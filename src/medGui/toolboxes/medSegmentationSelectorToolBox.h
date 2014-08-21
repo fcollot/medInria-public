@@ -15,6 +15,7 @@
 
 #include <medToolBox.h>
 #include <medGuiExport.h>
+#include <medAbstractWorkspace.h>
 
 class medViewEventFilter;
 class medSegmentationAbstractToolBox;
