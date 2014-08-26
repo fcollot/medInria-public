@@ -195,6 +195,10 @@ void medRegistrationSelectorToolBox::changeCurrentToolBox(int index)
     toolbox->setRegistrationToolBox(this);
     d->currentToolBox = toolbox;
     d->currentToolBox->show();
+
+    medAbstractWorkspace* workspace = getWorkspace();
+    if(workspace)
+        d->currentToolBox->setWorkspace(workspace);
     d->currentToolBox->header()->hide();
     d->toolBoxLayout->addWidget(d->currentToolBox);
 

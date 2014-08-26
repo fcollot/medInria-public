@@ -43,6 +43,7 @@ medRegistrationWorkspace::medRegistrationWorkspace(QWidget *parent) : medAbstrac
     // -- Registration toolbox --
 
     d->registrationToolBox = new medRegistrationSelectorToolBox(parent);
+    d->registrationToolBox->setWorkspace(this);
     this->addToolBox(d->registrationToolBox);
 
 //    this->setUserLayerPoolable(false);
