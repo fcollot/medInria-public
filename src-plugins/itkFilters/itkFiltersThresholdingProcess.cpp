@@ -11,7 +11,7 @@
 
 =========================================================================*/
 
-#include "itkFiltersThresholdingProcess.h"
+#include <itkFiltersThresholdingProcess.h>
 
 #include <dtkCore/dtkAbstractProcessFactory.h>
 #include <medAbstractDataFactory.h>
@@ -23,7 +23,7 @@
 #include "itkSmoothingRecursiveGaussianImageFilter.h"
 
 #include <itkExceptionObject.h>
-#include "itkFiltersThresholdingProcess_p.h"
+#include <itkFiltersThresholdingProcess_p.h>
 
 itkFiltersThresholdingProcess::itkFiltersThresholdingProcess(itkFiltersThresholdingProcess *parent) 
     : itkFiltersProcessBase(*new itkFiltersThresholdingProcessPrivate(this), parent)
@@ -32,8 +32,8 @@ itkFiltersThresholdingProcess::itkFiltersThresholdingProcess(itkFiltersThreshold
     
     d->filter = this;
     d->output = NULL; 
-    d->outsideValue =0;
-    d->threshold = 0;
+    d->outsideValue = 0;
+    d->threshold    = 0;
     d->comparisonOperator = true;
     
     d->description = tr("ITK thresholding filter");
