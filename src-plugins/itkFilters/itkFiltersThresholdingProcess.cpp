@@ -18,9 +18,9 @@
 
 #include <medMetaDataKeys.h>
 
-#include "itkImage.h"
-#include "itkCommand.h"
-#include "itkSmoothingRecursiveGaussianImageFilter.h"
+#include <itkImage.h>
+#include <itkCommand.h>
+#include <itkSmoothingRecursiveGaussianImageFilter.h>
 
 #include <itkExceptionObject.h>
 #include <itkFiltersThresholdingProcess_p.h>

@@ -102,7 +102,8 @@ itkFiltersToolBox::itkFiltersToolBox ( QWidget *parent ) : medFilteringAbstractT
                 << "Dilate image filter"
                 << "Erode image filter"
                 << "Close image filter"
-                << "Open image filter";
+                << "Open image filter"
+                << "Component threshold filter"  ;
     
     d->filters->addItems ( filtersList );
 

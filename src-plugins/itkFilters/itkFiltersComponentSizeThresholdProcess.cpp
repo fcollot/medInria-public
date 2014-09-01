@@ -11,7 +11,7 @@
 
 =========================================================================*/
 
-#include "itkFiltersComponentSizeThresholdProcess.h"
+#include <itkFiltersComponentSizeThresholdProcess.h>
 
 #include <dtkCore/dtkAbstractProcessFactory.h>
 #include <dtkCore/dtkAbstractDataFactory.h>

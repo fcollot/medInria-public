@@ -31,6 +31,7 @@
 #include <itkFiltersOpenProcess.h>
 #include <itkFiltersToolBox.h>
 #include <itkMorphologicalFiltersToolBox.h>
+#include <itkFiltersComponentSizeThresholdProcess.h>
 
 #include <dtkLog/dtkLog.h>
 
@@ -63,8 +64,8 @@ bool itkFiltersPlugin::initialize()
     if ( !itkFiltersNormalizeProcess::registered() ) { dtkWarn() << "Unable to register itkFilters normalize filter process type";}
     if ( !itkFiltersWindowingProcess::registered() ) { dtkWarn() << "Unable to register itkFilters windowing filter process type";}
     if ( !itkFiltersInvertProcess::registered() )    { dtkWarn() << "Unable to register itkFilters invert filter process type";   }
-    if ( !itkFiltersThresholdingProcess::registered() )    { dtkWarn() << "Unable to register itkFilters thresholding filter process type";   } //maj
-    if ( !itkFiltersComponentSizeThresholdProcess::registered() )    { dtkWarn() << "Unable to register itkFilters component size thresholding filter process type";   }
+    if ( !itkFiltersThresholdingProcess::registered() )           { dtkWarn() << "Unable to register itkFilters thresholding filter process type";   } //maj
+    if ( !itkFiltersComponentSizeThresholdProcess::registered() ) { dtkWarn() << "Unable to register itkFilters component size thresholding filter process type";   }
     if ( !itkFiltersShrinkProcess::registered() )    { dtkWarn() << "Unable to register itkFilters shrink filter process type";   }
     if ( !itkFiltersDilateProcess::registered() )    { dtkWarn() << "Unable to register itkFilters dilate filter process type";   }
     if ( !itkFiltersErodeProcess::registered() )     { dtkWarn() << "Unable to register itkFilters erode filter process type";    }
@@ -142,7 +143,8 @@ QStringList itkFiltersPlugin::types() const
                          << "itkDilateProcess"
                          << "itkErodeProcess"
                          << "itkCloseProcess"
-                         << "itkOpenProcess";
+                         << "itkOpenProcess"
+                         << "itkFiltersComponentSizeThresholdProcess";
 
 }
 
