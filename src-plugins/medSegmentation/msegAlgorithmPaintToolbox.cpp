@@ -221,6 +221,7 @@ public:
 		m_cb->cursorJustReactivated  = true;
         this->m_points.clear();
 		timer.start();
+        m_cb->calculateROIStatistics();
         return true;
     }
 
@@ -1254,7 +1255,6 @@ void AlgorithmPaintToolbox::updateStroke(ClickAndMoveEventFilter * filter, medAb
     }
 
     m_maskAnnotationData->invokeModified();
-    calculateROIStatistics();
 }
 
 void AlgorithmPaintToolbox::updateFromGuiItems()
@@ -1955,7 +1955,7 @@ void AlgorithmPaintToolbox::removeCursorDisplay()
     m_itkMask->GetPixelContainer()->Modified();
     m_itkMask->SetPipelineMTime(m_itkMask->GetMTime());
     m_maskAnnotationData->invokeModified();
-    calculateROIStatistics();
+    //calculateROIStatistics();
 }
 
 void AlgorithmPaintToolbox::increaseBrushSize()
