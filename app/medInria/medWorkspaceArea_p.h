@@ -15,6 +15,7 @@
 
 #include <QtCore/QHash>
 #include <medDataIndex.h>
+#include <medClutEditorToolBox.h>
 
 class medToolBoxContainer;
 class medDatabaseNavigator;
@@ -44,7 +45,7 @@ public:
     medFileSystemDataSource *fsSource;
     QList <medAbstractDataSource*> dataSources;
 
-    QPointer<medToolBox> transFun;
+    QPointer<medClutEditorToolBox> transFun;
     QStackedWidget *stack;
     QSplitter * splitter;
     QMutex mutex;

@@ -43,6 +43,7 @@ find_package(OpenGL REQUIRED)
 
 list_source_files(${PROJECT_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}
+  medClutEditorToolBox
   vtkDataManagement
   vtkImageView
   vtkWidgetsAddOn
@@ -122,6 +123,7 @@ list_header_directories_to_include(${PROJECT_NAME}
 include_directories(${${PROJECT_NAME}_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
   ${medCore_INCLUDE_DIRS}
+  ${medGui_INCLUDE_DIRS}
   ${${PROJECT_NAME}_BINARY_DIR}/shaders
   )
 
@@ -170,6 +172,7 @@ add_library(${PROJECT_NAME} SHARED
 
 target_link_libraries(${PROJECT_NAME}  
   ${OPENGL_LIBRARIES}
+  medGui
   vtkCommon
   vtkFiltering 
   vtkRendering

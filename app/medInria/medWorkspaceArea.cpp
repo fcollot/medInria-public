@@ -34,7 +34,7 @@
 #include <medAbstractImageView.h>
 #include <medViewContainerSplitter.h>
 #include <medViewContainer.h>
-//#include <medClutEditor.h>
+#include <medClutEditor.h>
 #include <medToolBoxFactory.h>
 #include <medCompositeParameter.h>
 
@@ -295,7 +295,7 @@ void medWorkspaceArea::bringUpTransferFunction(bool checked)
         return;
 
     if ( medAbstractImageView *view = qobject_cast<medAbstractImageView*>(current->view()) ) {
-        d->transFun = medToolBoxFactory::instance()->createToolBox("medClutEditorToolBox");
+        d->transFun = new medClutEditorToolBox();
         if(!d->transFun)
             return;
         d->transFun->setWorkspace(this->currentWorkspace());
