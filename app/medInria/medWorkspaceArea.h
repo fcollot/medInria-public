@@ -69,8 +69,7 @@ protected:
     void switchToStackedViewContainers(medTabbedViewContainers* stack);
 
 protected slots:
-    void bringUpTransferFunction(bool checked);
-    void updateTransferFunction();
+
 
 private slots:
     void removeInternSelectionToolBox();

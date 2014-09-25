@@ -107,7 +107,7 @@ public:
 
 public slots:
     void setOrientation(medImageView::Orientation orientation);
-
+    virtual void showHistogram(bool){}; // hack for histogram
 
 signals:
     void orientationChanged();

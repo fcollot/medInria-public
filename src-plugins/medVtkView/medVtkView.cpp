@@ -1,13 +1,13 @@
 /*=========================================================================
 
- medInria
+medInria
 
- Copyright (c) INRIA 2013 - 2014. All rights reserved.
- See LICENSE.txt for details.
+Copyright (c) INRIA 2013 - 2014. All rights reserved.
+See LICENSE.txt for details.
 
-  This software is distributed WITHOUT ANY WARRANTY; without even
-  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-  PURPOSE.
+This software is distributed WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
 
 =========================================================================*/
 
@@ -45,6 +45,13 @@
 #include <medParameterPool.h>
 #include <medParameterPoolManager.h>
 #include <medSettingsManager.h>
+#include <medClutEditorToolBox/medClutEditorToolBox.h>
+
+#ifdef Q_OS_MAC
+# define CONTROL_KEY "Meta"
+#else
+# define CONTROL_KEY "Ctrl"
+#endif
 
 class medVtkViewPrivate
 {
@@ -72,6 +79,8 @@ public:
     QWidget* mouseInteractionWidget;
 
     QScopedPointer<medVtkViewBackend> backend;
+
+    QPointer<medClutEditorToolBox> transFun;
 };
 
 medVtkView::medVtkView(QObject* parent): medAbstractImageView(parent),
@@ -82,20 +91,20 @@ medVtkView::medVtkView(QObject* parent): medAbstractImageView(parent),
     d->interactorStyle2D = NULL;
 
     // construct render window
-        // renWin
+    // renWin
     d->renWin = vtkRenderWindow::New();
     d->renWin->StereoCapableWindowOn();
     d->renWin->SetStereoTypeToCrystalEyes();
-            // needed for imersive room
+    // needed for imersive room
     if (qApp->arguments().contains("--stereo"))
         d->renWin->SetStereoRender(1);
-            // Necessary options for depth-peeling
+    // Necessary options for depth-peeling
     d->renWin->SetAlphaBitPlanes(1);
     d->renWin->SetMultiSamples(0);
 
 
     // construct views
-        // view2d
+    // view2d
     d->view2d = vtkImageView2D::New();
     d->view2d->SetBackground(0.0, 0.0, 0.0);
     d->view2d->SetLeftButtonInteractionStyle(vtkInteractorStyleImageView2D::InteractionTypeZoom);
@@ -108,7 +117,7 @@ medVtkView::medVtkView(QObject* parent): medAbstractImageView(parent),
     d->view2d->ShowRulerWidgetOn();
     d->view2d->SetRenderWindow (d->renWin); // set the interactor as well
     d->interactorStyle2D = d->view2d->GetInteractorStyle(); // save interactorStyle
-        // view3d.
+    // view3d.
     d->view3d = vtkImageView3D::New();
     d->view3d->SetShowBoxWidget(0);
     d->view3d->SetCroppingModeToOff();
@@ -156,7 +165,7 @@ medVtkView::medVtkView(QObject* parent): medAbstractImageView(parent),
 
     // Disable rubberBandMode if we leave the application.
     QMainWindow * mainWindowApp = dynamic_cast<QMainWindow *>
-            (qApp->property( "MainWindow" ).value<QObject *>());
+        (qApp->property( "MainWindow" ).value<QObject *>());
 
     connect(mainWindowApp, SIGNAL(mainWindowDeactivated()), this, SLOT(resetKeyboardInteractionModifier()));
 
@@ -164,6 +173,17 @@ medVtkView::medVtkView(QObject* parent): medAbstractImageView(parent),
 
     connect(this, SIGNAL(currentLayerChanged()), this, SLOT(changeCurrentLayer()));
     connect(this, SIGNAL(layerAdded(uint)), this, SLOT(buildMouseInteractionParamPool(uint)));
+
+
+    //action for transfer function-------------------------------------------------
+    /*QAction * transFunAction = new QAction("Toggle Tranfer Function Widget", this);
+    transFunAction->setShortcut(QKeySequence(tr(CONTROL_KEY "+H")));
+    transFunAction->setCheckable( true );
+    transFunAction->setChecked( false );
+    connect(transFunAction, SIGNAL(toggled(bool)),
+        this, SLOT(bringUpTransferFunction(bool)));
+
+    d->viewWidget->addAction(transFunAction);*/
 }
 
 medVtkView::~medVtkView()
@@ -343,8 +363,8 @@ QVector3D medVtkView::viewUp()
 bool medVtkView::is2D()
 {
     return this->orientation() == medImageView::VIEW_ORIENTATION_AXIAL ||
-           this->orientation() == medImageView::VIEW_ORIENTATION_CORONAL ||
-           this->orientation() == medImageView::VIEW_ORIENTATION_SAGITTAL;
+        this->orientation() == medImageView::VIEW_ORIENTATION_CORONAL ||
+        this->orientation() == medImageView::VIEW_ORIENTATION_SAGITTAL;
 }
 
 qreal medVtkView::sliceThickness()
@@ -531,3 +551,32 @@ void medVtkView::resetKeyboardInteractionModifier()
 {
     d->rubberBandZoomParameter->setValue(false);
 }
+
+void medVtkView::showHistogram(bool checked)
+{
+    if (!checked)
+    {
+        if (d->transFun !=NULL )
+        {
+            delete d->transFun ;
+            d->transFun=NULL;
+        }
+        return;
+    }
+
+    d->transFun = new medClutEditorToolBox();
+    d->viewWidget->parentWidget()->layout()->addWidget(d->transFun);
+    
+    d->transFun->setView(this);
+    //d->transFun->setWorkspace(this->currentWorkspace());
+    //d->transFun->setWindowModality( Qt::WindowModal );
+    //d->transFun->setWindowFlags(Qt::Tool|Qt::WindowStaysOnTopHint);
+    d->transFun->setMaximumHeight(350);
+    //d->transFun->clear(); //update()
+    d->transFun->show();
+}
+
+//void medVtkView::updateTransferFunction()
+//{
+//    d->transFun->clear(); //update()
+//}

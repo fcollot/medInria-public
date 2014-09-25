@@ -26,7 +26,7 @@
 #include <vtkLookupTable.h>
 #include <vtkImageView2D.h>
 #include <vtkImageView3D.h>
-
+#include <qsizepolicy.h>
 
 #include <math.h>
 #include <limits>
@@ -119,8 +119,11 @@ medClutEditorToolBox::medClutEditorToolBox(QWidget *parent) : medToolBox(parent)
     layout->addWidget(d->view);
     widget->setLayout(layout);
     this->addWidget(widget);
+    
     this->setTitle("CLUT Editor");
-
+    widget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    
     //get saved LUTs.
     d->tables = new QList<medClutEditorTable *>();
     medXMLToLUTReader reader = medXMLToLUTReader(d->tables);

@@ -51,6 +51,7 @@ public:
 public slots:
     virtual void reset();
     virtual void update();
+    virtual void showHistogram(bool);
 
 private slots:
     void displayDataInfo(uint layer);
@@ -62,7 +63,7 @@ private slots:
     void resetKeyboardInteractionModifier();
 
     virtual void enableRubberBandZoom(bool);
-
+    
 private:
     virtual QImage buildThumbnail(const QSize &size);
 
