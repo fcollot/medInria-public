@@ -15,13 +15,11 @@
 
 #include <QtCore/QHash>
 #include <medDataIndex.h>
-#include <medClutEditorToolBox.h>
 
 class medToolBoxContainer;
 class medDatabaseNavigator;
 class medTabbedViewContainers;
 class medAbstractWorkspace;
-class medClutEditor;
 class QStackedWidget;
 class QSplitter;
 class medToolBoxBody;

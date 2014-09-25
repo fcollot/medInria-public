@@ -34,7 +34,6 @@
 #include <medAbstractImageView.h>
 #include <medViewContainerSplitter.h>
 #include <medViewContainer.h>
-#include <medClutEditor.h>
 #include <medToolBoxFactory.h>
 #include <medCompositeParameter.h>
 
