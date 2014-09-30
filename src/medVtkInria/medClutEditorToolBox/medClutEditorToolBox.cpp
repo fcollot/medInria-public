@@ -17,6 +17,7 @@
 #include <medAbstractImageView.h>
 #include <medStorage.h>
 #include <medToolBoxFactory.h>
+#include <medToolBoxHeader.h>
 #include <medViewContainer.h>
 #include <medTabbedViewContainers.h>
 #include <medVtkViewBackend.h>
@@ -60,7 +61,7 @@ public:
     bool discreteMode;
 
     medAbstractData *dtk_data;
-    medAbstractLayeredView *med_view;
+    medAbstractView *med_view;
     QList <medClutEditorTable *> * tables;
 };
 
@@ -124,6 +125,9 @@ medClutEditorToolBox::medClutEditorToolBox(QWidget *parent) : medToolBox(parent)
     widget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
     
+    //Disables minimizing
+    disconnect(this->header(),SIGNAL(triggered()),this,SLOT(switchMinimize()));
+
     //get saved LUTs.
     d->tables = new QList<medClutEditorTable *>();
     medXMLToLUTReader reader = medXMLToLUTReader(d->tables);
@@ -136,7 +140,7 @@ medClutEditorToolBox::medClutEditorToolBox(QWidget *parent) : medToolBox(parent)
     }
 
     d->discreteMode = false;
-    d->layerForced = -1;
+    d->layerForced = 0;
 }
 
 medClutEditorToolBox::~medClutEditorToolBox(void)
@@ -203,13 +207,21 @@ void medClutEditorToolBox::setData(medAbstractData *data)
     }
 }
 
-void medClutEditorToolBox::setView(medAbstractImageView *view)
+void medClutEditorToolBox::setView(medAbstractView *view)
 {
-    if (d->layerForced!=-1)
-        view->setCurrentLayer(d->layerForced);
+    medAbstractImageData * image;
 
-    medAbstractImageData * image =
-        static_cast<medAbstractImageData *>(view->layerData(0));
+    if(medAbstractImageView *view = qobject_cast<medAbstractImageView*>(view))
+    {
+        //if (d->layerForced!=-1)
+        //    view->setCurrentLayer(d->layerForced);
+
+        image = static_cast<medAbstractImageData *>(view->layerData(view->currentLayer()));
+    }
+    else
+    {
+        image = static_cast<medAbstractImageData*>(view->dtkAbstractView::data());
+    }
 
     if( !image || image->identifier()=="vtkDataMesh" ) //no windowing on meshes
         return;
@@ -262,8 +274,8 @@ void medClutEditorToolBox::deleteTable(void)
 
 void medClutEditorToolBox::applyTable(void)
 {
-    if (d->layerForced!=-1)
-        d->med_view->setCurrentLayer(d->layerForced);
+    //if (d->layerForced!=-1)
+    //    d->med_view->setCurrentLayer(d->layerForced);
 
     if ( d->med_view != NULL )
     {
@@ -457,9 +469,9 @@ void medClutEditorToolBox::getTransferFunctions ( QList<double> & scalars,
                                      QList<QColor> & colors )
 {
     vtkColorTransferFunction * color   =
-        static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->GetColorTransferFunction(0);//No Layer
+        static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->GetColorTransferFunction(d->layerForced);//No Layer
     vtkPiecewiseFunction     * opacity =
-        static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->GetOpacityTransferFunction(0);
+        static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->GetOpacityTransferFunction(d->layerForced);
 
     if(!color || !opacity)
         return;
@@ -536,6 +548,15 @@ void medClutEditorToolBox::setColorLookupTable ( QList<double> scalars, QList<QC
     lut->Delete();
     delete [] table;
     delete [] alphaTable;
+}
+
+void medClutEditorToolBox::addVertex(QPointF value, QColor color)
+{
+    QPointF position = this->getScene()->valueToCoordinate(value);
+    medClutEditorVertex *vertex = new medClutEditorVertex(value, position, color);
+    this->getScene()->table()->addVertex(vertex);
+    this->getScene()->table()->finalizeMoveSelection();
+    this->getScene()->table()->triggerVertexChanged();
 }
 
 void medClutEditorToolBox::forceLayer(int layer)

@@ -15,6 +15,7 @@
 
 #include <medVtkInriaExport.h>
 #include <medClutEditor.h>
+#include <medAbstractView.h>
 #include <medToolBox.h>
 
 #include <QtGui>
@@ -39,13 +40,14 @@ public:
 
     static bool registered();
     void setData(medAbstractData *data);
-    void setView(medAbstractImageView *view);
+    void setView(medAbstractView *view);
     void applyTable();
     void setColorLookupTable ( QList<double> scalars, QList<QColor> colors );
 	void clear();
     void getTransferFunctions ( QList<double> & scalars, QList<QColor> & colors );
     void forceLayer(int layer);
     medClutEditorScene * getScene();
+    void addVertex(QPointF value, QColor color);
 
 public slots:
     void setDiscreteMode(bool);
