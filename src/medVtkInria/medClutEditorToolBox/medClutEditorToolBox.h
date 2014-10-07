@@ -41,13 +41,15 @@ public:
     static bool registered();
     void setData(medAbstractData *data);
     void setView(medAbstractView *view);
-    void applyTable();
-    void setColorLookupTable ( QList<double> scalars, QList<QColor> colors );
+    void applyTable(medAbstractView *view);
+    void setColorLookupTable (medAbstractView* view, QList<double> scalars, QList<QColor> colors );
 	void clear();
     void getTransferFunctions ( QList<double> & scalars, QList<QColor> & colors );
     void forceLayer(int layer);
     medClutEditorScene * getScene();
     void addVertex(QPointF value, QColor color);
+    void reset();
+    void deleteTable();
 
 public slots:
     void setDiscreteMode(bool);
@@ -55,7 +57,7 @@ public slots:
 
 protected:
     void initializeTable();
-    void deleteTable();
+    
 
     void mousePressEvent(QMouseEvent *event);
 

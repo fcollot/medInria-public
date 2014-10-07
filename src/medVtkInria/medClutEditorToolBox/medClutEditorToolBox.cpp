@@ -162,6 +162,14 @@ medClutEditorToolBox::~medClutEditorToolBox(void)
     delete d;
 }
 
+void medClutEditorToolBox::reset()
+{
+    d->dtk_data = NULL;
+    d->med_view = NULL;
+    d->discreteMode = false;
+    d->layerForced = 0;
+}
+
 medClutEditorScene * medClutEditorToolBox::getScene()
 {
     return d->scene;
@@ -209,22 +217,19 @@ void medClutEditorToolBox::setData(medAbstractData *data)
 
 void medClutEditorToolBox::setView(medAbstractView *view)
 {
+    if(!view)
+        return;
+
     medAbstractImageData * image;
 
-    if(medAbstractImageView *view = qobject_cast<medAbstractImageView*>(view))
-    {
-        //if (d->layerForced!=-1)
-        //    view->setCurrentLayer(d->layerForced);
-
-        image = static_cast<medAbstractImageData *>(view->layerData(view->currentLayer()));
-    }
+    if(medAbstractImageView *imageView = qobject_cast<medAbstractImageView*>(view))
+        image = static_cast<medAbstractImageData *>(imageView->layerData(imageView->currentLayer()));
     else
-    {
         image = static_cast<medAbstractImageData*>(view->dtkAbstractView::data());
-    }
 
     if( !image || image->identifier()=="vtkDataMesh" ) //no windowing on meshes
         return;
+
     this->setData(image);
 
     if (view == d->med_view)
@@ -237,7 +242,6 @@ void medClutEditorToolBox::setView(medAbstractView *view)
         QList<double> scalars;
         QList<QColor> colors;
 
-        //TODO GPR: make this works
         // Allows to modif medClutTbx when windowing with dragging on the view
         // AND used to initialize tbx with the image LUT
         this->getTransferFunctions( scalars, colors );
@@ -272,12 +276,12 @@ void medClutEditorToolBox::deleteTable(void)
     }
 }
 
-void medClutEditorToolBox::applyTable(void)
+void medClutEditorToolBox::applyTable(medAbstractView* view)
 {
     //if (d->layerForced!=-1)
     //    d->med_view->setCurrentLayer(d->layerForced);
 
-    if ( d->med_view != NULL )
+    if ( view != NULL )
     {
         QList<double> scalars;
         QList<QColor> colors;
@@ -297,11 +301,12 @@ void medClutEditorToolBox::applyTable(void)
             opacity->AddPoint ( scalars.at ( i ), colors.at ( i ).alphaF() );
         }
         double * range = color->GetRange();
-        static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->SetColorRange(range);
-        static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->SetColorTransferFunction(color);
-        static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->SetOpacityTransferFunction(opacity);
+        static_cast<medVtkViewBackend*>(view->backend())->view2D->SetColorRange(range);
+        static_cast<medVtkViewBackend*>(view->backend())->view2D->SetColorTransferFunction(color);
+        static_cast<medVtkViewBackend*>(view->backend())->view2D->SetOpacityTransferFunction(opacity);
 
-        d->med_view->viewWidget()->update();
+        this->setColorLookupTable(view, scalars, colors);
+        view->viewWidget()->update();
     }
 }
 
@@ -356,19 +361,19 @@ void medClutEditorToolBox::onVertexMoved(void)
     if ( d->scene->table() )
     {
         if ( d->toggleDirectUpdateAction->isChecked() )
-            this->applyTable();
+            this->applyTable(d->med_view);
     }
 }
 
 void medClutEditorToolBox::onApplyTablesAction(void)
 {
-    this->applyTable();
+    this->applyTable(d->med_view);
 }
 
 void medClutEditorToolBox::onToggleDirectUpdateAction(void)
 {
     if  ( d->toggleDirectUpdateAction->isChecked() )
-        this->applyTable();
+        this->applyTable(d->med_view);
 }
 
 void medClutEditorToolBox::setDiscreteMode(bool value)
@@ -469,7 +474,7 @@ void medClutEditorToolBox::getTransferFunctions ( QList<double> & scalars,
                                      QList<QColor> & colors )
 {
     vtkColorTransferFunction * color   =
-        static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->GetColorTransferFunction(d->layerForced);//No Layer
+        static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->GetColorTransferFunction(d->layerForced);
     vtkPiecewiseFunction     * opacity =
         static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->GetOpacityTransferFunction(d->layerForced);
 
@@ -504,7 +509,7 @@ void medClutEditorToolBox::getTransferFunctions ( QList<double> & scalars,
         "functions don't match!";
 }
 
-void medClutEditorToolBox::setColorLookupTable ( QList<double> scalars, QList<QColor> colors )
+void medClutEditorToolBox::setColorLookupTable ( medAbstractView *view, QList<double> scalars, QList<QColor> colors )
 {
     int size= qMin ( scalars.count(),colors.count() );
     vtkColorTransferFunction * ctf = vtkColorTransferFunction::New();
@@ -542,9 +547,10 @@ void medClutEditorToolBox::setColorLookupTable ( QList<double> scalars, QList<QC
     //if ( d->currentView == d->view2d ) {
     //    d->view2d->SetLookupTable( lut , this->currentLayer() );
     //} else {
-        static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->SetLookupTable ( lut );
+        static_cast<medVtkViewBackend*>(view->backend())->view2D->SetLookupTable ( lut );
+        static_cast<medVtkViewBackend*>(view->backend())->view3D->vtkImageView::SetLookupTable ( lut );
     //}
-    static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->Render();
+    //static_cast<medVtkViewBackend*>(d->med_view->backend())->view2D->Render();
     lut->Delete();
     delete [] table;
     delete [] alphaTable;
