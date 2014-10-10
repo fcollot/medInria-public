@@ -270,6 +270,8 @@ void medClutEditorToolBox::initializeTable(void)
 void medClutEditorToolBox::deleteTable(void)
 {
     medClutEditorTable * table;
+    if(!d->scene->table())
+        return;
     while ( (table = d->scene->table()) ) {
         d->scene->removeItem( table );
         delete table;
