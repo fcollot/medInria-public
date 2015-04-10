@@ -103,7 +103,9 @@ public slots:
     void activateMagicWand();
     void updateMagicWandComputationSpeed();
 
-    void import();
+    void save();
+
+    void import(medAbstractData* data);
     void clearMask();
 
     void setLabel(int newVal);
@@ -138,7 +140,9 @@ protected:
     friend class ClickAndMoveEventFilter;
     
     void addStroke( medAbstractImageView *view, const QVector3D &vec );
-    void setData( medAbstractData *data );
+    void updateData();
+
+    void setMaskMetaData();
 
     // update with seed point data.
     void updateTableRow(int row);
@@ -162,6 +166,7 @@ protected:
 
 signals:
     void installEventFilterRequest(medViewEventFilter *filter);
+    void save(medAbstractData* data);
 
 private:
     typedef dtkSmartPointer<medSeedPointAnnotationData> SeedPoint;
