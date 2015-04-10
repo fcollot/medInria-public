@@ -762,6 +762,7 @@ void AlgorithmPaintToolbox::updateData()
 
             m_imageData->addAttachedData(m_maskAnnotationData);
 
+            currentView->removeLayer(1);
             currentView->addLayer(m_maskAnnotationData);
 
             setMaskMetaData();
@@ -781,7 +782,10 @@ void AlgorithmPaintToolbox::setMaskMetaData()
 {
     m_maskData->copyMetaDataFrom(m_imageData);
 
-    QString newSeriesDescription = m_imageData->metadata(medMetaDataKeys::SeriesDescription.key()) + " (painted)";
+    QString newSeriesDescription = m_imageData->metadata(medMetaDataKeys::SeriesDescription.key()) + " (painted) ";
+    QString seriesSuffix = QString::number(qrand());
+    seriesSuffix.resize(importNameRandomSuffixSize);
+    newSeriesDescription += seriesSuffix;
     m_maskData->setMetaData(medMetaDataKeys::SeriesDescription.key(), newSeriesDescription);
 
     QString generatedSeriesID = QUuid::createUuid().toString().replace("{", "").replace("}", "");

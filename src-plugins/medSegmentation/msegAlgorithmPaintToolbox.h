@@ -60,6 +60,8 @@ class MEDVIEWSEGMENTATIONPLUGIN_EXPORT AlgorithmPaintToolbox : public medSegment
     MED_TOOLBOX_INTERFACE("AlgorithmPaintToolbox", "Paint Tool",
                           <<"segmentation")
 public:
+
+    static const int importNameRandomSuffixSize = 5;
     
     typedef QPair<Mask2dType::Pointer,unsigned int> SlicePair;
     typedef QPair<QList<SlicePair>,unsigned char> PairListSlicePlaneId;
