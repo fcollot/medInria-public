@@ -14,6 +14,7 @@
 #include <itkFiltersPlugin.h>
 
 #include <itkFiltersAddProcess.h>
+#include <itkFiltersAddProcessTest.h>
 #include <itkFiltersSubtractProcess.h>
 #include <itkFiltersMultiplyProcess.h>
 #include <itkFiltersDivideProcess.h>
@@ -75,6 +76,8 @@ bool itkFiltersPlugin::initialize()
     if ( !itkFiltersGrayscaleOpenProcess::registered() ) { dtkWarn() << "Unable to register itkFiltersGrayscaleOpenProcess type";     }
     if ( !itkFiltersBinaryCloseProcess::registered() )   { dtkWarn() << "Unable to register itkFiltersBinaryCloseProcess type";}
     if ( !itkFiltersBinaryOpenProcess::registered() )    { dtkWarn() << "Unable to register itkFiltersBinaryOpenProcess type";}
+
+    medTestSuite::registerSuite<itkFiltersAddProcessTest>();
 
     return true;
 }

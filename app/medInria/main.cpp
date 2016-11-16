@@ -24,6 +24,18 @@
 #include <medDatabaseController.h>
 #include <medSettingsManager.h>
 #include <medStorage.h>
+#include <medTestSuite.h>
+
+int runTests(int argc,char* argv[])
+{
+    medPluginManager::instance()->initialize();
+
+    int status = medTestSuite::runAll(argc, argv);
+
+    medPluginManager::instance()->uninitialize();
+
+    return status;
+}
 
 void forceShow(medMainWindow& mainwindow )
 {
@@ -84,6 +96,11 @@ int main(int argc,char* argv[]) {
         #endif
         "[--view] [files]]";
         return 1;
+    }
+
+    if (dtkApplicationArgumentsContain(&application, "--test"))
+    {
+        return runTests(argc, argv);
     }
 
     // Do not show the splash screen in debug builds because it hogs the
