@@ -32,16 +32,14 @@ public:
 
     medAbstractData* getOutputData(int channel = 0, int frame = 0) const override;
 
-public slots:
-    //! Method to actually start the filter
-    virtual int update();
-
 protected:
     dtkSmartPointer <medAbstractData> m_inputA;
     dtkSmartPointer <medAbstractData> m_inputB;
     dtkSmartPointer <medAbstractData> m_output;
 
     void setInputData(medAbstractData* data, int channel = 0, int frame = 0) override;
+
+    int internalUpdate() override;
 };
 
 

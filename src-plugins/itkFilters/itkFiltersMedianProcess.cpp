@@ -43,7 +43,7 @@ QString itkFiltersMedianProcess::description() const
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersMedianProcess::tryUpdate()
+int itkFiltersMedianProcess::internalUpdate()
 {
     int res = DTK_FAILURE;
 

@@ -52,6 +52,7 @@ QString resampleProcess::description(void) const
 {
     return "resampleProcess";
 }
+
 void resampleProcess::setInputData(medAbstractData* data, int channel, int frame)
 {
     Q_UNUSED(channel);
@@ -90,7 +91,7 @@ void resampleProcess::setDoubleParameter(double data, int channel, int frame)
     }
 }
 
-int resampleProcess::update ( void )
+int resampleProcess::internalUpdate()
 {
     if ( !d->input )
     {

@@ -76,7 +76,7 @@ void itkFiltersMultiplyProcess::setDoubleParameter(double data, int channel, int
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersMultiplyProcess::tryUpdate()
+int itkFiltersMultiplyProcess::internalUpdate()
 {  
     int res = DTK_FAILURE;
 

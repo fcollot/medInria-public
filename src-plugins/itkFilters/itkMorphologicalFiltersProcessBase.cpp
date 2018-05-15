@@ -83,8 +83,7 @@ void itkMorphologicalFiltersProcessBase::setIntParameter(int data, int channel, 
     d->kernelShape = static_cast<KernelShape>(data);
 }
 
-//only called if not defined in subclasses (e.g. dilate/erodeFilter)
-int itkMorphologicalFiltersProcessBase::tryUpdate()
+int itkMorphologicalFiltersProcessBase::internalUpdate()
 {
     int res = DTK_FAILURE;
 

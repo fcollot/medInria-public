@@ -31,15 +31,14 @@ public:
     static bool registered ( void );
 
     virtual QString description(void) const;
-    
-public slots:
-    int tryUpdate();
 
 protected:
     void setIntParameter(int data, int channel = 0, int frame = 0) override;
 
     template <class PixelType> int castToUInt3();
     template <class PixelType> int updateProcess();
+
+    int internalUpdate() override;
 
 private:
     itkFiltersComponentSizeThresholdProcessPrivate *d;

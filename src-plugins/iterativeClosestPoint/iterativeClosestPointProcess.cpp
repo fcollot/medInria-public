@@ -138,7 +138,7 @@ void iterativeClosestPointProcess::setIntParameter(int data, int channel, int fr
     }
 }
 
-int iterativeClosestPointProcess::update()
+int iterativeClosestPointProcess::internalUpdate()
 {
     if ( !d->inputSource || !d->inputTarget )
         return DTK_FAILURE;

@@ -43,7 +43,7 @@ QString itkFiltersNormalizeProcess::description() const
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersNormalizeProcess::tryUpdate()
+int itkFiltersNormalizeProcess::internalUpdate()
 {   
     int res = DTK_FAILURE;
 

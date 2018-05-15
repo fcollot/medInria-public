@@ -27,12 +27,10 @@ public:
 
     virtual QString description(void) const;
     
-public slots:
-
-    int tryUpdate();
-
 protected:
     template <class PixelType> int updateProcess();
+
+    int internalUpdate() override;
 };
 
 dtkAbstractProcess * createitkFiltersInvertProcess(void);

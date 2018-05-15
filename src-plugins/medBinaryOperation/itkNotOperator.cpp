@@ -43,7 +43,7 @@ void itkNotOperator::setInputData(medAbstractData* data, int channel, int frame)
     }
 }
 
-int itkNotOperator::update()
+int itkNotOperator::internalUpdate()
 {
     int res = DTK_FAILURE;
 

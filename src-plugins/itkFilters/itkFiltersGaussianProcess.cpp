@@ -74,7 +74,7 @@ void itkFiltersGaussianProcess::setDoubleParameter(double data, int channel, int
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersGaussianProcess::tryUpdate()
+int itkFiltersGaussianProcess::internalUpdate()
 {  
     int res = DTK_FAILURE;
 

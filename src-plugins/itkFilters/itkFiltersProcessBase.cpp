@@ -68,23 +68,6 @@ medAbstractData* itkFiltersProcessBase::getOutputData(int channel, int frame) co
     return d->outputData;
 }
 
-int itkFiltersProcessBase::update()
-{
-    int res = DTK_FAILURE;
-
-    try
-    {
-        res = tryUpdate();
-    }
-    catch( itk::ExceptionObject & error )
-    {
-        qDebug() << "ExceptionObject caught in" << metaObject()->className() << "!";
-        qDebug() << error.GetDescription();
-    }
-
-    return res;
-}
-
 void itkFiltersProcessBase::eventCallback ( itk::Object *caller, const itk::EventObject& event, void *clientData)
 {
     itkFiltersProcessBase * source = reinterpret_cast<itkFiltersProcessBase *> ( clientData );

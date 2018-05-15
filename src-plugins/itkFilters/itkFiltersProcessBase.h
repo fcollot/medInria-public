@@ -34,9 +34,6 @@ public:
     
     void emitProgress(int progress);
 
-    virtual int tryUpdate(){return DTK_FAILURE;}
-    int update();
-
     medAbstractImageData* getInputData();
     medAbstractData* getOutputData(int channel = 0, int frame = 0) const override;
 

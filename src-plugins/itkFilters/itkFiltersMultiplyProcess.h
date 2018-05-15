@@ -32,13 +32,12 @@ public:
 
     virtual QString description(void) const;
     
-public slots:
-    int tryUpdate();
-
 protected:
     void setDoubleParameter(double data, int channel = 0, int frame = 0) override;
 
     template <class PixelType> int updateProcess();
+
+    int internalUpdate() override;
 
 private:
     itkFiltersMultiplyProcessPrivate *d;

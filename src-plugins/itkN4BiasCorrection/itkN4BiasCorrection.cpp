@@ -86,7 +86,7 @@ void itkN4BiasCorrection::setDoubleParameter(double data, int channel, int frame
         d->numberOfIterations.push_back(data);
 }
 
-int itkN4BiasCorrection::update()
+int itkN4BiasCorrection::internalUpdate()
 {
     int res = DTK_FAILURE;
 

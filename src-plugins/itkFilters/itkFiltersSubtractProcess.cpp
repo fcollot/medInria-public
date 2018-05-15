@@ -76,7 +76,7 @@ void itkFiltersSubtractProcess::setDoubleParameter(double data, int channel, int
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersSubtractProcess::tryUpdate()
+int itkFiltersSubtractProcess::internalUpdate()
 {   
     int res = DTK_FAILURE;
 

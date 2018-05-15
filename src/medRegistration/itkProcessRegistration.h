@@ -78,14 +78,6 @@ public:
     };
 
     /**
-     * @brief Runs the process.
-     *
-     * @param void
-     * @return int 0 if it succeeded, any other value is an error. (could be used as error code)
-    */
-    int update();
-    
-    /**
      * @brief Sets the fixed or moving image paramters of the process.
      *
      * Directly converts the inputs in <float, 3> images.
@@ -186,6 +178,8 @@ protected :
      * @return bool: true on successful operation, false otherwise.
     */
     virtual bool writeTransform(const QString& file);
+
+    int internalUpdate() override;
 
     /**
      * @brief Apply the update on a specified fixed image type.

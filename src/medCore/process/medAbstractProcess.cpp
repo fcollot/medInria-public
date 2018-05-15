@@ -27,6 +27,19 @@ medAbstractProcess::~medAbstractProcess()
 {
 }
 
+int medAbstractProcess::update()
+{
+    try
+    {
+        return internalUpdate();
+    }
+    catch (std::exception& exception)
+    {
+        qDebug() << exception.what();
+        throw exception;
+    }
+}
+
 void medAbstractProcess::setParameter(int data)
 {
     setIntParameter(data);

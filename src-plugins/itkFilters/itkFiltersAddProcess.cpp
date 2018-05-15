@@ -76,7 +76,7 @@ void itkFiltersAddProcess::setDoubleParameter(double data, int channel, int fram
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersAddProcess::tryUpdate()
+int itkFiltersAddProcess::internalUpdate()
 {
     int res = DTK_FAILURE;
 
@@ -153,6 +153,9 @@ template <class PixelType> int itkFiltersAddProcess::updateProcess()
 
     QString newSeriesDescription = "add filter " + QString::number(d->addValue);
     medUtilities::setDerivedMetaData(getOutputData(), getInputData(), newSeriesDescription);
+
+    return MESH_TYPE;
+    //throw std::runtime_error("blah fucked up");
 
     return DTK_SUCCEED;
 }

@@ -159,7 +159,7 @@ void medMaskApplication::clearInput (int channel)
     }
 }
 
-int medMaskApplication::update()
+int medMaskApplication::internalUpdate()
 {
     int res = DTK_FAILURE;
 

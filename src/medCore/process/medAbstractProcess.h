@@ -55,7 +55,7 @@ public:
     virtual medAbstractData* getOutputData(int channel = 0, int frame = 0) const = 0;
 
 public slots:
-    virtual int update () = 0;
+    int update() override;
 
     void setParameter(int data) override;
     void setParameter(int data, int channel) override;
@@ -103,6 +103,8 @@ protected:
     virtual void setDataParameter(medAbstractData* data, int channel = 0, int frame = 0);
 
     virtual void setInputData(medAbstractData* data, int channel = 0, int frame = 0) = 0;
+
+    virtual int internalUpdate() = 0;
 
 private:
     using dtkAbstractProcess::onCanceled;

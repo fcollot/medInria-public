@@ -98,7 +98,7 @@ void itkFiltersWindowingProcess::setDoubleParameter(double data, int channel, in
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersWindowingProcess::tryUpdate()
+int itkFiltersWindowingProcess::internalUpdate()
 {   
     int res = DTK_FAILURE;
 

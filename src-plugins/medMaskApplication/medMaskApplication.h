@@ -39,15 +39,13 @@ public:
     void clearInput (int channel);
 
     medAbstractData* getOutputData(int channel = 0, int frame = 0) const override;
-    
-public slots:
-    //! Method to actually start the filter
-    int update();
 
 protected:
     void setDoubleParameter(double data, int channel = 0, int frame = 0) override;
 
     void setInputData(medAbstractData* data, int channel = 0, int frame = 0) override;
+
+    int internalUpdate() override;
     
 private:
     medMaskApplicationPrivate *d;

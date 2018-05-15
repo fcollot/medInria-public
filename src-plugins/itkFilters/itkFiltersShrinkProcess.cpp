@@ -89,7 +89,7 @@ void itkFiltersShrinkProcess::setIntParameter(int data, int channel, int frame)
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersShrinkProcess::tryUpdate()
+int itkFiltersShrinkProcess::internalUpdate()
 {   
     int res = DTK_FAILURE;
 

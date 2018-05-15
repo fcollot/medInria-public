@@ -41,7 +41,7 @@ QString itkFiltersInvertProcess::description() const
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersInvertProcess::tryUpdate()
+int itkFiltersInvertProcess::internalUpdate()
 {
     int res = DTK_FAILURE;
 

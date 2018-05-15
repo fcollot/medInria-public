@@ -78,7 +78,7 @@ void itkFiltersComponentSizeThresholdProcess::setIntParameter(int data, int chan
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersComponentSizeThresholdProcess::tryUpdate()
+int itkFiltersComponentSizeThresholdProcess::internalUpdate()
 {  
     int res = DTK_FAILURE;
 

@@ -29,11 +29,12 @@ public:
     
     static bool registered();
 
-    int update();
     template <class ImageType> int run();
 
 protected:
     void setInputData(medAbstractData* data, int channel = 0, int frame = 0) override;
+
+    int internalUpdate() override;
 };
 
 dtkAbstractProcess *createitkNotOperator();

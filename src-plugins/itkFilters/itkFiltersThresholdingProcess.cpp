@@ -85,7 +85,7 @@ void itkFiltersThresholdingProcess::setDoubleParameter(double data, int channel,
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersThresholdingProcess::tryUpdate()
+int itkFiltersThresholdingProcess::internalUpdate()
 {   
     int res = DTK_FAILURE;
 

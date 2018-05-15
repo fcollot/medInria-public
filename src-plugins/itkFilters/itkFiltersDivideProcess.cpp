@@ -76,7 +76,7 @@ void itkFiltersDivideProcess::setDoubleParameter(double data, int channel, int f
 
 //-------------------------------------------------------------------------------------------
 
-int itkFiltersDivideProcess::tryUpdate()
+int itkFiltersDivideProcess::internalUpdate()
 {
     int res = DTK_FAILURE;
     

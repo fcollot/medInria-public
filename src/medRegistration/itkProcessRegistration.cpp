@@ -340,7 +340,7 @@ int itkProcessRegistration::update(itkProcessRegistration::ImageType)
 }
 
 
-int itkProcessRegistration::update()
+int itkProcessRegistration::internalUpdate()
 {
     int retval = medAbstractProcess::FAILURE;
 

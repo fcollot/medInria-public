@@ -52,7 +52,7 @@ void medBinaryOperatorBase::setInputData(medAbstractData* data, int channel, int
     }
 }
 
-int medBinaryOperatorBase::update()
+int medBinaryOperatorBase::internalUpdate()
 {
     int res = DTK_FAILURE;
 
