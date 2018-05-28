@@ -13,19 +13,35 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-if(NOT DEFINED ${medInria_VERSION})
-    set(medInria_VERSION 2.2.0)
-endif()
-
-project(MEDINRIA VERSION ${medInria_VERSION})
-
-
 ## #############################################################################
 ## Set version
 ## #############################################################################
 
+find_package(Git)
+
+if (Git_FOUND)
+    execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags --always
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE gitDescribe)
+    string(REGEX MATCH "[0-9]+[.][0-9]+" medInria_VERSION ${gitDescribe})
+    string(REGEX MATCH "-[0-9]+" commitNumber ${gitDescribe})
+    string(REPLACE "-" "." commitNumber ${commitNumber})
+    string(CONCAT medInria_VERSION ${medInria_VERSION} ${commitNumber})
+endif()
+
+cmake_policy(SET CMP0048 NEW)
+project(MEDINRIA VERSION ${medInria_VERSION})
+
 string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UP)
 add_definitions(-D${PROJECT_NAME_UP}_VERSION="${${PROJECT_NAME}_VERSION}")
+
+#if (Git_FOUND)
+#    string(REGEX MATCH "[^-]+$" ${PROJECT_NAME}_VERSION_SUFFIX ${gitDescribe})
+#endif()
+
+#if (NOT (${CMAKE_BUILD_TYPE} STREQUAL "Release") OR (${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel"))
+#    set(${PROJECT_NAME}_VERSION_SUFFIX "(Debug)")
+#endif()
 
 ## #############################################################################
 ## Macro

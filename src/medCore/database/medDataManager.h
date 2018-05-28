@@ -36,6 +36,8 @@ public:
     static void initialize();
     static medDataManager * instance();
 
+    void garbageCollect();
+
     medAbstractData* retrieveData(const medDataIndex& index);
 
     QHash<QString, dtkAbstractDataWriter*> getPossibleWriters(medAbstractData* data);
@@ -79,7 +81,6 @@ signals:
 
 private slots:
     void exportDialog_updateSuffix(int index);
-    void garbageCollect();
     void removeFromNonPersistent(medDataIndex,QUuid);
     void setWriterPriorities();
 
