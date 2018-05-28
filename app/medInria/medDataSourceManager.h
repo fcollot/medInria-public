@@ -38,7 +38,7 @@ public:
 
 
 protected slots:
-    void exportData(const medDataIndex &index);
+    void exportData(const medDataIndex& index, QString path, QString writer);
     void importData(medAbstractData *data);
     void importFile(QString path);
     void indexFile(QString path);

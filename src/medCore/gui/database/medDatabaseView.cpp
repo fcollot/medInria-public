@@ -16,6 +16,7 @@
 #include <medAbstractDatabaseItem.h>
 #include <medAbstractDbController.h>
 #include <medDatabaseEditItemDialog.h>
+#include <medDatabaseExportView.h>
 
 #include <medAbstractDataFactory.h>
 
@@ -305,28 +306,28 @@ void medDatabaseView::onExportSelectedItemRequested(void)
 
     if(item)
     {
-        if(item->dataIndex().isValidForSeries())
-        {
-            emit exportData(item->dataIndex());
-        }
+        exportItem(item);
+//        if(item->dataIndex().isValidForSeries())
+//        {
+//            exportData(item->dataIndex());
+//        }
 
-        else if(item->dataIndex().isValidForStudy())
-        {
-            for (int i = 0; i<item->childCount(); i++)
-                emit exportData(item->child(i)->dataIndex());
-        }
+//        else if(item->dataIndex().isValidForStudy())
+//        {
+//            exportItem(item);
+//        }
 
-        if(item->dataIndex().isValidForPatient())
-        {
-            for (int i = 0; i<item->childCount(); i++)
-            {
-                medAbstractDatabaseItem *study = item->child(i);
-                for (int j = 0; j<study->childCount(); j++)
-                {
-                    emit exportData(study->child(j)->dataIndex());
-                }
-            }
-        }
+//        if(item->dataIndex().isValidForPatient())
+//        {
+//            for (int i = 0; i<item->childCount(); i++)
+//            {
+//                medAbstractDatabaseItem *study = item->child(i);
+//                for (int j = 0; j<study->childCount(); j++)
+//                {
+//                    exportData(study->child(j)->dataIndex());
+//                }
+//            }
+//        }
     }
 }
 
@@ -615,4 +616,89 @@ void medDatabaseView::onOpeningFailed(const medDataIndex& index)
 
         delegate->append(index);
     }
+}
+
+//void medDatabaseView::exportData(medDataIndex index)
+//{
+//    dtkSmartPointer<medAbstractData> data = medDataManager::instance()->retrieveData(index);
+
+//    QList<QString> allWriters = medAbstractDataFactory::instance()->writers();
+//    QHash<QString, dtkAbstractDataWriter*> possibleWriters = medDataManager::instance()->getPossibleWriters(data);
+
+//    QFileDialog* exportDialog = new QFileDialog(0, tr("Exporting: please choose a file name and directory"));
+//    exportDialog->setOption(QFileDialog::DontUseNativeDialog);
+//    exportDialog->setAcceptMode(QFileDialog::AcceptSave);
+
+//    QStringList nameFilters;
+
+//    // we use allWriters as the list of keys to make sure we traverse possibleWriters
+//    // in the order specified by the writers priorities.
+//    foreach(QString type, allWriters)
+//    {
+//        if (!possibleWriters.contains(type))
+//            continue;
+
+//        QStringList extensionList = possibleWriters[type]->supportedFileExtensions();
+//        QString label = possibleWriters[type]->description() + " (" + extensionList.join(", ") + ")";
+//        QString extension = (extensionList.isEmpty()) ? QString() : extensionList.first();
+//        nameFilters.append(label);
+//    }
+
+//    exportDialog->setNameFilters(nameFilters);
+//    //connect(typesHandled, SIGNAL(currentIndexChanged(int)), this, SLOT(exportDialog_updateSuffix(int)));
+
+//    // Set a default filename based on the series's description
+//    QString defaultName = medDataManager::instance()->getMetaData(data->dataIndex(), medMetaDataKeys::SeriesDescription.key());
+//   // defaultName += typesHandled->itemData(typesHandled->currentIndex(), Qt::UserRole+1).toString();
+//    //exportDialog->selectFile(defaultName);
+
+//    if ( exportDialog->exec() )
+//    {
+//        qDebug() << exportDialog->selectedNameFilter();
+//        // Chosen format in combobox. Ex. "vtkDataMesh"
+//        //QString chosenFormat = typesHandled->itemData(typesHandled->currentIndex()).toString();
+
+//        // Combobox extension. Ex. ".vtk"
+//        //QString comboExtension = typesHandled->itemData(typesHandled->currentIndex(), Qt::UserRole+1).toString();
+
+//        // Chosen extension in filename. Ex. "vtk"
+//        QString finalFilename = exportDialog->selectedFiles().first().toUtf8();
+//        QString userExtension = QFileInfo(finalFilename).suffix();
+
+//        // Some extensions are linked to several formats:
+//        // if the combobox and filename extensions are equal, no need to enter here.
+////        if (!userExtension.isEmpty() && (comboExtension != ("."+userExtension)))
+////        {
+////            foreach(QString type, allWriters)
+////            {
+////                if (possibleWriters.contains(type))
+////                {
+////                    QStringList extensionList = possibleWriters[type]->supportedFileExtensions();
+
+////                    if (extensionList.contains("." + userExtension))
+////                    {
+////                        // User has the last word about the file format, if it's a known format
+////                        chosenFormat = type;
+////                        break;
+////                    }
+////                }
+////            }
+////        }
+
+//        // Send final type to export data
+//        //emit exportData(data->dataIndex(), finalFilename, chosenFormat);
+//    }
+
+//    qDeleteAll(possibleWriters);
+//    delete exportDialog;
+//}
+
+void medDatabaseView::exportItem(medAbstractDatabaseItem *item)
+{
+//    QFileDialog* fileDialog = new QFileDialog(0, tr("Exporting: please choose a file name and directory"));
+//    dialog.layout()->addWidget(fileDialog);
+//    fileDialog->setOption(QFileDialog::DontUseNativeDialog);
+//    fileDialog->setAcceptMode(QFileDialog::AcceptSave);
+
+    medDatabaseExportView::exportItem(*item);
 }

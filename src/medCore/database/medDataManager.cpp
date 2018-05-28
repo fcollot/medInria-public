@@ -21,7 +21,6 @@
 #include <medMessageController.h>
 #include <medJobManager.h>
 #include <medPluginManager.h>
-#include <medGlobalDefs.h>
 
 /* THESE CLASSES NEED TO BE THREAD-SAFE, don't forget to lock the mutex in the
  * methods below that access state.
@@ -148,7 +147,6 @@ QUuid medDataManager::importPath(const QString& dataPath, bool indexWithoutCopyi
 */
 QHash<QString, dtkAbstractDataWriter*> medDataManager::getPossibleWriters(medAbstractData* data)
 {
-    Q_D(medDataManager);
     QList<QString> allWriters = medAbstractDataFactory::instance()->writers();
     QHash<QString, dtkAbstractDataWriter*> possibleWriters;
 
@@ -166,116 +164,16 @@ QHash<QString, dtkAbstractDataWriter*> medDataManager::getPossibleWriters(medAbs
     return possibleWriters;
 }
 
-void medDataManager::exportData(medAbstractData* data)
+void medDataManager::exportData(medAbstractData* data, QString path, QString writer)
 {
-    if (!data)
-        return;
+//    if (filename.isEmpty())
+//    {
+//        fileName = getMetaData(data->dataIndex(), medMetaDataKeys::SeriesDescription);
+//    }
 
-    Q_D(medDataManager);
-    QList<QString> allWriters = medAbstractDataFactory::instance()->writers();
-    QHash<QString, dtkAbstractDataWriter*> possibleWriters=getPossibleWriters(data);
-
-    QFileDialog * exportDialog = new QFileDialog(0, tr("Exporting: please choose a file name and directory"));
-    exportDialog->setOption(QFileDialog::DontUseNativeDialog);
-    exportDialog->setAcceptMode(QFileDialog::AcceptSave);
-
-    QComboBox* typesHandled = new QComboBox(exportDialog);
-    // we use allWriters as the list of keys to make sure we traverse possibleWriters
-    // in the order specified by the writers priorities.
-    foreach(QString type, allWriters)
-    {
-        if (!possibleWriters.contains(type))
-            continue;
-
-        QStringList extensionList = possibleWriters[type]->supportedFileExtensions();
-        QString label = possibleWriters[type]->description() + " (" + extensionList.join(", ") + ")";
-        QString extension = (extensionList.isEmpty()) ? QString() : extensionList.first();
-        typesHandled->addItem(label, type);
-        typesHandled->setItemData(typesHandled->count()-1, extension, Qt::UserRole+1);
-        typesHandled->setItemData(typesHandled->count()-1, QVariant::fromValue<QObject*>(exportDialog), Qt::UserRole+2);
-    }
-    connect(typesHandled, SIGNAL(currentIndexChanged(int)), this, SLOT(exportDialog_updateSuffix(int)));
-
-    QLayout* layout = exportDialog->layout();
-    QGridLayout* gridbox = qobject_cast<QGridLayout*>(layout);
-
-    // nasty hack to hide the filter list
-    QWidget * filtersLabel = gridbox->itemAtPosition(gridbox->rowCount()-1, 0)->widget();
-    QWidget * filtersList = gridbox->itemAtPosition(gridbox->rowCount()-1, 1)->widget();
-    filtersLabel->hide(); filtersList->hide();
-
-    if (gridbox) {
-        gridbox->addWidget(new QLabel("Export format:", exportDialog), gridbox->rowCount()-1, 0);
-        gridbox->addWidget(typesHandled, gridbox->rowCount()-1, 1);
-    }
-
-    exportDialog->setLayout(gridbox);
-
-    // Set a default filename based on the series's description
-    medAbstractDbController * dbController = d->controllerForDataSource(data->dataIndex().dataSourceId());
-    if (dbController) {
-        QString defaultName = dbController->metaData(data->dataIndex(), medMetaDataKeys::SeriesDescription);
-        defaultName += typesHandled->itemData(typesHandled->currentIndex(), Qt::UserRole+1).toString();
-        exportDialog->selectFile(defaultName);
-    }
-
-    if ( exportDialog->exec() )
-    {
-        // Chosen format in combobox. Ex. "vtkDataMesh"
-        QString chosenFormat = typesHandled->itemData(typesHandled->currentIndex()).toString();
-
-        // Combobox extension. Ex. ".vtk"
-        QString comboExtension = typesHandled->itemData(typesHandled->currentIndex(), Qt::UserRole+1).toString();
-
-        // Chosen extension in filename. Ex. "vtk"
-        QString finalFilename = exportDialog->selectedFiles().first().toUtf8();
-        QString userExtension = QFileInfo(finalFilename).suffix();
-
-        // Some extensions are linked to several formats:
-        // if the combobox and filename extensions are equal, no need to enter here.
-        if (!userExtension.isEmpty() && (comboExtension != ("."+userExtension)))
-        {
-            foreach(QString type, allWriters)
-            {
-                if (possibleWriters.contains(type))
-                {
-                    QStringList extensionList = possibleWriters[type]->supportedFileExtensions();
-
-                    if (extensionList.contains("." + userExtension))
-                    {
-                        // User has the last word about the file format, if it's a known format
-                        chosenFormat = type;
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Send final type to export data
-        this->exportDataToPath(data, finalFilename, chosenFormat);
-    }
-
-    qDeleteAll(possibleWriters);
-    delete exportDialog;
-}
-
-
-void medDataManager::exportDataToPath(medAbstractData *data, const QString & filename, const QString & writer)
-{
-    medDatabaseExporter *exporter = new medDatabaseExporter (data, filename, writer);
-    launchExporter(exporter, filename);
-}
-
-void medDataManager::exportDataToPath(QList<medAbstractData*> dataList, const QString & filename, const QString & writer)
-{
-    medDatabaseExporter *exporter = new medDatabaseExporter (dataList, filename, writer);
-    launchExporter(exporter, filename);
-}
-
-void medDataManager::launchExporter(medDatabaseExporter* exporter, const QString & filename)
-{
-    QFileInfo info(filename);
-    medMessageProgress *message = medMessageController::instance()->showProgress("Exporting data to " + info.baseName());
+    medDatabaseExporter* exporter = new medDatabaseExporter(data, path, writer);
+    QFileInfo info(path);
+    medMessageProgress* message = medMessageController::instance()->showProgress("Exporting data to " + info.baseName());
 
     connect(exporter, SIGNAL(progressed(int)), message, SLOT(setProgress(int)));
     connect(exporter, SIGNAL(success(QObject *)), message, SLOT(success()));
@@ -285,6 +183,19 @@ void medDataManager::launchExporter(medDatabaseExporter* exporter, const QString
 
     medJobManager::instance()->registerJobItem(exporter);
     QThreadPool::globalInstance()->start(exporter);
+}
+
+void medDataManager::exportData(QList<medAbstractData*> data, QList<QString> paths, QString writer)
+{
+    for (int i = 0; i < data.length(); i++)
+    {
+        exportData(data[i], paths[i], writer);
+    }
+}
+
+void medDataManager::launchExporter(medDatabaseExporter* exporter, const QString & filename)
+{
+
 }
 
 QList<medDataIndex> medDataManager::getSeriesListFromStudy(const medDataIndex& indexStudy)
@@ -345,19 +256,6 @@ medAbstractDbController *medDataManager::controllerForDataSource(int dataSourceI
 {
     Q_D(medDataManager);
     return d->controllerForDataSource(dataSourceId);
-}
-
-void medDataManager::exportDialog_updateSuffix(int index)
-{
-    QComboBox * typesHandled = qobject_cast<QComboBox*>(sender());
-    if (! typesHandled) return;
-
-    QFileDialog * exportDialog = qobject_cast<QFileDialog*>(typesHandled->itemData(index, Qt::UserRole+2).value<QObject*>());
-    QString extension = typesHandled->itemData(index, Qt::UserRole+1).toString();
-
-    QString currentFilename = med::smartBaseName(exportDialog->selectedFiles().first());
-    currentFilename += extension;
-    exportDialog->selectFile(currentFilename);
 }
 
 void medDataManager::garbageCollect()

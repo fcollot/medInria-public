@@ -441,6 +441,6 @@ void medClutToolBox::exportMeshWithLUT()
         {
             mesh->GetCurrentScalarArray()->SetLookupTable(lut);
         }
-        medDataManager::instance()->exportData(dataToExport);
+        //medDataManager::instance()->exportData(dataToExport);
     }
 }

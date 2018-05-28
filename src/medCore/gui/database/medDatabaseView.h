@@ -17,6 +17,7 @@
 
 #include <QtGui>
 
+class medAbstractDatabaseItem;
 class medDataIndex;
 class medDatabaseModel;
 class medDatabaseViewPrivate;
@@ -53,7 +54,7 @@ signals:
     void noPatientOrSeriesSelected();
 
     void open(const medDataIndex&);
-    void exportData(const medDataIndex &index);
+    void exportData(const medDataIndex &index, QString path, QString writer);
     void dataRemoved(const medDataIndex &index);
 
 public slots:
@@ -71,6 +72,9 @@ protected slots:
     virtual void updateContextMenu(const QPoint&);
     virtual void onItemDoubleClicked(const QModelIndex& index);
     virtual void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+
+private:
+    void exportItem(medAbstractDatabaseItem* item);
 
 private:
     medDatabaseViewPrivate *d;
