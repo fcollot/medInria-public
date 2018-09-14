@@ -37,4 +37,5 @@ protected:
 
 dtkAbstractProcess * createitkFiltersInvertProcess(void);
 
-
+template <> int itkFiltersInvertProcess::updateProcess<float>();
+template <> int itkFiltersInvertProcess::updateProcess<double>();

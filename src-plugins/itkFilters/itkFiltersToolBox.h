@@ -42,6 +42,8 @@ public slots:
     void run();
 
 private:
+    template <typename PixelType> int setupSpinBoxValues();
+
     void setupItkAddProcess();
     void setupItkSubtractProcess();
     void setupItkMultiplyProcess();
@@ -54,7 +56,7 @@ private:
     void setupItkWindowingProcess();
     void setupItkThresholdingProcess();
     void setupItkComponentSizeThresholdProcess();
-    
+
     itkFiltersToolBoxPrivate *d;
 };
 

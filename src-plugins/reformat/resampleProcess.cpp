@@ -181,8 +181,9 @@ int resampleProcess::update ( void )
     return DTK_SUCCEED;
 }
 
-template <class ImageType> void resampleProcess::resample(const char *str)
+template <class PixelType> void resampleProcess::resample()
 {
+    typedef itk::Image<PixelType, 3>
     typename ImageType::Pointer inputImage =dynamic_cast<ImageType*>((itk::Object*)(d->input->data()));
     
     typedef typename itk::ResampleImageFilter<ImageType, ImageType,double> ResampleFilterType;

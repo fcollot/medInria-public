@@ -47,59 +47,16 @@ int itkNotOperator::update()
 
     if (m_inputA)
     {
-        QString id = m_inputA->identifier();
-
-        if ( id == "itkDataImageChar3" )
-        {
-            res = run< itk::Image <char,3> >();
-        }
-        else if ( id == "itkDataImageUChar3" )
-        {
-            res = run< itk::Image <unsigned char,3> >();
-        }
-        else if ( id == "itkDataImageShort3" )
-        {
-            res = run< itk::Image <short,3> >();
-        }
-        else if ( id == "itkDataImageUShort3" )
-        {
-            res = run< itk::Image <unsigned short,3> >();
-        }
-        else if ( id == "itkDataImageInt3" )
-        {
-            res = run< itk::Image <int,3> >();
-        }
-        else if ( id == "itkDataImageUInt3" )
-        {
-            res = run< itk::Image <unsigned int,3> >();
-        }
-        else if ( id == "itkDataImageLong3" )
-        {
-            res = run< itk::Image <long,3> >();
-        }
-        else if ( id== "itkDataImageULong3" )
-        {
-            res = run< itk::Image <unsigned long,3> >();
-        }
-        else if ( id == "itkDataImageFloat3" )
-        {
-            res = run< itk::Image <float,3> >();
-        }
-        else if ( id == "itkDataImageDouble3" )
-        {
-            res = run< itk::Image <double,3> >();
-        }
-        else
-        {
-            res = medAbstractProcess::PIXEL_TYPE;
-        }
+        res = DISPATCH_ON_PIXEL_TYPE(&itkNotOperator::run, this, m_inputA);
     }
     return res;
 }
 
 
-template <class ImageType> int itkNotOperator::run()
+template <class PixelType> int itkNotOperator::run()
 {
+    typedef itk::Image<PixelType, 3> ImageType;
+
     if ( !m_inputA->data() )
     {
         return DTK_FAILURE;

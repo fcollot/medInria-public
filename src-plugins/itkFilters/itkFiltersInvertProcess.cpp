@@ -47,49 +47,7 @@ int itkFiltersInvertProcess::tryUpdate()
 
     if ( getInputData() )
     {
-        QString id = getInputData()->identifier();
-
-        if ( id == "itkDataImageChar3" )
-        {
-            res = updateProcess<char>();
-        }
-        else if ( id == "itkDataImageUChar3" )
-        {
-            res = updateProcess<unsigned char>();
-        }
-        else if ( id == "itkDataImageShort3" )
-        {
-            res = updateProcess<short>();
-        }
-        else if ( id == "itkDataImageUShort3" )
-        {
-            res = updateProcess<unsigned short>();
-        }
-        else if ( id == "itkDataImageInt3" )
-        {
-            res = updateProcess<int>();
-        }
-        else if ( id == "itkDataImageUInt3" )
-        {
-            res = updateProcess<unsigned int>();
-        }
-        else if ( id == "itkDataImageLong3" )
-        {
-            res = updateProcess<long>();
-        }
-        else if ( id== "itkDataImageULong3" )
-        {
-            res = updateProcess<unsigned long>();
-        }
-        else if ( id == "itkDataImageFloat3" || "itkDataImageDouble3" )
-        {
-            qDebug() << "Error: Invert image filter does not suport floating pixel values";
-            res = medAbstractProcess::PIXEL_TYPE;
-        }
-        else
-        {
-            res = medAbstractProcess::PIXEL_TYPE;
-        }
+        res = DISPATCH_ON_PIXEL_TYPE(&itkFiltersInvertProcess::updateProcess, this, getInputData());
     }
 
     return res;
@@ -128,6 +86,17 @@ template <class PixelType> int itkFiltersInvertProcess::updateProcess()
     return DTK_SUCCEED;
 }
 
+template <> int itkFiltersInvertProcess::updateProcess<float>()
+{
+    qDebug() << "Error: Invert image filter does not suport floating pixel values";
+    return medAbstractProcess::PIXEL_TYPE;
+}
+
+template <> int itkFiltersInvertProcess::updateProcess<double>()
+{
+    return updateProcess<float>();
+}
+
 // /////////////////////////////////////////////////////////////////
 // Type instanciation
 // /////////////////////////////////////////////////////////////////
@@ -136,4 +105,3 @@ dtkAbstractProcess * createitkFiltersInvertProcess ( void )
 {
     return new itkFiltersInvertProcess;
 }
-

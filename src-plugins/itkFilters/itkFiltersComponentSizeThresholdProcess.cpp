@@ -82,79 +82,10 @@ int itkFiltersComponentSizeThresholdProcess::tryUpdate()
 
     if ( getInputData() )
     {
-        QString id = getInputData()->identifier();
-
-        if ( id == "itkDataImageChar3" )
-        {
-            res = updateProcess<char>();
-        }
-        else if ( id == "itkDataImageUChar3" )
-        {
-            res = updateProcess<unsigned char>();
-        }
-        else if ( id == "itkDataImageShort3" )
-        {
-            res = updateProcess<short>();
-        }
-        else if ( id == "itkDataImageUShort3" )
-        {
-            res = updateProcess<unsigned short>();
-        }
-        else if ( id == "itkDataImageInt3" )
-        {
-            res = updateProcess<int>();
-        }
-        else if ( id == "itkDataImageUInt3" )
-        {
-            res = updateProcess<unsigned int>();
-        }
-        else if ( id == "itkDataImageLong3" )
-        {
-            res = updateProcess<long>();
-        }
-        else if ( id== "itkDataImageULong3" )
-        {
-            res = updateProcess<unsigned long>();
-        }
-        else if ( id== "itkDataImageFloat3" )
-        {
-            if (castToUInt3<float>() == DTK_SUCCEED)
-            {
-                res = updateProcess<unsigned int>();
-            }
-        }
-        else if ( id== "itkDataImageDouble3" )
-        {
-            if(castToUInt3<double>() == DTK_SUCCEED)
-            {
-                res = updateProcess<unsigned int>();
-            }
-        }
-        else
-        {
-            res = medAbstractProcess::PIXEL_TYPE;
-        }
+        res = DISPATCH_ON_PIXEL_TYPE(&itkFiltersComponentSizeThresholdProcess::updateProcess, this, getInputData());
     }
 
     return res;
-}
-
-template <class PixelType> int itkFiltersComponentSizeThresholdProcess::castToUInt3 ( void )
-{
-    //we will later label the image so we don't care about precision.
-    typedef itk::Image< PixelType, 3 > InputImageType;
-    typedef itk::Image< unsigned int, 3 > OutputImageType;
-    typedef itk::CastImageFilter< InputImageType, OutputImageType > CastFilterType;
-
-    typename CastFilterType::Pointer  caster = CastFilterType::New();
-    typename InputImageType::Pointer im = dynamic_cast< InputImageType*>((itk::Object*)(getInputData()->data()));
-    caster->SetInput(im);
-    caster->Update();
-
-    setInputData(medAbstractDataFactory::instance()->createSmartPointer ( "itkDataImageUInt3" ));
-    getInputData()->setData(caster->GetOutput());
-
-    return DTK_SUCCEED;
 }
 
 template <class PixelType> int itkFiltersComponentSizeThresholdProcess::updateProcess()
@@ -195,6 +126,46 @@ template <class PixelType> int itkFiltersComponentSizeThresholdProcess::updatePr
 
     QString newSeriesDescription = "connectedComponent " + QString::number(d->minimumSize);
     medUtilities::setDerivedMetaData(getOutputData(), getInputData(), newSeriesDescription);
+
+    return DTK_SUCCEED;
+}
+
+template <> int itkFiltersComponentSizeThresholdProcess::updateProcess<float>()
+{
+    return castToUInt3AndUpdate<float>();
+}
+
+template <> int itkFiltersComponentSizeThresholdProcess::updateProcess<double>()
+{
+    return castToUInt3AndUpdate<double>();
+}
+
+template <class PixelType> int itkFiltersComponentSizeThresholdProcess::castToUInt3AndUpdate()
+{
+    if (castToUInt3<PixelType>() == DTK_SUCCEED)
+    {
+        return updateProcess<unsigned int>();
+    }
+    else
+    {
+        return DTK_FAILURE;
+    }
+}
+
+template <class PixelType> int itkFiltersComponentSizeThresholdProcess::castToUInt3()
+{
+    //we will later label the image so we don't care about precision.
+    typedef itk::Image< PixelType, 3 > InputImageType;
+    typedef itk::Image< unsigned int, 3 > OutputImageType;
+    typedef itk::CastImageFilter< InputImageType, OutputImageType > CastFilterType;
+
+    typename CastFilterType::Pointer  caster = CastFilterType::New();
+    typename InputImageType::Pointer im = dynamic_cast< InputImageType*>((itk::Object*)(getInputData()->data()));
+    caster->SetInput(im);
+    caster->Update();
+
+    setInputData(medAbstractDataFactory::instance()->createSmartPointer ( "itkDataImageUInt3" ));
+    getInputData()->setData(caster->GetOutput());
 
     return DTK_SUCCEED;
 }

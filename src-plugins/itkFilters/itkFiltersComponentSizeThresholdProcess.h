@@ -38,12 +38,17 @@ public slots:
     int tryUpdate();
 
 protected:
-    template <class PixelType> int castToUInt3();
     template <class PixelType> int updateProcess();
 
 private:
     itkFiltersComponentSizeThresholdProcessPrivate *d;
+
+    template <class PixelType> int castToUInt3AndUpdate();
+    template <class PixelType> int castToUInt3();
 };
 
 dtkAbstractProcess * createitkFiltersComponentSizeThresholdProcess(void);
+
+template <> int itkFiltersComponentSizeThresholdProcess::updateProcess<float>();
+template <> int itkFiltersComponentSizeThresholdProcess::updateProcess<double>();
 

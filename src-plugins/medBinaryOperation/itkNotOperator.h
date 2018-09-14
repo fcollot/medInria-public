@@ -30,7 +30,7 @@ public:
     static bool registered();
 
     int update();
-    template <class ImageType> int run();
+    template <class PixelType> int run();
 
 public slots:
     
