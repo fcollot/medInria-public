@@ -5,8 +5,6 @@
 #include <medUtilitiesExport.h>
 
 class medAbstractData;
-class medAbstractView;
-class vtkDataArray;
 
 class MEDUTILITIES_EXPORT medUtilitiesITK
 {
