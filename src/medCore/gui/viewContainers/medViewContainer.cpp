@@ -1118,5 +1118,5 @@ void medViewContainer::printInConsole(QString message)
 void medViewContainer::displayMessageError(QString message)
 {
     printInConsole(message);
-    medMessageController::instance()->showError(message,3000);
+    medMessageController::instance()->showError(message);
 }
