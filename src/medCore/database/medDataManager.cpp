@@ -143,25 +143,21 @@ QUuid medDataManager::importPath(const QString& dataPath, bool indexWithoutCopyi
     controller->importPath(dataPath, uuid, indexWithoutCopying);
     return uuid;
 }
-/** @brief return writers able to handle the data *Memory management is the responsability of the caller*
 
-*/
-QHash<QString, dtkAbstractDataWriter*> medDataManager::getPossibleWriters(medAbstractData* data)
+QList<dtkSmartPointer<dtkAbstractDataWriter> > medDataManager::getPossibleWriters(medAbstractData* data)
 {
-    Q_D(medDataManager);
     QList<QString> allWriters = medAbstractDataFactory::instance()->writers();
-    QHash<QString, dtkAbstractDataWriter*> possibleWriters;
+    QList<dtkSmartPointer<dtkAbstractDataWriter> > possibleWriters;
 
     foreach(QString writerType, allWriters)
     {
-        dtkAbstractDataWriter * writer = medAbstractDataFactory::instance()->writer(writerType);
+        dtkAbstractDataWriter* writer = medAbstractDataFactory::instance()->writer(writerType);
+
         if (writer->handled().contains(data->identifier()))
-            possibleWriters[writerType] = writer;
-        else
-            delete writer;
+        {
+            possibleWriters.append(writer);
+        }
     }
-    if (possibleWriters.isEmpty())
-        medMessageController::instance()->showError("Sorry, we have no exporter for this format.");
 
     return possibleWriters;
 }
@@ -173,27 +169,24 @@ void medDataManager::exportData(medAbstractData* data)
 
     Q_D(medDataManager);
     QList<QString> allWriters = medAbstractDataFactory::instance()->writers();
-    QHash<QString, dtkAbstractDataWriter*> possibleWriters=getPossibleWriters(data);
+    QList<dtkSmartPointer<dtkAbstractDataWriter> > possibleWriters = getPossibleWriters(data);
 
     QFileDialog * exportDialog = new QFileDialog(0, tr("Exporting: please choose a file name and directory"));
     exportDialog->setOption(QFileDialog::DontUseNativeDialog);
     exportDialog->setAcceptMode(QFileDialog::AcceptSave);
 
     QComboBox* typesHandled = new QComboBox(exportDialog);
-    // we use allWriters as the list of keys to make sure we traverse possibleWriters
-    // in the order specified by the writers priorities.
-    foreach(QString type, allWriters)
-    {
-        if (!possibleWriters.contains(type))
-            continue;
 
-        QStringList extensionList = possibleWriters[type]->supportedFileExtensions();
-        QString label = possibleWriters[type]->description() + " (" + extensionList.join(", ") + ")";
+    foreach(dtkAbstractDataWriter* possibleWriter, possibleWriters)
+    {
+        QStringList extensionList = possibleWriter->supportedFileExtensions();
+        QString label = possibleWriter->description() + " (" + extensionList.join(", ") + ")";
         QString extension = (extensionList.isEmpty()) ? QString() : extensionList.first();
         typesHandled->addItem(label, type);
         typesHandled->setItemData(typesHandled->count()-1, extension, Qt::UserRole+1);
         typesHandled->setItemData(typesHandled->count()-1, QVariant::fromValue<QObject*>(exportDialog), Qt::UserRole+2);
     }
+
     connect(typesHandled, SIGNAL(currentIndexChanged(int)), this, SLOT(exportDialog_updateSuffix(int)));
 
     QLayout* layout = exportDialog->layout();

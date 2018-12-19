@@ -22,10 +22,12 @@
 #include <medDatabaseExporter.h>
 #include <medDataIndex.h>
 
+#include <dtkcore/dtkSmartPointer>
+#include <dtkcore/dtkAbstractDataWriter>
+
 class medDataManagerPrivate;
 class medAbstractData;
 class medAbstractDbController;
-class dtkAbstractDataWriter;
 
 
 class MEDCORE_EXPORT medDataManager : public QObject
@@ -38,7 +40,7 @@ public:
 
     medAbstractData* retrieveData(const medDataIndex& index);
 
-    QHash<QString, dtkAbstractDataWriter*> getPossibleWriters(medAbstractData* data);
+    QList<dtkSmartPointer<dtkAbstractDataWriter> > getPossibleWriters(medAbstractData* data);
 
     QUuid importData(medAbstractData* data, bool persistent = false);
     QUuid importPath(const QString& dataPath, bool indexWithoutCopying, bool persistent = false);
