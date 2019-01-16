@@ -25,7 +25,6 @@
 class medDataManagerPrivate;
 class medAbstractData;
 class medAbstractDbController;
-class dtkAbstractDataWriter;
 
 
 class MEDCORE_EXPORT medDataManager : public QObject
@@ -38,14 +37,15 @@ public:
 
     medAbstractData* retrieveData(const medDataIndex& index);
 
-    QHash<QString, dtkAbstractDataWriter*> getPossibleWriters(medAbstractData* data);
+    void garbageCollect();
+
+    QList<QString> getPossibleWriters(medAbstractData* data);
 
     QUuid importData(medAbstractData* data, bool persistent = false);
     QUuid importPath(const QString& dataPath, bool indexWithoutCopying, bool persistent = false);
 
-    void exportData(medAbstractData* data);
-    void exportDataToPath(medAbstractData* data, const QString& path, const QString& format = "");
-    void exportDataToPath(QList<medAbstractData *> dataList, const QString& path, const QString& format = "");
+    void exportData(medAbstractData* data, QString path, QString writer);
+    void exportData(QList<medAbstractData*> data, QList<QString> paths, QString writer);
 
     QUuid makePersistent(medAbstractData* data);
 
@@ -78,8 +78,6 @@ signals:
     void studyModified(medDataIndex index);
 
 private slots:
-    void exportDialog_updateSuffix(int index);
-    void garbageCollect();
     void removeFromNonPersistent(medDataIndex,QUuid);
     void setWriterPriorities();
 

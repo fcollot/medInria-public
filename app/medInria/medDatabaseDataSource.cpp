@@ -74,7 +74,7 @@ QWidget* medDatabaseDataSource::mainViewWidget()
         database_layout->addWidget(d->largeView);
 
         connect(d->largeView, SIGNAL(open(const medDataIndex&)), this, SIGNAL(open(const medDataIndex&)));
-        connect(d->largeView, SIGNAL(exportData(const medDataIndex&)), this, SIGNAL(exportData(const medDataIndex&)));
+        connect(d->largeView, SIGNAL(exportData(const medDataIndex&, QString, QString)), this, SIGNAL(exportData(const medDataIndex&, QString, QString)));
         connect(d->largeView, SIGNAL(dataRemoved(const medDataIndex&)), this, SIGNAL(dataRemoved(const medDataIndex&)));
 
         if(!d->toolBoxes.isEmpty())
@@ -124,7 +124,7 @@ QWidget* medDatabaseDataSource::compactViewWidget()
         connect(d->compactView, SIGNAL(seriesClicked(const medDataIndex&)), d->compactPreview, SLOT(showSeriesPreview(const medDataIndex&)));
 
         connect(d->compactPreview, SIGNAL(openRequest(medDataIndex)), d->compactView , SIGNAL(open(medDataIndex)));
-        connect(d->compactView, SIGNAL(exportData(const medDataIndex&)), this, SIGNAL(exportData(const medDataIndex&)));
+        connect(d->compactView, SIGNAL(exportData(const medDataIndex&, QString, QString)), this, SIGNAL(exportData(const medDataIndex&, QString, QString)));
         connect(d->compactView, SIGNAL(dataRemoved(const medDataIndex&)), this, SIGNAL(dataRemoved(const medDataIndex&)));
     }
 

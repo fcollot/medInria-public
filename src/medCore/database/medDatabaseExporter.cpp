@@ -21,76 +21,49 @@
 class medDatabaseExporterPrivate
 {
 public:
-    medAbstractData *data;
-    QList<medAbstractData*> dataList;
-    QString          filename;
-    QString          writer;
-    bool saveMultipleData;
+    QList<dtkSmartPointer<medAbstractData> > data;
+    QList<QString> paths;
+    QList<QString> writers;
+
+    medDatabaseExporterPrivate(QList<dtkSmartPointer<medAbstractData> > data, QList<QString> paths, QList<QString> writers) :
+        data(data), paths(paths), writers(writers)
+    {
+    }
 };
 
-medDatabaseExporter::medDatabaseExporter(medAbstractData * data, const QString & filename, const QString & writer) : medJobItem(), d(new medDatabaseExporterPrivate)
+medDatabaseExporter::medDatabaseExporter(dtkSmartPointer<medAbstractData> data, QString path, QString writer) :
+    d(new medDatabaseExporterPrivate({data}, {path}, {writer}))
 {
-    d->data     = data;
-    d->filename = filename;
-    d->writer   = writer;
-    d->saveMultipleData = false;
 }
 
-medDatabaseExporter::medDatabaseExporter(QList<medAbstractData*> data, const QString & filename, const QString & writer) : medJobItem(), d(new medDatabaseExporterPrivate)
+medDatabaseExporter::medDatabaseExporter(QList<dtkSmartPointer<medAbstractData> > data, QList<QString> paths, QList<QString> writers) :
+    d(new medDatabaseExporterPrivate(data, paths, writers))
 {
-    d->data     = NULL;
-    d->dataList = data;
-    d->filename = filename;
-    d->writer   = writer;
-    d->saveMultipleData = true;
 }
 
-medDatabaseExporter::~medDatabaseExporter(void)
+medDatabaseExporter::~medDatabaseExporter()
 {
     delete d;
-
-    d = NULL;
 }
 
-/**
- * @brief Starts the job and writes to the file system.
- *
- * @param void
- * @todo enrich the signals in the exporter (the writer progress signal is not forwarded to the explorer)
-*/
-void medDatabaseExporter::internalRun(void)
+void medDatabaseExporter::internalRun()
 {
-    if ((!d->saveMultipleData && !d->data) ||
-            (d->saveMultipleData && d->dataList.isEmpty()))
+    for (int i = 0; i < d->data.length(); i++)
     {
-        emit showError("Cannot export data", 3000);
-        return;
-    }
+        dtkSmartPointer<dtkAbstractDataWriter> dataWriter = medAbstractDataFactory::instance()->writer(d->writers[i]);
+        dataWriter->setData(d->data[i]);
+        QString path = d->paths[i];
 
-    if (d->filename.isEmpty()) {
-        emit showError("File name is empty", 3000);
-        return;
-    }
-
-    dtkAbstractDataWriter * dataWriter = medAbstractDataFactory::instance()->writer(d->writer);
-    if(!d->saveMultipleData)
-    {
-        dataWriter->setData(d->data);
-    }
-    else
-    {
-        medAbstractDataWriter* medDataWriter = dynamic_cast<medAbstractDataWriter*>(dataWriter);
-        Q_ASSERT(medDataWriter != NULL);
-        medDataWriter->setData(d->dataList);
+        if (!dataWriter->canWrite(path) || !dataWriter->write(path))
+        {
+            emit showError(QString(tr("Writing to file \"%1\" with exporter \"%2\" failed.")).arg(path).arg(dataWriter->description()), 3000);
+            emit failure(this);
+        }
+        else
+        {
+            emit success(this);
+        }
     }
 
 
-    if ( ! dataWriter->canWrite(d->filename) || ! dataWriter->write(d->filename)) {
-
-        emit showError(QString(tr("Writing to file \"%1\" with exporter \"%2\" failed.")).arg(d->filename).arg(dataWriter->description()), 3000);
-        emit failure(this);
-    } else {
-        emit success(this);
-    }
-    delete dataWriter;
 }

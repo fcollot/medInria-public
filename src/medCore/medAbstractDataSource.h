@@ -76,7 +76,7 @@ signals:
      * The medBrowserArea will treat the demand based on the medDataIndex.
      * @param index
     */
-    void exportData(const medDataIndex& index);
+    void exportData(const medDataIndex& index, QString path, QString writer);
 
     /** emitted when the source is about to remove a data.*/
     void dataRemoved(const medDataIndex& index);

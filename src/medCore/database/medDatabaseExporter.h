@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include <dtkCore/dtkSmartPointer>
 #include <medCoreExport.h>
 #include <QtCore>
 
@@ -26,8 +27,8 @@ class MEDCORE_EXPORT medDatabaseExporter : public medJobItem
     Q_OBJECT
 
 public:
-     medDatabaseExporter(medAbstractData * data, const QString & filename, const QString & writer);
-     medDatabaseExporter(QList<medAbstractData *> data, const QString & filename, const QString & writer);
+     medDatabaseExporter(dtkSmartPointer<medAbstractData> data, QString path, QString writer);
+     medDatabaseExporter(QList<dtkSmartPointer<medAbstractData> > data, QList<QString> paths, QList<QString> writers);
     ~medDatabaseExporter();
 
 protected:

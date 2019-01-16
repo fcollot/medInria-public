@@ -86,8 +86,8 @@ medDataSourceManager::medDataSourceManager(): d(new medDataSourceManagerPrivate)
 
 void medDataSourceManager::connectDataSource(medAbstractDataSource *dataSource)
 {
-    connect(dataSource, SIGNAL(exportData(const medDataIndex&)),
-            this, SLOT(exportData(const medDataIndex&)));
+    connect(dataSource, SIGNAL(exportData(const medDataIndex&, QString, QString)),
+            this, SLOT(exportData(const medDataIndex&, QString, QString)));
 
     connect(dataSource, SIGNAL(dataReceived(medAbstractData*)),
             this, SLOT(importData(medAbstractData*)));
@@ -127,11 +127,10 @@ void medDataSourceManager::importData(medAbstractData *data)
     medDataManager::instance()->importData(data, true);
 }
 
-void medDataSourceManager::exportData(const medDataIndex &index)
+void medDataSourceManager::exportData(const medDataIndex& index, QString path, QString writer)
 {
-    //TODO did it all from the medDataManager ? - RDE
     dtkSmartPointer<medAbstractData> data = medDataManager::instance()->retrieveData(index);
-    medDataManager::instance()->exportData(data);
+    medDataManager::instance()->exportData(data, path, writer);
 }
 
 void medDataSourceManager::importFile(QString path)
