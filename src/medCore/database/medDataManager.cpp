@@ -67,6 +67,7 @@ public:
     medAbstractDbController * nonPersDbController;
     QTimer timer;
     QHash<QUuid, medDataIndex> makePersistentJobs;
+    QThreadPool threadPool;
 };
 
 // ------------------------- medDataManager -----------------------------------
@@ -161,8 +162,9 @@ QList<QString> medDataManager::getPossibleWriters(medAbstractData* data)
     return possibleWriters;
 }
 
-void medDataManager::exportData(medAbstractData* data, QString path, QString writer)
+void medDataManager::exportData(dtkSmartPointer<medAbstractData> data, QString path, QString writer)
 {
+    Q_D(medDataManager);
     medDatabaseExporter* exporter = new medDatabaseExporter(data, path, writer);
     QFileInfo info(path);
     medMessageProgress* message = medMessageController::instance()->showProgress("Exporting data to " + info.baseName());
@@ -174,15 +176,27 @@ void medDataManager::exportData(medAbstractData* data, QString path, QString wri
     connect(exporter, SIGNAL(failure(QObject *)), this, SIGNAL(exportFinished()));
 
     medJobManager::instance()->registerJobItem(exporter);
-    QThreadPool::globalInstance()->start(exporter);
+    d->threadPool->start(exporter);
 }
 
-void medDataManager::exportData(QList<medAbstractData*> data, QList<QString> paths, QString writer)
+void medDataManager::exportDataAndWait(dtkSmartPointer<medAbstractData> data, QString path, QString writer)
+{
+    exportData(data, path, writer);
+    QThreadPool::globalInstance()->waitForDone();
+}
+
+void medDataManager::exportData(QList<dtkSmartPointer<medAbstractData> > data, QList<QString> paths, QList<QString> writers)
 {
     for (int i = 0; i < data.length(); i++)
     {
-        exportData(data[i], paths[i], writer);
+        exportData(data[i], paths[i], writers[i]);
     }
+}
+
+void medDataManager::exportDataAndWait(QList<dtkSmartPointer<medAbstractData> > data, QList<QString> paths, QList<QString> writers)
+{
+    exportData(data, paths, writers);
+    QThreadPool::globalInstance()->waitForDone();
 }
 
 void medDataManager::launchExporter(medDatabaseExporter* exporter, const QString & filename)

@@ -44,8 +44,10 @@ public:
     QUuid importData(medAbstractData* data, bool persistent = false);
     QUuid importPath(const QString& dataPath, bool indexWithoutCopying, bool persistent = false);
 
-    void exportData(medAbstractData* data, QString path, QString writer);
-    void exportData(QList<medAbstractData*> data, QList<QString> paths, QString writer);
+    void exportData(dtkSmartPointer<medAbstractData> data, QString path, QString writer);
+    void exportDataAndWait(dtkSmartPointer<medAbstractData> data, QString path, QString writer);
+    void exportData(QList<dtkSmartPointer<medAbstractData> > data, QList<QString> paths, QList<QString> writers);
+    void exportDataAndWait(QList<dtkSmartPointer<medAbstractData> > data, QList<QString> paths, QList<QString> writers);
 
     QUuid makePersistent(medAbstractData* data);
 

@@ -44,9 +44,7 @@ private:
 
     QWidget* createSeriesWriterCombo(medDataIndex& dataIndex, QLineEdit* nameEdit);
 
-    void extractChosenSeriesFilenameAndWriter(QWidget* seriesWidget, QString* filename, QString writer);
-
-    //void selectSubfolderName();
+    void copySelectedDataToTemporaryFolder(QWidget* selectionWidget, QDir folder = QDir::tempPath());
 
     QList<dtkSmartPointer<dtkAbstractDataWriter> > createWriters(medAbstractData* data);
 
@@ -54,12 +52,13 @@ private:
 
     QString getWriterFilter(dtkAbstractDataWriter* writer);
 
-    QString findSuitableFilter(QString extension, QString preferedFilter, QStringList filters);
+    int findSuitableFilter(QString extension, QStringList filters, int preferedFilter);
 
     bool filterContainsExtension(QString extension, QString filter);
 //    void checkSubfolderName(QString name);
     bool chooseExportFilename(QString* outputPath);
 
 private slots:
+    void adjustWriterCombo(QString filename);
     void updateFilenameSuffix(int writerIndex);
 };

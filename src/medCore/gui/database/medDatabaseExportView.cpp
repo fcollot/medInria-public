@@ -65,12 +65,11 @@ bool medDatabaseExportView::chooseSeriesFilenameAndFormat(medAbstractData* data,
         *outputPath = fileDialog.selectedFiles().first().toUtf8();
         QString extension = QFileInfo(*outputPath).suffix();
         QString chosenFilter = fileDialog.selectedNameFilter();
+        int filterIndex = findSuitableFilter(extension, filters, filters.indexOf(chosenFilter));
 
-        QString suitableFilter = findSuitableFilter(extension, chosenFilter, filters);
-
-        if (!suitableFilter.isNull())
+        if (filterIndex >= 0)
         {
-            dtkAbstractDataWriter* writer = writers[filters.indexOf(suitableFilter)];
+            dtkAbstractDataWriter* writer = writers[filterIndex];
             *outputWriter = writer->identifier();
 
             return true;
@@ -86,7 +85,14 @@ void medDatabaseExportView::exportMultipleSeries(medAbstractDatabaseItem* databa
 
     if (selectionDialog->exec())
     {
+        QWidget* selectionWidget = selectionDialog->findChild<QWidget*>("patientSelectionWidget");
 
+        if (!selectionWidget)
+        {
+            selectionWidget = selectionDialog->findChild<QWidget*>("studySelectionWidget");
+        }
+
+        copySelectedDataToTemporaryFolder(selectionWidget);
     }
 
     delete selectionDialog;
@@ -148,6 +154,7 @@ int medDatabaseExportView::numLeafItems(medAbstractDatabaseItem* databaseItem)
 QWidget* medDatabaseExportView::createSelectionWidget(medAbstractDatabaseItem* databaseItem, QProgressDialog* progressDialog, int checkable)
 {
     medDataIndex dataIndex = databaseItem->dataIndex();
+    bool disableWidget = false;
 
     QWidget* widget = new QWidget();
     QGridLayout* layout = new QGridLayout();
@@ -155,9 +162,7 @@ QWidget* medDatabaseExportView::createSelectionWidget(medAbstractDatabaseItem* d
     //layout->setColumnMinimumWidth(1, 300);
     layout->setColumnStretch(3, 1);
 
-    QCheckBox* checkBox = new QCheckBox();
-    layout->addWidget(checkBox, 0, 0);
-    checkBox->setChecked(true);
+    QList<QWidget*> checkEnabledWidgets;
 
     QString name = selectionName(dataIndex);
 
@@ -165,19 +170,22 @@ QWidget* medDatabaseExportView::createSelectionWidget(medAbstractDatabaseItem* d
     layout->addWidget(nameLabel, 0, 1);
     nameLabel->setFixedWidth(300);
     //nameLabel->setAlignment(Qt::AlignLeft);
-    connect(checkBox, SIGNAL(toggled(bool)), nameLabel, SLOT(setEnabled(bool)));
+    checkEnabledWidgets.append(nameLabel);
 
     QLineEdit* filename = new QLineEdit(name);
     layout->addWidget(filename, 0, 2);
     filename->setFixedWidth(300);
     //filename->setAlignment(Qt::AlignLeft);
-    connect(checkBox, SIGNAL(toggled(bool)), filename, SLOT(setEnabled(bool)));
+    checkEnabledWidgets.append(filename);
 
     if (dataIndex.isValidForSeries())
     {
+        widget->setObjectName("seriesSelectionWidget");
+        widget->setProperty("dataIndex", QVariant::fromValue<medDataIndex>(dataIndex));
+
         QWidget* writerWidget = createSeriesWriterCombo(dataIndex, filename);
         layout->addWidget(writerWidget, 0, 3);
-        connect(checkBox, SIGNAL(toggled(bool)), writerWidget, SLOT(setEnabled(bool)));
+        checkEnabledWidgets.append(writerWidget);
         QComboBox* writerCombo = dynamic_cast<QComboBox*>(writerWidget);
 
         if (writerCombo)
@@ -187,19 +195,53 @@ QWidget* medDatabaseExportView::createSelectionWidget(medAbstractDatabaseItem* d
         }
         else
         {
-            checkBox->setChecked(false);
-            checkBox->setEnabled(false);
+            disableWidget = true;
         }
 
         progressDialog->setValue(progressDialog->value() + 1);
     }
     else
     {
+        if (dataIndex.isValidForStudy())
+        {
+            widget->setObjectName("studySelectionWidget");
+        }
+        else
+        {
+            widget->setObjectName("patientSelectionWidget");
+        }
+
         for (int i = 0; i < databaseItem->childCount(); i++)
         {
             QWidget* childSelectionWidget = createSelectionWidget(databaseItem->child(i), progressDialog, true);
             layout->addWidget(childSelectionWidget, i + 1, 1, 1, 3);
-            connect(checkBox, SIGNAL(toggled(bool)), childSelectionWidget, SLOT(setEnabled(bool)));
+            checkEnabledWidgets.append(childSelectionWidget);
+        }
+    }
+
+    if (checkable)
+    {
+        QCheckBox* checkBox = new QCheckBox();
+        layout->addWidget(checkBox, 0, 0);
+
+        if (disableWidget)
+        {
+            checkBox->setChecked(false);
+            checkBox->setEnabled(false);
+
+            foreach (QWidget* checkEnabledWidget, checkEnabledWidgets)
+            {
+                checkEnabledWidget->setEnabled(false);
+            }
+        }
+        else
+        {
+            checkBox->setChecked(true);
+
+            foreach (QWidget* checkEnabledWidget, checkEnabledWidgets)
+            {
+                connect(checkBox, SIGNAL(toggled(bool)), checkEnabledWidget, SLOT(setEnabled(bool)));
+            }
         }
     }
 
@@ -243,6 +285,7 @@ QWidget* medDatabaseExportView::createSeriesWriterCombo(medDataIndex& dataIndex,
         if (!writers.isEmpty())
         {
             QComboBox* writersComboBox = new QComboBox();
+            writersComboBox->setObjectName("writerCombo");
 
             foreach (dtkAbstractDataWriter* writer, writers)
             {
@@ -254,6 +297,7 @@ QWidget* medDatabaseExportView::createSeriesWriterCombo(medDataIndex& dataIndex,
             }
 
             connect(writersComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateFilenameSuffix(int)));
+            connect(nameEdit, SIGNAL(textEdited(QString)), this, SLOT(adjustWriterCombo(QString)));
             return writersComboBox;
         }
         else
@@ -263,19 +307,103 @@ QWidget* medDatabaseExportView::createSeriesWriterCombo(medDataIndex& dataIndex,
     }
 }
 
-void medDatabaseExportView::extractChosenSeriesFilenameAndWriter(QWidget* seriesWidget, QString* filename, QString writer)
+void medDatabaseExportView::copySelectedDataToTemporaryFolder(QWidget* selectionWidget, QDir folder)
 {
-    QLineEdit* filenameWidget = seriesWidget->findChild<QLineEdit*>();
-    *filename = filenameWidget->text();
+    QLineEdit* nameEdit = selectionWidget->findChild<QLineEdit*>(); // object name
 
-    QComboBox* writerCombo = seriesWidget->findChild<QComboBox*>();
-    QString extension = QFileInfo(*filename).suffix();
-    QString chosenFilter = writerCombo->currentText();
+    if (nameEdit->isEnabled())
+    {
+        QString selectionName = nameEdit->text();
+        QString selectionObjectName = selectionWidget->objectName();
 
-    QString suitableFilter = findSuitableFilter(extension, chosenFilter, filters);
+        if (selectionObjectName == "seriesSelectionWidget")
+        {
+            QComboBox* writerCombo = selectionWidget->findChild<QComboBox*>("writerCombo");
+            QString filter = writerCombo->currentText();
+            QString extension = QFileInfo(selectionName).suffix();
 
-    if (!suitableFilter.isNull());
+            if (filterContainsExtension(extension, filter))
+            {
+                medDataIndex dataIndex = selectionWidget->property("dataIndex").value<medDataIndex>();
+                dtkSmartPointer<medAbstractData> data = medDataManager::instance()->retrieveData(dataIndex);
+                QString writerType = writerCombo->itemData(writerCombo->currentIndex(), Qt::UserRole + 2).toString();
+                medDataManager::instance()->exportData(data, folder.absoluteFilePath(selectionName), writerType);
+            }
+        }
+        else
+        {
+            QString subFolderName;
+
+            if (folder == QDir::tempPath())
+            {
+                do
+                {
+                    subFolderName = QUuid::createUuid().toString().replace("{", "").replace("}", "");
+                }
+                while (folder.exists(subFolderName));
+            }
+            else
+            {
+                subFolderName = selectionName;
+            }
+
+            QDir subFolder = folder;
+            subFolder.mkdir(subFolderName);
+            subFolder.cd(subFolderName);
+            qDebug() << subFolder.absolutePath();
+
+            QString childObjectName;
+
+            if (selectionObjectName == "studySelectionWidget")
+            {
+                childObjectName = "seriesSelectionWidget";
+            }
+            else
+            {
+                childObjectName = "studySelectionWidget";
+            }
+
+            foreach (QWidget* childWidget, selectionWidget->findChildren<QWidget*>(childObjectName))
+            {
+                copySelectedDataToTemporaryFolder(childWidget, subFolder);
+            }
+        }
+    }
 }
+
+//bool medDatabaseExportView::extractChosenSeriesFilenameAndWriter(QWidget* seriesWidget, QString* filename, QString* writer)
+//{
+//    QLineEdit* filenameWidget = seriesWidget->findChild<QLineEdit*>();
+//    *filename = filenameWidget->text();
+//    QString extension = QFileInfo(*filename).suffix();
+
+//    QComboBox* writerCombo = seriesWidget->findChild<QComboBox*>();
+//    QString chosenFilter = writerCombo->currentText();
+
+//    if (filterContainsExtension(extension, chosenFilter))
+//    {
+//        *writer = writerCombo->itemData(writerCombo->currentIndex(), Qt::UserRole + 2).toString();
+//        return true;
+//    }
+//    else
+//    {
+//        for (int i = 0; i < writerCombo->count(); i++)
+//        {
+//            if (i != writerCombo->currentIndex())
+//            {
+//                QString filter = writerCombo->itemText(i);
+
+//                if (filterContainsExtension(extension, filter))
+//                {
+//                    *writer = writerCombo->itemData(i, Qt::UserRole + 2).toString();
+//                    return true;
+//                }
+//            }
+//        }
+//    }
+
+//    return false;
+//}
 
 //void medDatabaseExportView::selectSubfolderName()
 //{
@@ -327,23 +455,26 @@ QString medDatabaseExportView::getWriterFilter(dtkAbstractDataWriter* writer)
     return writer->description() + " (" + extensions.join(" ") + ")";
 }
 
-QString medDatabaseExportView::findSuitableFilter(QString extension, QString preferedFilter, QStringList filters)
+int medDatabaseExportView::findSuitableFilter(QString extension, QStringList filters, int preferedFilter)
 {
-    if (filterContainsExtension(extension, preferedFilter))
+    if (filterContainsExtension(extension, filters[preferedFilter]))
     {
         return preferedFilter;
     }
     else
     {
-        foreach (QString filter, filters)
+        for (int i = 0; i < filters.length(); i++)
         {
-            if (filterContainsExtension(extension, filter))
+            if (i != preferedFilter)
             {
-                return filter;
+                if (filterContainsExtension(extension, filters[i]))
+                {
+                    return i;
+                }
             }
         }
 
-        return QString();
+        return -1;
     }
 }
 
@@ -378,19 +509,19 @@ bool medDatabaseExportView::filterContainsExtension(QString extension, QString f
 //    d->subFolderInputDialog->setLabelText(labelText);
 //}
 
-void medDatabaseExportView::extractDataToTemporaryFolder()
-{
-    QString tempPath = QDir::tempPath();
-    QString exportFolder;
+//void medDatabaseExportView::extractDataToTemporaryFolder()
+//{
+//    QString tempPath = QDir::tempPath();
+//    QString exportFolder;
 
-    do
-    {
-        exportFolder = tempPath + "/" + QUuid::createUuid().toString().replace("{", "").replace("}", "");
-    }
-    while (QFileInfo(exportFolder).exists());
+//    do
+//    {
+//        exportFolder = tempPath + "/" + QUuid::createUuid().toString().replace("{", "").replace("}", "");
+//    }
+//    while (QFileInfo(exportFolder).exists());
 
 
-}
+//}
 
 bool medDatabaseExportView::chooseExportFilename(QString* outputPath)
 {
@@ -437,6 +568,28 @@ bool medDatabaseExportView::chooseExportFilename(QString* outputPath)
 //        }
 
         return false;
+}
+
+void medDatabaseExportView::adjustWriterCombo(QString filename)
+{
+    QString extension = QFileInfo(filename).suffix();
+    QObject* filenameEdit = sender();
+    QComboBox* writerCombo = filenameEdit->parent()->findChild<QComboBox*>("writerCombo");
+    QStringList filters;
+
+    for (int i = 0; i < writerCombo->count(); i++)
+    {
+        filters.append(writerCombo->itemText(i));
+    }
+
+    int filterIndex = findSuitableFilter(extension, filters, writerCombo->currentIndex());
+
+    if (filterIndex >= 0)
+    {
+        writerCombo->blockSignals(true);
+        writerCombo->setCurrentIndex(filterIndex);
+        writerCombo->blockSignals(false);
+    }
 }
 
 void medDatabaseExportView::updateFilenameSuffix(int writerIndex)
