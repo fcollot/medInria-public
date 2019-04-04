@@ -19,6 +19,7 @@
 #include <medApplication.h>
 
 #include <medPluginManager.h>
+#include <medCloudDatabaseController.h>
 #include <medDataIndex.h>
 #include <medDatabaseController.h>
 #include <medSettingsManager.h>
@@ -147,6 +148,8 @@ int main(int argc,char* argv[]) {
             mnger->setValue("medDatabaseSettingsWidget", "new_database_location","");
         }
     }
+
+    medCloudDatabaseController::instance();
     // END OF DATABASE INITIALISATION
     medPluginManager::instance()->initialize();
 
