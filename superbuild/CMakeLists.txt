@@ -54,7 +54,7 @@ list(APPEND external_projects
   TTK 
   DCMTK 
   QtDCM 
-  dtk 
+  dtk
   )
 
 if (USE_DTKIMAGING)
@@ -67,6 +67,10 @@ else()
       medInria
       )
 endif()
+
+list(APPEND external_projects
+    MUSIC_plugins
+    )
 
 if (USE_OSPRay)
   SET(ospray_DIR CACHE PATH "The directory containing a CMAKE configuration file for OSPRay")
@@ -138,6 +142,8 @@ set(CMAKE_MODULE_PATH
 
 set(PRIVATE_PLUGINS_DIRS "" CACHE PATH "Folders containing private plugins, separated by ';'")
 set(PRIVATE_PLUGINS_LEGACY_DIRS "" CACHE PATH "Folders containing legacy private plugins, separated by ';'")
+
+set(EXTERNAL_PROJECT_PLUGINS_LEGACY_DIRS "")
 
 ## #############################################################################
 ## Add Targets
