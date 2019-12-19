@@ -2,24 +2,49 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2019. All rights reserved.
+ Copyright (c) INRIA 2013 - 2014. All rights reserved.
  See LICENSE.txt for details.
-
+ 
   This software is distributed WITHOUT ANY WARRANTY; without even
   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
   PURPOSE.
 
 =========================================================================*/
 
-#include "medDatabaseController.h"
-#include "medDatabaseImporter.h"
-#include "medDatabaseReader.h"
-#include "medDatabaseRemover.h"
-#include "medStorage.h"
+#include <medDatabaseController.h>
 
-#include <medJobManagerL.h>
+#include <QtCore>
+#include <QtGui>
+
+#include <medAbstractDataFactory.h>
+#include <dtkCore/dtkAbstractDataReader.h>
+#include <dtkCore/dtkAbstractDataWriter.h>
+#include <medAbstractData.h>
+#include <dtkCore/dtkGlobal.h>
+#include <dtkLog/dtkLog.h>
+
 #include <medMessageController.h>
+#include <medStorage.h>
+#include <medJobManager.h>
+#include <medMetaDataKeys.h>
 
+#include <medDataManager.h>
+
+#include <medDatabaseImporter.h>
+#include <medDatabaseExporter.h>
+#include <medDatabaseReader.h>
+#include <medDatabaseRemover.h>
+
+#define EXEC_QUERY(q) execQuery(q, __FILE__ , __LINE__ )
+namespace {
+    inline bool execQuery( QSqlQuery & query, const char *file, int line ) {
+        if ( ! query.exec() ) {
+            qDebug() << file << "(" << line << ") :" << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
+            return false;
+        }
+        return true;
+    }
+}
 class medDatabaseControllerPrivate
 {
 public:
@@ -36,11 +61,13 @@ public:
 
     MetaDataMap metaDataLookup;
     // Reusable table names.
+    static const QString T_image ;
     static const QString T_series ;
     static const QString T_study ;
     static const QString T_patient ;
 };
 
+const QString medDatabaseControllerPrivate::T_image = "image";
 const QString medDatabaseControllerPrivate::T_series = "series";
 const QString medDatabaseControllerPrivate::T_study = "study";
 const QString medDatabaseControllerPrivate::T_patient = "patient";
@@ -49,9 +76,10 @@ void medDatabaseControllerPrivate::buildMetaDataLookup()
 {
 // The table defines the mapping between metadata in the medAbstractData and the database tables.
     metaDataLookup.insert(medMetaDataKeys::ThumbnailPath.key(),
-                          TableEntryList() << TableEntry(T_series, "thumbnail", true)
-                          << TableEntry(T_study, "thumbnail", true)
-                          << TableEntry(T_patient, "thumbnail", true) );
+        TableEntryList() << TableEntry(T_image, "thumbnail", true)
+        << TableEntry(T_series, "thumbnail", true)
+        << TableEntry(T_study, "thumbnail", true)
+        << TableEntry(T_patient, "thumbnail", true) );
 
 //Patient data
     metaDataLookup.insert(medMetaDataKeys::PatientName.key(),
@@ -117,16 +145,10 @@ void medDatabaseControllerPrivate::buildMetaDataLookup()
         TableEntryList() << TableEntry(T_series, "institution") );
     metaDataLookup.insert(medMetaDataKeys::Report.key(),
         TableEntryList() << TableEntry(T_series, "report") );
-    metaDataLookup.insert(medMetaDataKeys::Origin.key(),
-        TableEntryList() << TableEntry(T_series, "origin") );
-    metaDataLookup.insert(medMetaDataKeys::FlipAngle.key(),
-        TableEntryList() << TableEntry(T_series, "flipAngle") );
-    metaDataLookup.insert(medMetaDataKeys::EchoTime.key(),
-        TableEntryList() << TableEntry(T_series, "echoTime") );
-    metaDataLookup.insert(medMetaDataKeys::RepetitionTime.key(),
-        TableEntryList() << TableEntry(T_series, "repetitionTime") );
-    metaDataLookup.insert(medMetaDataKeys::AcquisitionTime.key(),
-        TableEntryList() << TableEntry(T_series, "acquisitionTime") );
+
+//Image data
+
+
 }
 
 medDatabaseController * medDatabaseController::s_instance = NULL;
@@ -146,41 +168,42 @@ const QSqlDatabase& medDatabaseController::database(void) const
 
 bool medDatabaseController::createConnection(void)
 {
+    if(!QDir(medStorage::dataLocation()).exists())
+    {
+        qDebug()<<"Database path does not exist: "<<medStorage::dataLocation();
+        return false;
+    }
+
     medStorage::mkpath(medStorage::dataLocation() + "/");
 
     if (this->m_database.databaseName().isEmpty())
         this->m_database = QSqlDatabase::addDatabase("QSQLITE");
     this->m_database.setDatabaseName(medStorage::dataLocation() + "/" + "db");
 
-    if (!m_database.open())
-    {
-        qDebug() << DTK_COLOR_FG_RED << "Cannot open database: unable to establish a database connection." << DTK_NO_COLOR;
+    if (!m_database.open()) {
+        qDebug() << DTK_COLOR_FG_RED << "Cannot open database: Unable to establish a database connection." << DTK_NO_COLOR;
         return false;
     }
     else
     {
-        qDebug() << "Database opened at: " << qPrintable(m_database.databaseName());
+        qDebug() << "Database opened at: " << m_database.databaseName();
         d->isConnected = true;
     }
 
-    if(    !createPatientTable()
-        || !createStudyTable()
-        || !createSeriesTable()
-        || !updateFromNoVersionToVersion1())
-    {
-        return false;
-    }
+    createPatientTable();
+    createStudyTable();
+    createSeriesTable();
+    createImageTable();
 
     // optimize speed of sqlite db
     QSqlQuery query(m_database);
-    if (!(query.prepare(QLatin1String("PRAGMA synchronous = 0"))
-          && EXEC_QUERY(query))) {
+    if ( !query.exec( QLatin1String( "PRAGMA synchronous = 0" ) ) ) {
         qDebug() << "Could not set sqlite synchronous mode to asynchronous mode.";
     }
-    if (!(query.prepare(QLatin1String("PRAGMA journal_mode=wal"))
-          && EXEC_QUERY(query))) {
+    if ( !query.exec( QLatin1String( "PRAGMA journal_mode=wal" ) ) ) {
         qDebug() << "Could not set sqlite write-ahead-log journal mode";
     }
+
 
     return true;
 }
@@ -200,7 +223,7 @@ medDataIndex medDatabaseController::indexForPatient(int id)
 }
 
 /**
-* Returns the index of a data given patient, study, and series name
+* Returns the index of a data given patient, study, series and image name
 */
 medDataIndex medDatabaseController::indexForPatient (const QString &patientName)
 {
@@ -209,11 +232,8 @@ medDataIndex medDatabaseController::indexForPatient (const QString &patientName)
 
     query.prepare("SELECT id FROM patient WHERE name = :name");
     query.bindValue(":name", patientName);
-
-    if(!EXEC_QUERY(query))
-    {
+    if(!query.exec())
         qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
-    }
 
     if(query.first()) {
         patientId = query.value(0);
@@ -231,11 +251,8 @@ medDataIndex medDatabaseController::indexForStudy(int id)
 
     query.prepare("SELECT patient FROM study WHERE id = :id");
     query.bindValue(":id", id);
-
-    if(!EXEC_QUERY(query))
-    {
+    if(!query.exec())
         qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
-    }
 
     if(query.first())
         patientId = query.value(0);
@@ -258,10 +275,8 @@ medDataIndex medDatabaseController::indexForStudy(const QString &patientName, co
     query.bindValue(":id",   patientId);
     query.bindValue(":name", studyName);
 
-    if(!EXEC_QUERY(query))
-    {
+    if(!query.exec())
         qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
-    }
 
     if(query.first()) {
         studyId = query.value(0);
@@ -281,22 +296,16 @@ medDataIndex medDatabaseController::indexForSeries(int id)
 
     query.prepare("SELECT study FROM series WHERE id = :id");
     query.bindValue(":id", id);
-
-    if(!EXEC_QUERY(query))
-    {
+    if(!query.exec())
         qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
-    }
 
     if(query.first())
         studyId = query.value(0);
 
     query.prepare("SELECT patient FROM study WHERE id = :id");
     query.bindValue(":id", studyId);
-
-    if(!EXEC_QUERY(query))
-    {
+    if(!query.exec())
         qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
-    }
 
     if(query.first())
         patientId = query.value(0);
@@ -319,14 +328,74 @@ medDataIndex medDatabaseController::indexForSeries(const QString &patientName, c
     query.bindValue(":id",   studyId);
     query.bindValue(":name", seriesName);
 
-    if(!EXEC_QUERY(query))
-    {
+    if(!query.exec())
         qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
-    }
 
     if(query.first()) {
         QVariant seriesId = query.value(0);
         index.setSeriesId(seriesId.toInt());
+        return index;
+    }
+
+    return medDataIndex();
+}
+
+medDataIndex medDatabaseController::indexForImage(int id)
+{
+    QSqlQuery query(m_database);
+
+    QVariant patientId = -1;
+    QVariant   studyId = -1;
+    QVariant  seriesId = -1;
+
+    query.prepare("SELECT series FROM image WHERE id = :id");
+    query.bindValue(":id", id);
+    if(!query.exec())
+        qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
+
+    if(query.first())
+        seriesId = query.value(0);
+
+    query.prepare("SELECT study FROM series WHERE id = :id");
+    query.bindValue(":id", seriesId);
+    if(!query.exec())
+        qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
+
+    if(query.first())
+        studyId = query.value(0);
+
+    query.prepare("SELECT patient FROM study WHERE id = :id");
+    query.bindValue(":id", studyId);
+    if(!query.exec())
+        qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
+
+    if(query.first())
+        patientId = query.value(0);
+
+    return medDataIndex(this->dataSourceId(),patientId.toInt(), studyId.toInt(), seriesId.toInt(), id);
+}
+
+medDataIndex medDatabaseController::indexForImage(const QString &patientName, const QString &studyName,
+                                                  const QString &seriesName,  const QString &imageName)
+{
+    medDataIndex index = this->indexForSeries(patientName, studyName, seriesName);
+    if (!index.isValid())
+        return index;
+
+    QSqlQuery query(m_database);
+
+    QVariant seriesId = index.seriesId();
+
+    query.prepare("SELECT id FROM image WHERE series = :id AND name = :name");
+    query.bindValue(":id",   seriesId);
+    query.bindValue(":name", imageName);
+
+    if(!query.exec())
+        qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
+
+    if(query.first()) {
+        QVariant imageId = query.value(0);
+        index.setImageId(imageId .toInt());
         return index;
     }
 
@@ -344,16 +413,16 @@ void medDatabaseController::importPath(const QString& file, const QUuid &importU
     QFileInfo info(file);
     medDatabaseImporter *importer = new medDatabaseImporter(info.absoluteFilePath(),importUuid, indexWithoutCopying);
     medMessageProgress *message = medMessageController::instance()->showProgress("Importing " + info.fileName());
-
+ 
     connect(importer, SIGNAL(progressed(int)),    message, SLOT(setProgress(int)));
     connect(importer, SIGNAL(dataImported(medDataIndex,QUuid)), this, SIGNAL(dataImported(medDataIndex,QUuid)));
-
+    
     connect(importer, SIGNAL(success(QObject *)), message, SLOT(success()));
     connect(importer, SIGNAL(failure(QObject *)), message, SLOT(failure()));
     connect(importer,SIGNAL(showError(const QString&,unsigned int)),
             medMessageController::instance(),SLOT(showError(const QString&,unsigned int)));
 
-    medJobManagerL::instance()->registerJobItem(importer);
+    medJobManager::instance()->registerJobItem(importer);
     QThreadPool::globalInstance()->start(importer);
 }
 
@@ -362,10 +431,10 @@ void medDatabaseController::importPath(const QString& file, const QUuid &importU
 * @param medAbstractData * data dataObject
 */
 void medDatabaseController::importData( medAbstractData *data, const QUuid & importUuid)
-{
+{    
     medDatabaseImporter *importer = new medDatabaseImporter(data, importUuid);
     medMessageProgress *message = medMessageController::instance()->showProgress("Saving database item");
-
+  
     connect(importer, SIGNAL(progressed(int)),    message, SLOT(setProgress(int)));
     connect(importer, SIGNAL(dataImported(medDataIndex,QUuid)), this, SIGNAL(dataImported(medDataIndex,QUuid)));
 
@@ -374,7 +443,7 @@ void medDatabaseController::importData( medAbstractData *data, const QUuid & imp
     connect(importer,SIGNAL(showError(const QString&,unsigned int)),
             medMessageController::instance(),SLOT(showError(const QString&,unsigned int)));
 
-    medJobManagerL::instance()->registerJobItem(importer);
+    medJobManager::instance()->registerJobItem(importer);
     QThreadPool::globalInstance()->start(importer);
 }
 
@@ -383,219 +452,91 @@ void medDatabaseController::showOpeningError(QObject *sender)
     medMessageController::instance()->showError("Opening item failed.", 3000);
 }
 
-bool medDatabaseController::createPatientTable()
+void medDatabaseController::createPatientTable(void)
+{
+    QSqlQuery query(this->database());
+    query.exec(
+            "CREATE TABLE patient ("
+            " id       INTEGER PRIMARY KEY,"
+            " name        TEXT,"
+            " thumbnail   TEXT,"
+            " birthdate   TEXT,"
+            " gender      TEXT,"
+            " patientId   TEXT"
+            ");"
+            );
+}
+
+void medDatabaseController::createStudyTable(void)
 {
     QSqlQuery query(this->database());
 
-    if( ! query.prepare(
-                "CREATE TABLE IF NOT EXISTS patient ("
-                " id       INTEGER PRIMARY KEY,"
-                " name        TEXT,"
-                " thumbnail   TEXT,"
-                " birthdate   TEXT,"
-                " gender      TEXT,"
-                " patientId   TEXT"
-                ");"
-                ) )
-    {
-        qDebug() << query.lastError();
-    }
-    return EXEC_QUERY(query);
+    query.exec(
+            "CREATE TABLE study ("
+            " id        INTEGER      PRIMARY KEY,"
+            " patient   INTEGER," // FOREIGN KEY
+            " name         TEXT,"
+            " uid          TEXT,"
+            " thumbnail    TEXT,"
+            " studyId      TEXT"
+            ");"
+            );
 }
 
-bool medDatabaseController::createStudyTable()
+void medDatabaseController::createSeriesTable(void)
 {
     QSqlQuery query(this->database());
-
-    return query.prepare(
-                "CREATE TABLE IF NOT EXISTS study ("
-                " id        INTEGER      PRIMARY KEY,"
-                " patient   INTEGER," // FOREIGN KEY
-                " name         TEXT,"
-                " uid          TEXT,"
-                " thumbnail    TEXT,"
-                " studyId      TEXT"
-                ");"
-                ) && EXEC_QUERY(query);
+    query.exec(
+            "CREATE TABLE series ("
+            " id       INTEGER      PRIMARY KEY,"
+            " study    INTEGER," // FOREIGN KEY
+            " size     INTEGER,"
+            " name            TEXT,"
+            " path            TEXT,"
+            " uid             TEXT,"
+            " seriesId        TEXT,"
+            " orientation     TEXT,"
+            " seriesNumber    TEXT,"
+            " sequenceName    TEXT,"
+            " sliceThickness  TEXT,"
+            " rows            TEXT,"
+            " columns         TEXT,"
+            " thumbnail       TEXT,"
+            " age             TEXT,"
+            " description     TEXT,"
+            " modality        TEXT,"
+            " protocol        TEXT,"
+            " comments        TEXT,"
+            " status          TEXT,"
+            " acquisitiondate TEXT,"
+            " importationdate TEXT,"
+            " referee         TEXT,"
+            " performer       TEXT,"
+            " institution     TEXT,"
+            " report          TEXT"
+            ");"
+            );
 }
 
-bool medDatabaseController::createSeriesTable()
+void medDatabaseController::createImageTable(void)
 {
+    // Note to the reader who came here looking for the 'size' column:
+    // it was removed because it was always filled with a
+    // placeholder (number 64), and it was never read.
+
     QSqlQuery query(this->database());
-
-    return query.prepare(
-                   "CREATE TABLE IF NOT EXISTS series ("
-                   " id       INTEGER      PRIMARY KEY,"
-                   " study    INTEGER," // FOREIGN KEY
-                   " size     INTEGER,"
-                   " name            TEXT,"
-                   " path            TEXT,"
-                   " uid             TEXT,"
-                   " seriesId        TEXT,"
-                   " orientation     TEXT,"
-                   " seriesNumber    TEXT,"
-                   " sequenceName    TEXT,"
-                   " sliceThickness  TEXT,"
-                   " rows            TEXT,"
-                   " columns         TEXT,"
-                   " thumbnail       TEXT,"
-                   " age             TEXT,"
-                   " description     TEXT,"
-                   " modality        TEXT,"
-                   " protocol        TEXT,"
-                   " comments        TEXT,"
-                   " status          TEXT,"
-                   " acquisitiondate TEXT,"
-                   " importationdate TEXT,"
-                   " referee         TEXT,"
-                   " performer       TEXT,"
-                   " institution     TEXT,"
-                   " report          TEXT,"
-                   " origin          TEXT,"
-                   " flipAngle       TEXT,"
-                   " echoTime        TEXT,"
-                   " repetitionTime  TEXT,"
-                   " acquisitionTime TEXT"
-                   ");"
-                   ) && EXEC_QUERY(query);
-
-    // Get all the information about the table columns
-    query.prepare("PRAGMA table_info(series)");
-    if ( !EXEC_QUERY(query) )
-    {
-        qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
-    }
-
-    this->addTextColumnToSeriesTableIfNeeded(query, "origin");
-    this->addTextColumnToSeriesTableIfNeeded(query, "flipAngle");
-    this->addTextColumnToSeriesTableIfNeeded(query, "echoTime");
-    this->addTextColumnToSeriesTableIfNeeded(query, "repetitionTime");
-    this->addTextColumnToSeriesTableIfNeeded(query, "acquisitionTime");
-}
-
-void medDatabaseController::addTextColumnToSeriesTableIfNeeded(QSqlQuery query, QString columnName)
-{
-    bool isColumnThere = false;
-    query.first();
-
-    while ( query.next() )
-    {
-        if (query.value(1).toString() == columnName)
-        {
-            isColumnThere = true;
-        }
-    }
-
-    // If columnName is not defined in the db series table, add it.
-    if (!isColumnThere)
-    {
-        query.prepare("ALTER TABLE series ADD COLUMN "+columnName+" TEXT");
-        EXEC_QUERY(query);
-    }
-}
-
-bool medDatabaseController::updateFromNoVersionToVersion1()
-{
-    // Updates the DB schema from the original, un-versioned schema, to the
-    // version 1 schema:
-    // - Table series gains a column isIndexed
-    // - Field image.isIndexed is migrated to series.isIndexed
-    // - Field image.path is migrated to series.path if image.isIndexed is true
-    // - Table image is removed
-    // We to do this in a transaction so that we won't mess up the DB if for
-    // whatever reason the app/computer crashes, and we'll just try again on the
-    // next launch.
-
-    QSqlQuery q(this->database());
-
-    if ( ! (q.exec("PRAGMA user_version") && q.first()))
-    {
-        qWarning("medDatabaseController: Testing DB version for upgrade failed.");
-        qDebug() << q.lastError();
-        return false;
-    }
-
-    if ( ! q.exec("BEGIN EXCLUSIVE TRANSACTION"))
-    {
-        qWarning("medDatabaseController: Could not begin transaction.");
-        qDebug() << q.lastError();
-        return false;
-    }
-
-    // Test for isIndexed column to series
-    if ( ! (q.exec("SELECT sql FROM sqlite_master WHERE type=='table' AND tbl_name=='series'") && q.first()))
-    {
-        qWarning("medDatabaseController: Could not test for `isIndexed` column in table `series`.");
-        qDebug() << q.lastError();
-        return false;
-    }
-
-    bool missingColumn = (q.value(0).toString().indexOf("isIndexed") == -1);
-
-    if( missingColumn )
-    {
-        // Add isIndexed column if missing
-        if ( ! q.exec("ALTER TABLE series ADD COLUMN isIndexed BOOLEAN"))
-        {
-            qWarning("medDatabaseController: Could not add `isIndexed` column to table `series`.");
-            qDebug() << q.lastError();
-            return false;
-        }
-    }
-
-    // If the image column does not exist, the database is already a new version,
-    // and user_version should be set without trying to access the image column from old versions.
-    if (q.value(0).toString().indexOf("image") != -1)
-    {
-        // Migrate path and isIndexed fields from table `image` to `series`
-        if ( ! q.exec("SELECT id,path FROM image WHERE isIndexed == 'true'"))
-        {
-            qWarning("medDatabaseController: getting a list of path from the `image` table failed.");
-            qDebug() << q.lastError();
-            return false;
-        }
-        QHash<int, QStringList> imagePaths;
-        while(q.next())
-        {
-            imagePaths[q.value(0).toInt()] += q.value(0).toString();
-        }
-        foreach(int id, imagePaths.keys())
-        {
-            q.prepare("UPDATE series SET path==:paths,isIndexed='true' WHERE id==:seriesId");
-            q.bindValue(":paths", imagePaths[id].join(";"));
-            q.bindValue(":seriesId", id);
-            if (! q.exec())
-            {
-                qWarning("medDatabaseController: updating the `series` table failed for id %d.", id);
-                qDebug() << q.lastError();
-                return false;
-            }
-        }
-
-        // Delete table `image`
-        if ( ! q.exec("DROP TABLE image"))
-        {
-            qWarning("medDatabaseController: could not drop table `image`.");
-            qDebug() << q.lastError();
-            return false;
-        }
-    }
-
-    // finally, update DB version
-    if ( ! q.exec("PRAGMA user_version = 1"))
-    {
-        qWarning("medDatabaseController: updating DB version to 1 after upgrade failed.");
-        qDebug() << q.lastError();
-        return false;
-    }
-
-    if ( ! q.exec("END TRANSACTION"))
-    {
-        qWarning("medDatabaseController: Could not end transaction.");
-        qDebug() << q.lastError();
-        return false;
-    }
-    return true;
+    query.exec(
+            "CREATE TABLE image ("
+            " id         INTEGER      PRIMARY KEY,"
+            " series     INTEGER," // FOREIGN KEY
+            " name          TEXT,"
+            " path          TEXT,"
+            " instance_path TEXT,"
+            " thumbnail     TEXT,"
+            " slice      INTEGER,"
+            " isIndexed  BOOLEAN"
+            ");"
+            );
 }
 
 /**
@@ -650,7 +591,7 @@ void medDatabaseController::remove( const medDataIndex& index )
     connect(remover, SIGNAL(failure(QObject *)), message, SLOT(failure()));
     connect(remover, SIGNAL(removed(const medDataIndex &)), this, SIGNAL(dataRemoved(medDataIndex)));
 
-    medJobManagerL::instance()->registerJobItem(remover);
+    medJobManager::instance()->registerJobItem(remover);
     QThreadPool::globalInstance()->start(remover);
 }
 
@@ -682,13 +623,13 @@ QList<medDataIndex> medDatabaseController::moveStudy( const medDataIndex& indexS
             newIndex.setPatientId(toPatient.patientId());
 
             newIndexList << newIndex;
-
+            
             // and update patient id in series indexes
             QList<medDataIndex> seriesIndexList = series(indexStudy);
-            foreach(medDataIndex newSeriesIndex, seriesIndexList)
+            foreach(medDataIndex newSerieIndex, seriesIndexList)
             {
-                newSeriesIndex.setPatientId(toPatient.patientId());
-                newIndexList << newSeriesIndex;
+                newSerieIndex.setPatientId(toPatient.patientId());
+                newIndexList << newSerieIndex;
             }
         }
     }
@@ -702,35 +643,36 @@ QList<medDataIndex> medDatabaseController::moveStudy( const medDataIndex& indexS
 }
 
 /**
- * Moves series from one study to another and returns the new index of the series
- * @param const medDataIndex & indexSeries The data index of the series to be moved
- * @param const medDataIndex & toStudy The data index to move the series to.
+ * Moves serie from one study to another and returns the new index of the serie
+ * @param const medDataIndex & indexSerie The data index of the serie to be moved
+ * @param const medDataIndex & toStudy The data index to move the serie to.
  */
-medDataIndex medDatabaseController::moveSeries( const medDataIndex& indexSeries, const medDataIndex& toStudy)
+medDataIndex medDatabaseController::moveSerie( const medDataIndex& indexSerie, const medDataIndex& toStudy)
 {
     QSqlQuery query(this->database());
 
     bool result = false;
     medDataIndex newIndex;
 
-    if(indexSeries.isValidForSeries() && toStudy.isValidForStudy())
+    if(indexSerie.isValidForSeries() && toStudy.isValidForStudy())
     {
-        query.prepare("UPDATE series SET study=:studyId  WHERE id=:seriesId");
+        query.prepare("UPDATE series SET study=:studyId  WHERE id=:serieId");
         query.bindValue(":studyId", toStudy.studyId());
-        query.bindValue(":seriesId", indexSeries.seriesId());
+        query.bindValue(":serieId", indexSerie.seriesId());
 
         result = EXEC_QUERY(query);
 
         if(result)
         {
-            newIndex = indexSeries;
+            newIndex = indexSerie;
             newIndex.setPatientId(toStudy.patientId());
             newIndex.setStudyId(toStudy.studyId());
         }
     }
-
-    emit metadataModified(indexSeries); // to signal the series has been removed
-    emit metadataModified(newIndex);   // to signal the series has been added
+    
+    emit metadataModified(indexSerie, medMetaDataKeys::PatientID.key(), QString::number(toStudy.patientId()));
+    emit metadataModified(indexSerie, medMetaDataKeys::StudyID.key(), QString::number(toStudy.studyId()));
+    emit metadataModified(newIndex);
 
     return newIndex;
 }
@@ -745,45 +687,42 @@ QString medDatabaseController::metaData(const medDataIndex& index,const QString&
 
     // Attempt to translate the desired metadata into a table / column entry.
     MetaDataMap::const_iterator it(d->metaDataLookup.find(key));
-    if (it == d->metaDataLookup.end() )
-    {
+    if (it == d->metaDataLookup.end() ) {
         return QString();
     }
 
     QString ret;
     bool isPath = false;
-    for ( TableEntryList::const_iterator entryIt(it.value().begin());
-        entryIt != it.value().end(); ++entryIt )
-    {
+    for ( TableEntryList::const_iterator entryIt(it.value().begin() );
+        entryIt != it.value().end(); ++entryIt ) {
+
         const QString tableName = entryIt->table;
         const QString columnName = entryIt->column;
         isPath = entryIt->isPath;
 
         int id = -1;
-
-        if ( tableName == d->T_series && index.isValidForSeries() )
-        {
+        if ( tableName == d->T_image && index.isValidForImage() ) {
+            id = index.imageId();
+        } else if ( tableName == d->T_series && index.isValidForSeries() ) {
             id = index.seriesId();
-        }
-        else if ( tableName == d->T_study && index.isValidForStudy() )
-        {
+        } else if ( tableName == d->T_study && index.isValidForStudy() ) {
             id = index.studyId();
-        }
-        else if ( tableName == d->T_patient && index.isValidForPatient() )
-        {
+        } else if ( tableName == d->T_patient && index.isValidForPatient() ) {
             id = index.patientId();
         }
-        if ( id != -1 )
-        {
+        if ( id != -1 ) {
             query.prepare("SELECT " + columnName + " FROM " + tableName + " WHERE id = :id");
             query.bindValue(":id", id);
             EXEC_QUERY(query);
-            if ( query.next() )
-            {
+            if ( query.next() ) {
                 ret = query.value(0).toString();
                 break;
             }
         }
+    }
+
+    if ( ret.isNull() ){
+        dtkDebug() << "medDatabaseControllerImpl : Failed to get metadata " << key << " for index " << index.asString();
     }
 
     if ( !ret.isEmpty() && isPath )
@@ -814,33 +753,26 @@ bool medDatabaseController::setMetaData( const medDataIndex& index, const QStrin
         const QString columnName = entryIt->column;
 
         int id = -1;
-
-        if ( tableName == d->T_series && index.isValidForSeries() )
-        {
+        if ( tableName == d->T_image && index.isValidForImage() ) {
+            id = index.imageId();
+        } else if ( tableName == d->T_series && index.isValidForSeries() ) {
             id = index.seriesId();
-        }
-        else if ( tableName == d->T_study && index.isValidForStudy() )
-        {
+        } else if ( tableName == d->T_study && index.isValidForStudy() ) {
             id = index.studyId();
-        }
-        else if ( tableName == d->T_patient && index.isValidForPatient() )
-        {
+        } else if ( tableName == d->T_patient && index.isValidForPatient() ) {
             id = index.patientId();
         }
-        if ( id != -1 )
-        {
+        if ( id != -1 ) {
             query.prepare(QString("UPDATE %1 SET %2 = :value WHERE id = :id")
                 .arg(tableName).arg(columnName) );
             query.bindValue(":value", value);
             query.bindValue(":id", id);
             success = EXEC_QUERY(query);
             if ( success )
-            {
                 break;
-            }
         }
     }
-
+    // emit ?
     return success;
 }
 
@@ -873,7 +805,7 @@ QList<medDataIndex> medDatabaseController::studies( const medDataIndex& index ) 
 
     if ( !index.isValidForPatient() )
     {
-        qWarning() << "invalid index passed (not patient)";
+        qWarning() << "invalid index passed";
         return ret;
     }
 
@@ -890,7 +822,7 @@ QList<medDataIndex> medDatabaseController::studies( const medDataIndex& index ) 
     return ret;
 }
 
-/** Enumerate all series for given study*/
+/** Enumerate all series for given patient*/
 QList<medDataIndex> medDatabaseController::series( const medDataIndex& index) const
 {
     QList<medDataIndex> ret;
@@ -914,13 +846,36 @@ QList<medDataIndex> medDatabaseController::series( const medDataIndex& index) co
     return ret;
 }
 
+/** Enumerate all images for given patient*/
+QList<medDataIndex> medDatabaseController::images( const medDataIndex& index) const
+{
+    QList<medDataIndex> ret;
+
+    if ( !index.isValidForSeries() )
+    {
+        qWarning() << "invalid index passed";
+        return ret;
+    }
+
+    QSqlQuery query(this->database());
+    query.prepare("SELECT id FROM image WHERE series = :seriesId");
+    query.bindValue(":seriesId", index.seriesId());
+    EXEC_QUERY(query);
+#if QT_VERSION > 0x0406FF
+    ret.reserve( query.size() );
+#endif
+    while( query.next() ){
+        ret.push_back( medDataIndex(this->dataSourceId(), index.patientId(), index.studyId(), index.seriesId(), query.value(0).toInt()));
+    }
+    return ret;
+}
+
 QPixmap medDatabaseController::thumbnail(const medDataIndex &index) const
 {
     QString thumbpath = this->metaData(index, medMetaDataKeys::ThumbnailPath.key());
 
     QFileInfo fileInfo(thumbpath);
-    if ( fileInfo.exists() )
-    {
+    if ( fileInfo.exists() ) {
         return QPixmap(thumbpath);
     }
     return QPixmap();
@@ -929,18 +884,6 @@ QPixmap medDatabaseController::thumbnail(const medDataIndex &index) const
 /** Implement base class */
 bool medDatabaseController::isPersistent(  ) const
 {
-    return true;
-}
-
-bool medDatabaseController::execQuery(QSqlQuery& query, const char* file, int line) const
-{
-    if (!query.exec())
-    {
-        qDebug() << file << "(" << line << ") :" << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
-        qDebug() << "The query was: " << query.lastQuery().simplified();
-        return false;
-    }
-
     return true;
 }
 
@@ -961,6 +904,7 @@ bool medDatabaseController::contains(const medDataIndex &index) const
         QVariant patientId = index.patientId();
         QVariant studyId = index.studyId();
         QVariant seriesId = index.seriesId();
+        QVariant imageId = index.imageId();
 
         QSqlQuery query(this->database());
         QString fromRequest = "SELECT * FROM patient";
@@ -974,27 +918,34 @@ bool medDatabaseController::contains(const medDataIndex &index) const
             {
                 fromRequest += " INNER JOIN series ON (study.id = series.study)";
                 whereRequest +=  " AND series.id = :seID";
+                if (imageId != -1)
+                {
+                    fromRequest += " INNER JOIN image ON (series.id = image.series)";
+                    whereRequest +=  " AND image.id = :imID";
+                }
             }
         }
         QString request = fromRequest + whereRequest;
-
+        
         query.prepare(request);
         query.bindValue(":id", patientId);
         if (studyId != -1)
             query.bindValue(":stID", studyId);
         if (seriesId != -1)
             query.bindValue(":seID", seriesId);
+        if (imageId != -1)
+            query.bindValue(":imID", imageId);
 
-        if(!EXEC_QUERY(query))
-        {
+        if(!query.exec())
             qDebug() << DTK_COLOR_FG_RED << query.lastError() << DTK_NO_COLOR;
-        }
         if(query.first())
             return true;
 
     }
     return false;
 }
+
+
 
 medAbstractData* medDatabaseController::retrieve(const medDataIndex &index) const
 {
@@ -1011,6 +962,7 @@ medAbstractData* medDatabaseController::retrieve(const medDataIndex &index) cons
     data = reader->run();
     return data;
 }
+
 
 void medDatabaseController::removeAll()
 {
