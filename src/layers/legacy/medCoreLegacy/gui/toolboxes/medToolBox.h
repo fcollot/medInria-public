@@ -81,6 +81,29 @@ public:
 
     virtual void toXMLNode(QDomDocument *doc, QDomElement *currentNode);
 
+    virtual QVariant getProperty(QString name) const;
+    virtual void setProperty(QString name, QVariant value);
+
+    template<class PROPERTY_TYPE>
+    PROPERTY_TYPE getProperty(QString name)
+    {
+        return getProperty(name).value<PROPERTY_TYPE>();
+    }
+
+    template<class PROPERTY_TYPE>
+    void setProperty(QString name, PROPERTY_TYPE value)
+    {
+        setProperty(name, QVariant::fromValue<PROPERTY_TYPE>(value));
+    }
+
+    virtual QObject* getComponent(QString name);
+
+    template<class TYPE>
+    TYPE getComponent(QString name)
+    {
+        return dynamic_cast<TYPE>(getComponent(name));
+    }
+
 signals:
     /**
      * @brief Tells the world to add a new toolbox to the medToolboxContainer.
@@ -142,6 +165,10 @@ public slots:
 protected slots:
     void onAboutButtonClicked();
 
+protected:
+    template<class COMPONENT_TYPE> bool getComponentValue(QObject* component, QVariant* value);
+    template<class COMPONENT_TYPE> bool setComponentValue(QObject* component, QVariant value);
+
 private:
     medToolBoxPrivate *d;
 };
@@ -156,4 +183,3 @@ public:\
     virtual QString name() const {return staticName();}\
     virtual QString description() const {return staticDescription();}\
     virtual QStringList categories() const {return staticCategories();}
-

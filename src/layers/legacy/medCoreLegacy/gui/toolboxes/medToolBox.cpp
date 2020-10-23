@@ -420,3 +420,85 @@ void medToolBox::enableOnProcessSuccessImportOutput(medJobItemL *job, bool enabl
         disconnect(job, SIGNAL(success(QObject*)), this->getWorkspace(), SLOT(importProcessOutput()));
     }
 }
+
+template<class COMPONENT_TYPE>
+bool medToolBox::getComponentValue(QObject* component, QVariant* value)
+{
+    COMPONENT_TYPE* castedComponent = dynamic_cast<COMPONENT_TYPE*>(component);
+
+    if (castedComponent)
+    {
+        *value = castedComponent.value();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+template<class COMPONENT_TYPE>
+bool medToolBox::setComponentValue(QObject* component, QVariant value)
+{
+    COMPONENT_TYPE* castedComponent = dynamic_cast<COMPONENT_TYPE*>(component);
+
+    if (castedComponent)
+    {
+        castedComponent.setValue(value);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+QVariant medToolBox::getProperty(QString name) const
+{
+    QObject* component = getComponent(name);
+    QVariant result;
+
+    if ((dynamic_cast<medAbstractParameterL*>(component)
+         && !(getComponentValue<medAbstractIntParameterL>(component, &result)
+              || getComponentValue<medAbstractDoubleParameterL>(component, &result)
+              || getComponentValue<medAbstractBoolParameterL>(component, &result)
+              || getComponentValue<medAbstractStringParameterL>(component, &result)))
+        ||
+        (dynamic_cast<QAbstractSpinBox*>(component)
+         && !(getComponentValue<QSpinBox>(component, &result)
+              || getComponentValue<QDoubleSpinBox>(component, &result))))
+    {
+        QDebug();
+        assert(false);
+    }
+
+    return result;
+}
+
+void medToolBox::setProperty(QString name, QVariant value)
+{
+    QObject* component = getComponent(name);
+
+    if ((dynamic_cast<medAbstractParameterL*>(component)
+         && !(setComponentValue<medAbstractIntParameterL>(component, value)
+              || setComponentValue<medAbstractDoubleParameterL>(component, value)
+              || setComponentValue<medAbstractBoolParameterL>(component, value)
+              || setComponentValue<medAbstractStringParameterL>(component, value)))
+        ||
+        (dynamic_cast<QAbstractSpinBox*>(component)
+         && !(setComponentValue<QSpinBox>(component, value)
+              || setComponentValue<QDoubleSpinBox>(component, value))))
+    {
+        QDebug();
+        assert(false);
+    }
+
+    return result;
+}
+
+QObject* medToolBox::getComponent(QString name)
+{
+    QObject* result = findChild<QObject*>(name);
+    assert(result);
+    return result;
+}
