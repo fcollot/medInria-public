@@ -47,5 +47,5 @@ public:
 
     medDataIndex populateDatabaseAndGenerateThumbnails ( medAbstractData* medData, QString pathToStoreThumbnails );
 
-    QString ensureUniqueSeriesName ( const QString seriesName );
+    QString ensureUniqueSeriesName(const QString seriesName, int studyId) override;
 };

@@ -326,18 +326,20 @@ int medDatabaseImporter::getOrCreateSeries ( const medAbstractData* medData, QSq
 
 //-----------------------------------------------------------------------------------------------------------
 /**
-* Finds if parameter @seriesName is already being used in the database
+* Finds if parameter @seriesName is already being used in the study
 * if is not, it returns @seriesName unchanged
 * otherwise, it returns an unused new series name (created by adding a suffix)
 * @param seriesName - the series name
+* @param studyId - the study id
 * @return newSeriesName - a new, unused, series name
 **/
-QString medDatabaseImporter::ensureUniqueSeriesName ( const QString seriesName )
+QString medDatabaseImporter::ensureUniqueSeriesName(const QString seriesName, int studyId)
 {
     QSqlDatabase db = medDatabaseController::instance()->database();
 
     QSqlQuery query ( db );
-    query.prepare ( "SELECT name FROM series WHERE name LIKE '" + seriesName + "%'" );
+
+    query.prepare("SELECT name FROM series WHERE study = " + QString::number(studyId) + " AND name LIKE '" + seriesName + "%'");
 
     if ( !query.exec() )
     {

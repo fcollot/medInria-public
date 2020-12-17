@@ -429,10 +429,15 @@ void medAbstractDatabaseImporter::importData()
         return;
     }
 
-    // Update name of the series if a permanent data has this name already
+    // Update name of the series if a permanent data in the same study has this name already
     QString seriesDescription = d->data->metadata(medMetaDataKeys::SeriesDescription.key());
-    QString newSeriesDescription = ensureUniqueSeriesName(seriesDescription);
-    d->data->setMetaData(medMetaDataKeys::SeriesDescription.key(), QStringList() << newSeriesDescription );
+    QString studyId = medMetaDataKeys::StudyID.getFirstValue(d->data);
+
+    if (!studyId.isEmpty())
+    {
+        QString newSeriesDescription = ensureUniqueSeriesName(seriesDescription, studyId.toInt());
+        d->data->setMetaData(medMetaDataKeys::SeriesDescription.key(), QStringList() << newSeriesDescription);
+    }
 
     if ( !d->data->hasMetaData ( medMetaDataKeys::FilePaths.key() ) )
     {
@@ -537,6 +542,9 @@ void medAbstractDatabaseImporter::populateMissingMetadata ( medAbstractData* med
         return;
     }
 
+    if ( !medData->hasMetaData ( medMetaDataKeys::StudyID.key() ) )
+        medData->setMetaData ( medMetaDataKeys::StudyID.key(), QStringList() << "0" );
+
     QString newSeriesDescription;
     // check if image have basic information like patient, study, etc.
     // DICOMs, for instance, do provide it
@@ -552,7 +560,8 @@ void medAbstractDatabaseImporter::populateMissingMetadata ( medAbstractData* med
         // it could be that we have already another image with this characteristics
         // so we would like to check whether the image filename is on the db
         // and if so we would add some suffix to distinguish it
-        newSeriesDescription = ensureUniqueSeriesName(seriesDescription);
+        int studyId = medData->metadata(medMetaDataKeys::StudyID.key()).toInt();
+        newSeriesDescription = ensureUniqueSeriesName(seriesDescription, studyId);
     }
     else
     {
@@ -574,9 +583,6 @@ void medAbstractDatabaseImporter::populateMissingMetadata ( medAbstractData* med
     if ( !medData->hasMetaData ( medMetaDataKeys::SeriesDescription.key() ) ||
          medData->metadata(medMetaDataKeys::SeriesDescription.key()).isEmpty() )
         medData->setMetaData ( medMetaDataKeys::SeriesDescription.key(), QStringList() << newSeriesDescription );
-
-    if ( !medData->hasMetaData ( medMetaDataKeys::StudyID.key() ) )
-        medData->setMetaData ( medMetaDataKeys::StudyID.key(), QStringList() << "0" );
 
     if ( !medData->hasMetaData ( medMetaDataKeys::SeriesInstanceUID.key() ) )
         medData->setMetaData ( medMetaDataKeys::SeriesInstanceUID.key(), QStringList() << "" );

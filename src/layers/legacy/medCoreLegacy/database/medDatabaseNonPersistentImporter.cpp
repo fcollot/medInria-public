@@ -250,13 +250,14 @@ medDataIndex medDatabaseNonPersistentImporter::populateDatabaseAndGenerateThumbn
 }
 
 /**
-* Finds if parameter @seriesName is already being used in the database
+* Finds if parameter @seriesName is already being used in the study
 * if is not, it returns @seriesName unchanged
 * otherwise, it returns an unused new series name (created by adding a suffix)
 * @param seriesName - the series name
+* @param studyId - the study id
 * @return newSeriesName - a new, unused, series name
 **/
-QString medDatabaseNonPersistentImporter::ensureUniqueSeriesName ( const QString seriesName )
+QString medDatabaseNonPersistentImporter::ensureUniqueSeriesName(const QString seriesName, int studyId)
 {
     QPointer<medDatabaseNonPersistentController> npdc =
         medDatabaseNonPersistentController::instance();
@@ -266,9 +267,12 @@ QString medDatabaseNonPersistentImporter::ensureUniqueSeriesName ( const QString
     QStringList seriesNames;
     for(medDatabaseNonPersistentItem* item : items)
     {
-        QString sname = item->seriesName();
-        if(sname.startsWith(seriesName) )
-            seriesNames << sname;
+        if (item->studyId().toInt() == studyId)
+        {
+            QString sname = item->seriesName();
+            if(sname.startsWith(seriesName) )
+                seriesNames << sname;
+        }
     }
 
     QString originalSeriesName = seriesName;

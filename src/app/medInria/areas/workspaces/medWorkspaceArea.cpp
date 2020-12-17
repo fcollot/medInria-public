@@ -341,13 +341,18 @@ void medWorkspaceArea::removeToolBox(medToolBox *toolbox)
     d->toolBoxContainer->removeToolBox(toolbox);
 }
 
-void medWorkspaceArea::setCurrentWorkspace(medAbstractWorkspaceLegacy *workspace)
+bool medWorkspaceArea::setCurrentWorkspace(medAbstractWorkspaceLegacy *workspace)
 {
     if (d->currentWorkspace == workspace)
-        return;
+        return true;
 
     if (!d->workspaces.contains(workspace->identifier()))
-        this->setupWorkspace(workspace->identifier());
+    {
+        if (!this->setupWorkspace(workspace->identifier()))
+        {
+            return false;
+        }
+    }
 
     this->disconnect(this, SIGNAL(open(medDataIndex)), d->currentWorkspace, 0);
 
@@ -363,9 +368,6 @@ void medWorkspaceArea::setCurrentWorkspace(medAbstractWorkspaceLegacy *workspace
     d->navigatorContainer->setVisible(workspace->isDatabaseVisible());
 
     // add toolboxes
-    d->toolBoxContainer->addToolBox(workspace->selectionToolBox());
-    workspace->selectionToolBox()->show();
-
     for(medToolBox * toolbox : workspace->toolBoxes())
     {
         d->toolBoxContainer->addToolBox(toolbox);
@@ -375,14 +377,20 @@ void medWorkspaceArea::setCurrentWorkspace(medAbstractWorkspaceLegacy *workspace
 
     medParameterGroupManagerL::instance()->setCurrentWorkspace(workspace->identifier());
 
+    return true;
 }
 
-void medWorkspaceArea::setCurrentWorkspace(const QString &id)
+bool medWorkspaceArea::setCurrentWorkspace(const QString &id)
 {
     if (!d->workspaces.contains(id))
-        this->setupWorkspace(id);
+    {
+        if (!this->setupWorkspace(id))
+        {
+            return false;
+        }
+    }
 
-    this->setCurrentWorkspace(d->workspaces.value(id));
+    return this->setCurrentWorkspace(d->workspaces.value(id));
 }
 
 medAbstractWorkspaceLegacy* medWorkspaceArea::currentWorkspace()
@@ -390,10 +398,10 @@ medAbstractWorkspaceLegacy* medWorkspaceArea::currentWorkspace()
     return d->currentWorkspace;
 }
 
-void medWorkspaceArea::setupWorkspace(const QString &id)
+bool medWorkspaceArea::setupWorkspace(const QString &id)
 {
     if (d->workspaces.contains(id))
-        return;
+        return true;
 
     medAbstractWorkspaceLegacy *workspace = nullptr;
 
@@ -405,10 +413,12 @@ void medWorkspaceArea::setupWorkspace(const QString &id)
     else
     {
         qWarning()<< "Workspace " << id << " couldn't be created";
-        return;
+        return false;
     }
     workspace->setupTabbedViewContainer();
     workspace->setInitialGroups();
+
+    return true;
 }
 
 void medWorkspaceArea::addDatabaseView(medDatabaseDataSource* dataSource)

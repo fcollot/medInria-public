@@ -95,13 +95,14 @@ protected:
     void importFile();
 
     /**
-    * Finds if parameter @seriesName is already being used in the database
+    * Finds if parameter @seriesName is already being used in the study
     * if is not, it returns @seriesName unchanged
     * otherwise, it returns an unused new series name (created by adding a suffix)
     * @param seriesName - the series name
+    * @param studyId - the study id
     * @return newSeriesName - a new, unused, series name
     **/
-    virtual QString ensureUniqueSeriesName ( const QString seriesName ) = 0;
+    virtual QString ensureUniqueSeriesName(const QString seriesName, int studyId) = 0;
 
     /**
      * Retrieves patientID. Checks if patient is already in the database
