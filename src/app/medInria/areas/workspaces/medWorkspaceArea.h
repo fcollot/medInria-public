@@ -58,10 +58,6 @@ public:
 
     void setupWorkspace(const QString& id);
 
-    void addToolBox(medToolBox *toolbox);
-    void insertToolBox(int index, medToolBox *toolbox);
-    void removeToolBox(medToolBox *toolbox);
-
     void setCurrentWorkspace(medAbstractWorkspaceLegacy* workspace);
     void setCurrentWorkspace(const QString& id);
 

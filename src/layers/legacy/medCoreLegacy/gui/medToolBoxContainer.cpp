@@ -57,10 +57,19 @@ void medToolBoxContainer::insertToolBox(int index, medToolBox* toolBox)
     if (toolBox)
     {
         d->toolboxes.insert(index, toolBox);
-        toolBox->setParent(d->container);
         d->layout->setStretch(d->layout->count()-1, 0);
         d->layout->insertWidget(index, toolBox, 0, Qt::AlignTop);
         d->layout->addStretch(1);
+        toolBox->show();
+    }
+}
+
+void medToolBoxContainer::moveToolBox(int toIndex, medToolBox* toolBox)
+{
+    if (d->toolboxes.removeOne(toolBox))
+    {
+        d->layout->removeWidget(toolBox);
+        d->layout->insertWidget(toIndex, toolBox, 0, Qt::AlignTop);
     }
 }
 
@@ -73,6 +82,7 @@ void medToolBoxContainer::removeToolBox(medToolBox *toolBox)
 {
     d->toolboxes.removeOne( toolBox );
     d->layout->removeWidget(toolBox);
+    toolBox->deleteLater();
 }
 
 void medToolBoxContainer::clear()

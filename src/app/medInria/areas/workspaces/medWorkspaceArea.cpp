@@ -314,33 +314,6 @@ void medWorkspaceArea::runExportVideoProcess(medAbstractProcessLegacy *process, 
     process->setParameter(pixelListOfCurrentScreenshot.data(), screenshotCount);
 }
 
-void medWorkspaceArea::addToolBox(medToolBox *toolbox)
-{
-    if(!toolbox)
-        return;
-
-    d->toolBoxContainer->addToolBox(toolbox);
-    toolbox->show();
-}
-
-void medWorkspaceArea::insertToolBox(int index, medToolBox *toolbox)
-{
-    if(!toolbox)
-        return;
-
-    d->toolBoxContainer->insertToolBox(index, toolbox);
-    toolbox->show();
-}
-
-void medWorkspaceArea::removeToolBox(medToolBox *toolbox)
-{
-    if(!toolbox)
-        return;
-
-    toolbox->hide();
-    d->toolBoxContainer->removeToolBox(toolbox);
-}
-
 void medWorkspaceArea::setCurrentWorkspace(medAbstractWorkspaceLegacy *workspace)
 {
     if (d->currentWorkspace == workspace)
@@ -349,10 +322,14 @@ void medWorkspaceArea::setCurrentWorkspace(medAbstractWorkspaceLegacy *workspace
     if (!d->workspaces.contains(workspace->identifier()))
         this->setupWorkspace(workspace->identifier());
 
-    this->disconnect(this, SIGNAL(open(medDataIndex)), d->currentWorkspace, 0);
+    disconnect(this, SIGNAL(open(medDataIndex)), d->currentWorkspace, 0);
+    disconnect(d->currentWorkspace, nullptr, this, nullptr);
 
     d->currentWorkspace = workspace;
     connect(this, SIGNAL(open(medDataIndex)), d->currentWorkspace, SLOT(open(medDataIndex)));
+    connect(d->currentWorkspace, &medAbstractWorkspaceLegacy::toolBoxInserted, d->toolBoxContainer, &medToolBoxContainer::insertToolBox);
+    connect(d->currentWorkspace, &medAbstractWorkspaceLegacy::toolBoxRemoved, d->toolBoxContainer, &medToolBoxContainer::removeToolBox);
+    connect(d->currentWorkspace, &medAbstractWorkspaceLegacy::toolBoxMoved, d->toolBoxContainer, &medToolBoxContainer::moveToolBox);
 
     //clean toolboxes
     d->toolBoxContainer->hide();
@@ -363,13 +340,9 @@ void medWorkspaceArea::setCurrentWorkspace(medAbstractWorkspaceLegacy *workspace
     d->navigatorContainer->setVisible(workspace->isDatabaseVisible());
 
     // add toolboxes
-    d->toolBoxContainer->addToolBox(workspace->selectionToolBox());
-    workspace->selectionToolBox()->show();
-
     for(medToolBox * toolbox : workspace->toolBoxes())
     {
         d->toolBoxContainer->addToolBox(toolbox);
-        toolbox->show();
     }
     d->toolBoxContainer->setVisible(workspace->areToolBoxesVisible());
 

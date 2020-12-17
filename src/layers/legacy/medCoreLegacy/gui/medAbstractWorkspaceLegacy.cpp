@@ -49,12 +49,12 @@ public:
     QHash <QListWidgetItem*, QUuid> containerForLayerWidgetsItem;
 
     QList<medToolBox*> toolBoxes;
-    medToolBox *selectionToolBox;
     medToolBox *layersToolBox;
     medToolBox *layerListToolBox;
     medToolBox *interactorToolBox;
     medToolBox *navigatorToolBox;
     medToolBox *mouseInteractionToolBox;
+    medToolBox* progressionStackToolBox;
     medListWidget* layerListWidget;
 
     QList<QListWidgetItem*> selectedLayers;
@@ -73,11 +73,6 @@ medAbstractWorkspaceLegacy::medAbstractWorkspaceLegacy(QWidget *parent)
 {
     d->parent = parent;
 
-    d->selectionToolBox = new medToolBox;
-    d->selectionToolBox->setTitle("Selection");
-    d->selectionToolBox->header()->hide();
-    d->selectionToolBox->hide();
-
     d->viewContainerStack = new medTabbedViewContainers(this, parent);
 
     connect(d->viewContainerStack, SIGNAL(containersSelectedChanged()), this, SLOT(updateNavigatorsToolBox()), Qt::UniqueConnection);
@@ -88,12 +83,12 @@ medAbstractWorkspaceLegacy::medAbstractWorkspaceLegacy(QWidget *parent)
     d->mouseInteractionToolBox = new medToolBox;
     d->mouseInteractionToolBox->setTitle("Mouse Interaction");
     d->mouseInteractionToolBox->hide();
-    d->selectionToolBox->addWidget(d->mouseInteractionToolBox);
+    addToolBox(d->mouseInteractionToolBox);
 
     d->navigatorToolBox = new medToolBox;
     d->navigatorToolBox->setTitle("View settings");
     d->navigatorToolBox->hide();
-    d->selectionToolBox->addWidget(d->navigatorToolBox);
+    addToolBox(d->navigatorToolBox);
 
     d->layersToolBox = new medToolBox;
     d->layersToolBox->setTitle("Layer settings");
@@ -107,10 +102,13 @@ medAbstractWorkspaceLegacy::medAbstractWorkspaceLegacy(QWidget *parent)
     d->interactorToolBox->header()->hide();
     d->layersToolBox->addWidget(d->interactorToolBox);
 
-    d->selectionToolBox->addWidget(d->layersToolBox);
+    addToolBox(d->layersToolBox);
 
     d->progressionStack = new medProgressionStack();
-    d->selectionToolBox->addWidget(d->progressionStack);
+    d->progressionStackToolBox = new medToolBox;
+    d->progressionStackToolBox->header()->hide();
+    d->progressionStackToolBox->addWidget(d->progressionStack);
+    addToolBox(d->progressionStackToolBox);
 
     d->layerListToolBox->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
@@ -134,26 +132,44 @@ medAbstractWorkspaceLegacy::~medAbstractWorkspaceLegacy(void)
 
 void medAbstractWorkspaceLegacy::addToolBox(medToolBox *toolbox)
 {
+    insertToolBox(toolBoxes().count(), toolbox);
+}
+
+void medAbstractWorkspaceLegacy::insertToolBox(int index, medToolBox* toolbox)
+{
     toolbox->setWorkspace(this);
-    d->toolBoxes.append(toolbox);
-    d->selectionToolBox->addWidget(toolbox);
+    toolbox->setParent(d->parent);
+    d->toolBoxes.insert(index, toolbox);
+    emit toolBoxInserted(index, toolbox);
+}
+
+void medAbstractWorkspaceLegacy::moveToolBox(int toIndex, medToolBox* toolbox)
+{
+    if (d->toolBoxes.removeOne(toolbox))
+    {
+        d->toolBoxes.insert(toIndex, toolbox);
+        emit toolBoxMoved(toIndex, toolbox);
+    }
 }
 
 void medAbstractWorkspaceLegacy::removeToolBox(medToolBox *toolbox)
 {
     toolbox->setWorkspace(nullptr);
     d->toolBoxes.removeOne(toolbox);
-    d->selectionToolBox->removeWidget(toolbox);
+
+    if (toolbox->parent() == d->parent)
+    {
+        toolbox->deleteLater();
+    }
+    else
+    {
+        emit toolBoxRemoved(toolbox);
+    }
 }
 
 QList<medToolBox*> medAbstractWorkspaceLegacy::toolBoxes() const
 {
     return d->toolBoxes;
-}
-
-medToolBox* medAbstractWorkspaceLegacy::selectionToolBox() const
-{
-    return d->selectionToolBox;
 }
 
 void medAbstractWorkspaceLegacy::setDatabaseVisibility(bool visibility)
@@ -171,11 +187,24 @@ medTabbedViewContainers* medAbstractWorkspaceLegacy::tabbedViewContainers() cons
     return d->viewContainerStack;
 }
 
-void medAbstractWorkspaceLegacy::clear()
+medToolBox* medAbstractWorkspaceLegacy::getMouseInteractionToolBox() const
 {
-    this->setupTabbedViewContainer();
-    this->clearWorkspaceToolBoxes();
-    return;
+    return d->mouseInteractionToolBox;
+}
+
+medToolBox* medAbstractWorkspaceLegacy::getNavigatorToolBox() const
+{
+    return d->navigatorToolBox;
+}
+
+medToolBox* medAbstractWorkspaceLegacy::getLayersToolBox() const
+{
+    return d->layersToolBox;
+}
+
+medToolBox* medAbstractWorkspaceLegacy::getProgressionStackToolBox() const
+{
+    return d->progressionStackToolBox;
 }
 
 void medAbstractWorkspaceLegacy::setupTabbedViewContainer()
@@ -196,14 +225,6 @@ void medAbstractWorkspaceLegacy::setToolBoxesVisibility (bool value)
 bool medAbstractWorkspaceLegacy::areToolBoxesVisible() const
 {
     return d->toolBoxesVisibility;
-}
-
-void medAbstractWorkspaceLegacy::clearWorkspaceToolBoxes()
-{
-    for(medToolBox* tb : d->toolBoxes)
-    {
-        tb->body()->clear();
-    }
 }
 
 void medAbstractWorkspaceLegacy::addNewTab()
@@ -406,7 +427,7 @@ void medAbstractWorkspaceLegacy::updateLayersToolBox()
                 }
 
                 layerWidget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
-                layerWidget->resize(d->selectionToolBox->sizeHint().width(), 25);
+                layerWidget->resize(d->layersToolBox->sizeHint().width(), 25);
 
                 QListWidgetItem * item = new QListWidgetItem;
                 item->setData(Qt::UserRole, layer);
