@@ -30,6 +30,7 @@ public:
     void addToolBox(medToolBox *toolBox);
     void removeToolBox(medToolBox *toolBox);
     void insertToolBox(int index, medToolBox* toolBox);
+    void moveToolBox(int toIndex, medToolBox* toolBox);
     void clear();
 
     QList<medToolBox*> toolBoxes() const;
