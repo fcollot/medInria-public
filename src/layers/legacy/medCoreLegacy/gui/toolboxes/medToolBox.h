@@ -52,6 +52,7 @@ public:
     void removeWidget(QWidget *widget);
     void setTabWidget (medToolBoxTab* tab);
     void setTitle(const QString& title);
+    QString getTitle();
     void setTitleOffset(const QPoint & titleOffset);
 
     medToolBoxHeader *header() const;
@@ -80,6 +81,35 @@ public:
     void enableOnProcessSuccessImportOutput(medJobItemL *job, bool enable);
 
     virtual void toXMLNode(QDomDocument *doc, QDomElement *currentNode);
+
+    virtual QVariant getValue(QString name) const;
+    virtual void setValue(QString name, QVariant value);
+
+    template<class VALUE_TYPE>
+    VALUE_TYPE getValue(QString name) const
+    {
+        return getValue(name).value<VALUE_TYPE>();
+    }
+
+    template<class VALUE_TYPE>
+    void setValue(QString name, VALUE_TYPE value)
+    {
+        setValue(name, QVariant::fromValue<VALUE_TYPE>(value));
+    }
+
+    virtual QObject* getComponent(QString name);
+
+    template<class TYPE>
+    TYPE getComponent(QString name)
+    {
+        return dynamic_cast<TYPE>(getComponent(name));
+    }
+
+    QWidget* getWidget(QString name);
+    QAbstractButton* getButton(QString name);
+//    QSpinBox* getSpinBox(QString name);
+//    QDoubleSpinBox* getDoubleSpinBox(QString name);
+//    QComboBox* getComboBox(QString name);
 
 signals:
     /**
@@ -142,6 +172,10 @@ public slots:
 protected slots:
     void onAboutButtonClicked();
 
+protected:
+    template<class COMPONENT_TYPE, class VALUE_TYPE> bool getComponentValue(QObject* component, VALUE_TYPE* value) const;
+    template<class COMPONENT_TYPE, class VALUE_TYPE> bool setComponentValue(QObject* component, VALUE_TYPE value);
+
 private:
     medToolBoxPrivate *d;
 };
@@ -156,4 +190,3 @@ public:\
     virtual QString name() const {return staticName();}\
     virtual QString description() const {return staticDescription();}\
     virtual QStringList categories() const {return staticCategories();}
-
