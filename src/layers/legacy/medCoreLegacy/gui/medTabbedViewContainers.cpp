@@ -234,7 +234,16 @@ medViewContainer *medTabbedViewContainers::insertNewTab(int index, const QString
 
 void medTabbedViewContainers::closeCurrentTab()
 {
-    this->closeTab(this->currentIndex());
+    int index = this->currentIndex();
+
+    if (index >= 0)
+    {
+        this->closeTab(this->currentIndex());
+    }
+    else
+    {
+        qDebug() << "ahahahahaha";
+    }
 }
 
 void medTabbedViewContainers::closeTab(int index)

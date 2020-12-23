@@ -72,7 +72,7 @@ list(APPEND external_projects
      mmg
      tetgen
      zlib
-     quazip
+     #quazip
      )
 
 if (USE_DTKIMAGING)

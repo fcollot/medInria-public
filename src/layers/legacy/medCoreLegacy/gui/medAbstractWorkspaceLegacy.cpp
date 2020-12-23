@@ -154,6 +154,7 @@ void medAbstractWorkspaceLegacy::moveToolBox(int toIndex, medToolBox* toolbox)
 
 void medAbstractWorkspaceLegacy::removeToolBox(medToolBox *toolbox)
 {
+    toolbox->disconnect();
     toolbox->setWorkspace(nullptr);
     d->toolBoxes.removeOne(toolbox);
 

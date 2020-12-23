@@ -91,10 +91,10 @@ public slots:
     void updateMouseInteractionToolBox();
     void updateLayersToolBox();
     void updateInteractorsToolBox();
-    void addToolBox(medToolBox *toolbox);
-    void insertToolBox(int index, medToolBox* toolbox);
-    void moveToolBox(int toIndex, medToolBox* toolbox);
-    void removeToolBox(medToolBox *toolbox);
+    virtual void addToolBox(medToolBox *toolbox);
+    virtual void insertToolBox(int index, medToolBox* toolbox);
+    virtual void moveToolBox(int toIndex, medToolBox* toolbox);
+    virtual void removeToolBox(medToolBox *toolbox);
 
     virtual void open(const medDataIndex& index);
 

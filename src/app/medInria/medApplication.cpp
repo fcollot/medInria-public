@@ -25,6 +25,7 @@
 #include <medLogger.h>
 #include <medMainWindow.h>
 #include <medPluginManager.h>
+#include <medPython.h>
 #include <medSeedPointAnnotationData.h>
 #include <medSettingsManager.h>
 #include <medSettingsWidgetFactory.h>
@@ -205,4 +206,6 @@ void medApplication::initialize()
         medCore::pluginManager::initialize(pluginsPath);
     else
         medCore::pluginManager::initialize(defaultPath);
+
+    medPython::initialize();
 }
