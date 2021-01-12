@@ -28,6 +28,7 @@
 #include <medDatabaseController.h>
 #include <medSettingsManager.h>
 #include <medStorage.h>
+#include <medPythonManager.h>
 
 void forceShow(medMainWindow& mainwindow )
 {
@@ -271,6 +272,8 @@ int main(int argc,char* argv[])
     application.setMainWindow(mainwindow);
 
     forceShow(*mainwindow);
+
+    medPythonManager().addConsoleShortcut(mainwindow, QKeySequence("Ctrl+Shift+P"));
 
     qInfo() << "### Application is running...";
 

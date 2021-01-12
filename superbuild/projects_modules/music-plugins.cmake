@@ -16,7 +16,7 @@ function(music_plugins_project)
         tetgen
         eigen
         qwt
-        quazip
+        #quazip
         zlib
         )
 
@@ -58,7 +58,7 @@ function(music_plugins_project)
             -DTETGEN_INCLUDE_DIR:FILEPATH=${tetgen_INCLUDE_DIR}
             -DTETGEN_DIR:FILEPATH=${tetgen_DIR}
             -DQUAZIP_DIR:FILEPATH=${quazip_DIR}
-            -DQUAZIP_INCLUDE_DIR:FILEPATH=${quazip_INCLUDE_DIR}
+            #-DQUAZIP_INCLUDE_DIR:FILEPATH=${quazip_INCLUDE_DIR}
             -DOPENSSL_ROOT_DIR:FILEPATH=${OPENSSL_ROOT_DIR}
             -DZLIB_DIR:FILEPATH=${zlib_DIR}
             )

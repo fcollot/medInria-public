@@ -49,5 +49,9 @@ add_library(medVtkDataMeshBase UNKNOWN IMPORTED)
 find_library(medVtkDataMeshBase_LIBRARY NAMES medVtkDataMeshBase PATHS @medVtkDataMeshBase_LIBRARY_DIR@ @medVtkDataMeshBase_LIBRARY_DIR_DEBUG@ @medVtkDataMeshBase_LIBRARY_DIR_RELEASE@ @medVtkDataMeshBase_LIBRARY_DIR_MINSIZEREL@ @medVtkDataMeshBase_LIBRARY_DIR_RELWITHDEBINFO@)
 set_target_properties(medVtkDataMeshBase PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "@medVtkDataMeshBase_INCLUDE_DIRS@" IMPORTED_LOCATION ${medVtkDataMeshBase_LIBRARY})
 
+add_library(medPython UNKNOWN IMPORTED)
+find_library(medPython_LIBRARY NAMES medPython PATHS @medPython_LIBRARY_DIR@ @medPython_LIBRARY_DIR_DEBUG@ @medPython_LIBRARY_DIR_RELEASE@ @medPython_LIBRARY_DIR_MINSIZEREL@ @medPython_LIBRARY_DIR_RELWITHDEBINFO@)
+set_target_properties(medPython PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "@medPython_INCLUDE_DIRS@" IMPORTED_LOCATION ${medPython_LIBRARY})
+
 set(medInria_CMAKE_DIR @medInria_CMAKE_DIR@)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${medInria_CMAKE_DIR}")
