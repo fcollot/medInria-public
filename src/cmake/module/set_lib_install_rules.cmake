@@ -13,7 +13,6 @@
 
 macro(set_lib_install_rules
   target
-  headers_list
   )
 
 
@@ -52,6 +51,7 @@ install(TARGETS ${target}
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
+  RESOURCE DESTINATION resources
   )
 
 

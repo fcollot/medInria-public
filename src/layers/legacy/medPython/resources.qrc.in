@@ -1,0 +1,5 @@
+<RCC>
+    <qresource>
+        @RESOURCE_FILES@
+    </qresource>
+</RCC>
