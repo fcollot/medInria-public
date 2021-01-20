@@ -100,6 +100,8 @@ if (WIN32)
   set(${TARGET_NAME}_RC resources/medInria.rc)
 endif()
 
+make_directory(${CMAKE_BINARY_DIR}/resources)
+
 ## #############################################################################
 ## Add Exe
 ## #############################################################################
@@ -144,6 +146,7 @@ target_link_libraries(${TARGET_NAME}
   medWidgets
   medCoreLegacy
   medPacs
+  
   )
 
 
