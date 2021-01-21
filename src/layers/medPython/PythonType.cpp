@@ -1,7 +1,5 @@
 #include "PythonType.h"
 
-#include "Convert.h"
-
 namespace medPython
 {
 
@@ -17,18 +15,18 @@ PythonType::PythonType(const PythonObject& other) :
 
 QString PythonType::getName()
 {
-    return Convert::fromString(getAttribute("__name__"));
+    return getAttribute("__name__").toString();
 }
 
-PythonObject PythonType::newInstance(PythonTuple args, PythonDict kwargs)
+PythonObject PythonType::createInstance(PythonTuple args, PythonDict kwargs)
 {
     return call(args, kwargs);
 }
 
 template<class TYPE>
-TYPE* PythonType::newCastedInstance(PythonTuple args, PythonDict kwargs)
+TYPE* PythonType::createCastedInstance(PythonTuple args, PythonDict kwargs)
 {
-    return newInstance(args, kwargs).internalCast<TYPE>(true);
+    return createInstance(args, kwargs).internalCast<TYPE>(true);
 }
 
 }

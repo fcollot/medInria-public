@@ -1,7 +1,7 @@
 #include "PythonModule.h"
 
-#include "Convert.h"
-#include "Exception.h"
+#include "ExceptionManager.h"
+#include "Resource.h"
 
 namespace medPython
 {
@@ -10,11 +10,12 @@ PythonModule PythonModule::createModule(QString name)
 {
     if (getModule(name))
     {
-        THROW_PYTHON_RELATED_EXCEPTION("Module " + name + " already exists");
+        PythonObject message("Module " + name + " already exists");
+        throw RuntimeError::create(MEDPYTHON_CODE_LOCATION, PythonTuple({message}));
     }
 
-    PythonModule module = PythonModule::borrowed(PyImport_AddModule(TO_CSTRING(name)));
-    CHECK_PYTHON_ERROR();
+    PythonModule module = PythonModule::borrowed(PyImport_AddModule(qUtf8Printable(name)));
+    MEDPYTHON_CHECK_ERROR();
     return module;
 }
 
@@ -22,20 +23,20 @@ PythonModule PythonModule::createPackage(QString name)
 {
     PythonModule package = createModule(name);
     PythonObject path = PyList_New(2);
-    PythonObject resourcePath = Convert::toPython(packageNameToResourcePath(package.getName()));
-    PythonObject libraryPath = Convert::toPython(qEnvironmentVariable("MEDINRIA_LIBRARY_DIR"));
+    PythonObject resourcePath = Resource::packageNameToResourcePath(package.getName());
+    PythonObject libraryPath = qEnvironmentVariable("MEDINRIA_LIBRARY_DIR");
     PyList_SET_ITEM(path.data(), 0, resourcePath.takeReference());
     PyList_SET_ITEM(path.data(), 1, libraryPath.takeReference());
     PyObject_SetAttrString(package.data(), "__path__", path.data());
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
     return package;
 }
 
 PythonModule PythonModule::getModule(QString name)
 {
-    PythonObject pythonName = Convert::toPython(name);
+    PythonObject pythonName = name;
     PythonModule module = PyImport_GetModule(pythonName.data());
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
     return module;
 }
 
@@ -67,7 +68,7 @@ bool PythonModule::isPackage()
 QString PythonModule::getName()
 {
     QString name = QString(PyModule_GetName(data()));
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
     return name;
 }
 
@@ -79,17 +80,18 @@ PythonDict PythonModule::getDict()
 void PythonModule::runCode(QString pythonCode)
 {
     PythonObject globals = PythonObject::borrowed(PyModule_GetDict(data()));
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
 
-    PythonObject(PyRun_String(TO_CSTRING(pythonCode), Py_file_input, globals.data(), nullptr));
-    CHECK_PYTHON_ERROR();
+    PythonObject(PyRun_String(qUtf8Printable(pythonCode), Py_file_input, globals.data(), nullptr));
+    MEDPYTHON_CHECK_ERROR();
 }
 
 PythonModule PythonModule::createSubModule(QString name)
 {
     if (!isPackage())
     {
-        THROW_PYTHON_RELATED_EXCEPTION("Not a package");
+        PythonObject message("Cannot create submodule for " + getName() + " which is not a package");
+        throw RuntimeError::create(MEDPYTHON_CODE_LOCATION, PythonTuple({message}));
     }
 
     QString qualifiedName = getName() + "." + name;
@@ -112,7 +114,7 @@ PythonModule PythonModule::localImport(QString name, PythonList fromList, bool r
 
         for (int i = 0; i < numObjects; i++)
         {
-            QString objectName = Convert::fromString(fromList.getItem(i));
+            QString objectName = fromList.getItem(i).toString();
 
             if (!objectName.startsWith("_"))
             {
@@ -120,7 +122,8 @@ PythonModule PythonModule::localImport(QString name, PythonList fromList, bool r
 
                 if (!objectValue)
                 {
-                    THROW_PYTHON_RELATED_EXCEPTION("Object " + objectName + " not found in module " + importedModule.getName());
+                    PythonObject message("Object " + objectName + " not found in module " + importedModule.getName());
+                    throw ImportError::create(MEDPYTHON_CODE_LOCATION, PythonTuple({message}));
                 }
                 else
                 {
@@ -141,8 +144,8 @@ PythonModule PythonModule::internalImport(QString name, PythonDict globals, Pyth
     }
 
     int level = relative ? 1 : 0;
-    PythonModule importedModule = PyImport_ImportModuleLevel(TO_CSTRING(name), globals.data(), nullptr, fromList.data(), level);
-    CHECK_PYTHON_ERROR();
+    PythonModule importedModule = PyImport_ImportModuleLevel(qUtf8Printable(name), globals.data(), nullptr, fromList.data(), level);
+    MEDPYTHON_CHECK_ERROR();
     return importedModule;
 }
 

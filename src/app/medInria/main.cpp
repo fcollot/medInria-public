@@ -28,7 +28,7 @@
 #include <medDatabaseController.h>
 #include <medSettingsManager.h>
 #include <medStorage.h>
-#include <medPythonManager.h>
+#include <Manager.h>
 
 void forceShow(medMainWindow& mainwindow )
 {

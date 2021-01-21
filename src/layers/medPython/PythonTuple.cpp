@@ -2,7 +2,7 @@
 
 #include <QList>
 
-#include "Exception.h"
+#include "ExceptionManager.h"
 
 namespace medPython
 {
@@ -20,7 +20,7 @@ PythonTuple::PythonTuple(const PythonObject& other) :
 PythonTuple::PythonTuple(QList<PythonObject> items) :
     TypeCheckedPythonObject(PyTuple_New(items.length()))
 {
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
 
     for (int i = 0; i < items.length(); i++)
     {
@@ -31,21 +31,21 @@ PythonTuple::PythonTuple(QList<PythonObject> items) :
 int PythonTuple::getSize()
 {
     int size = PyTuple_Size(data());
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
     return size;
 }
 
 PythonObject PythonTuple::getItem(int i)
 {
     PythonObject item = PythonObject::borrowed(PyTuple_GetItem(data(), i));
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
     return item;
 }
 
 void PythonTuple::setItem(int i, PythonObject item)
 {
     PyTuple_SetItem(data(), i, item.newReference());
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
 }
 
 }

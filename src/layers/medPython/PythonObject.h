@@ -8,7 +8,7 @@
 namespace medPython
 {
 
-class PythonObject;
+class PythonObjectPrivate;
 class PythonType;
 
 class MEDPYTHON_EXPORT PythonObject
@@ -18,9 +18,10 @@ public:
 
     PythonObject(PyObject* object = nullptr);
     PythonObject(QString string);
+    PythonObject(long integer);
     PythonObject(const PythonObject& other);
     PythonObject& operator=(const PythonObject& other);
-    ~PythonObject();
+    virtual ~PythonObject();
 
     void clear();
 
@@ -40,6 +41,7 @@ public:
     template<class TYPE>
     TYPE cast();
 
+    bool hasAttribute(QString name);
     PythonObject getAttribute(QString name);
     void setAttribute(QString name, PythonObject value);
 
@@ -48,12 +50,13 @@ public:
     PythonObject call(PythonObject args = nullptr, PythonObject kwargs = nullptr);
 
     QString toString();
+    long toInteger();
 
 protected:
     void setObject(PyObject* object);
 
 private:
-    PythonObject* const d;
+    PythonObjectPrivate* const d;
 
     void internalBorrow(PyObject* object);
 

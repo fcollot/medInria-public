@@ -8,7 +8,7 @@
 namespace medPython
 {
 
-class MEDPYTHON_EXPORT PythonOutputStream : public QObject
+class MEDPYTHON_EXPORT OutputStream : public QObject
 {
     Q_OBJECT
 

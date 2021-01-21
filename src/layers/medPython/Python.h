@@ -10,5 +10,3 @@
 
 #undef slots
 #define slots Q_SLOTS
-
-#define TO_CSTRING(qstring) qUtf8Printable(qstring)

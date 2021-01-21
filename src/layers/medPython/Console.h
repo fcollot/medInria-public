@@ -9,7 +9,7 @@ namespace medPython
 
 class CommandLineBase;
 class ConsoleBasePrivate;
-class PythonOutputStream;
+class OutputStream;
 
 class MEDPYTHON_EXPORT ConsoleBase : public QWidget
 {
@@ -19,7 +19,7 @@ public:
     ConsoleBase(QWidget* parent = nullptr);
     virtual ~ConsoleBase();
 
-    void listenTo(PythonOutputStream* stream);
+    void listenTo(OutputStream* stream);
 
 protected:
     void showEvent(QShowEvent* event) override;

@@ -1,14 +1,14 @@
-#include "PythonOutputStream.h"
+#include "OutputStream.h"
 
 namespace medPython
 {
 
-void PythonOutputStream::write(QString text)
+void OutputStream::write(QString text)
 {
     emit recieved(text);
 }
 
-void PythonOutputStream::flush()
+void OutputStream::flush()
 {
     emit flushed();
 }

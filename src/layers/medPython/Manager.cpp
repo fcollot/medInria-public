@@ -6,6 +6,7 @@
 #include <medSettingsWidgetFactory.h>
 
 #include "Console.h"
+#include "ExceptionManager.h"
 #include "Resource.h"
 #include "SettingsWidget.h"
 #include "PythonType.h"
@@ -56,6 +57,8 @@ void Manager::setupIfNeeded()
     {
         Py_Initialize();
 
+        ExceptionManager::initialize();
+
         setupConsole();
         setupResources();
         setupPythonModules();
@@ -101,7 +104,7 @@ void Manager::setupBindingsModule(PythonModule& package, QString name)
     PythonModule module = package.createSubModule(name);
     module.runCode(Resource().getResourceModuleSourceCode(module.getName()));
     //package.importObjectsFrom(module, {"*"});
-    //PyObject_SetAttrString(package.getModuleObject(), TO_CSTRING(name), module.getModuleObject());
+    //PyObject_SetAttrString(package.getModuleObject(), qUtf8Printable(name), module.getModuleObject());
 }
 
 void Manager::setupResourceBasedImport(PythonModule& package)
@@ -130,7 +133,7 @@ void Manager::setupConsole()
 {
     PythonModule medInriaPackage;
     PythonType consoleType = medInriaPackage.getAttribute("PythonConsole");
-    ConsoleBase* console = consoleType.newCastedInstance<ConsoleBase>();
+    ConsoleBase* console = consoleType.createCastedInstance<ConsoleBase>();
     qApp->setProperty(CONSOLE_PROPERTY_NAME, QVariant::fromValue(console));
 }
 

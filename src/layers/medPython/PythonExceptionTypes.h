@@ -1,46 +1,25 @@
 #pragma once
 
-#include <stdexcept>
+#include "PythonExceptionBase.h"
 
-#include <QString>
-
-#include "PythonObject.h"
-
-#define PYTHON_EXCEPTION_WRAPPER(name, parent, pythonExceptionType) \
+#define PYTHON_EXCEPTION_WRAPPER(name, parent, nativeExceptionType) \
     class name : public parent \
     { \
     public: \
-        static const PyObject* pythonType; \
+        static PyObject* const nativeType; \
+        name(SourceCodeLocation throwSite, PyObject* nativeException) : parent(throwSite, nativeException) {} \
+        name(const PythonExceptionBase& other) : parent(other) {} \
     }; \
-    const PyObject* name::pythonType  = pythonExceptionType
+    PyObject* const name::nativeType = nativeExceptionType
 
 namespace medPython
 {
 
-class PythonBaseExceptionPrivate;
-
-class PythonBaseException : public std::exception
-{
-public:
-    static const PyObject* pythonType;
-
-    PythonBaseException();
-    ~PythonBaseException();
-
-    const char* what() const throw() override;
-
-    void setMessage(QString message);
-    void setPythonInstance(PythonObject pythonInstance);
-
-private:
-    PythonBaseExceptionPrivate* const d;
-};
-
 // BASE EXCEPTIONS
-PYTHON_EXCEPTION_WRAPPER(PythonException, PythonBaseException, PyExc_Exception);
-PYTHON_EXCEPTION_WRAPPER(GeneratorExit, PythonBaseException, PyExc_GeneratorExit);
-PYTHON_EXCEPTION_WRAPPER(KeyboardInterrupt, PythonBaseException, PyExc_KeyboardInterrupt);
-PYTHON_EXCEPTION_WRAPPER(SystemExit, PythonBaseException, PyExc_SystemExit);
+PYTHON_EXCEPTION_WRAPPER(PythonException, PythonExceptionBase, PyExc_Exception);
+PYTHON_EXCEPTION_WRAPPER(GeneratorExit, PythonExceptionBase, PyExc_GeneratorExit);
+PYTHON_EXCEPTION_WRAPPER(KeyboardInterrupt, PythonExceptionBase, PyExc_KeyboardInterrupt);
+PYTHON_EXCEPTION_WRAPPER(SystemExit, PythonExceptionBase, PyExc_SystemExit);
 
 // ARITHMETIC ERRORS
 PYTHON_EXCEPTION_WRAPPER(ArithmeticError, PythonException, PyExc_ArithmeticError);

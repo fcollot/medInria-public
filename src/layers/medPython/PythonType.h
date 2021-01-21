@@ -20,10 +20,10 @@ public:
 
     QString getName();
 
-    PythonObject newInstance(PythonTuple args = nullptr, PythonDict kwargs = nullptr);
+    PythonObject createInstance(PythonTuple args = nullptr, PythonDict kwargs = nullptr);
 
     template<class TYPE>
-    TYPE* newCastedInstance(PythonTuple args = nullptr, PythonDict kwargs = nullptr);
+    TYPE* createCastedInstance(PythonTuple args = nullptr, PythonDict kwargs = nullptr);
 };
 
 }

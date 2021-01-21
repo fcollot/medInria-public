@@ -2,7 +2,7 @@
 
 #include <QKeyEvent>
 
-#include "Exception.h"
+#include "ExceptionManager.h"
 
 namespace medPython
 {

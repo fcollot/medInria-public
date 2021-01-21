@@ -8,12 +8,11 @@ namespace medPython
 class MEDPYTHON_EXPORT Resource
 {
 public:
+    static QString getResourceModuleSourceCode(QString name);
 
-    QString getResourceModuleSourceCode(QString name);
+    static QString moduleNameToResourcePath(QString name);
 
-private:
-    QString moduleNameToResourcePath(QString name);
-    QString packageNameToResourcePath(QString name);
+    static QString packageNameToResourcePath(QString name);
 };
 
 }

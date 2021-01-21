@@ -1,16 +1,13 @@
-#include "ResourceMModuleFactory.h"
+#include "Resource.h"
 
 #include <QResource>
 #include <QFileInfo>
 #include <QTextStream>
 
-#include "Convert.h"
-#include "Exception.h"
+#include "ExceptionManager.h"
 
 namespace medPython
 {
-
-
 
 QString Resource::getResourceModuleSourceCode(QString name)
 {
@@ -18,7 +15,8 @@ QString Resource::getResourceModuleSourceCode(QString name)
 
     if (!resourceFile.open(QIODevice::ReadOnly))
     {
-        THROW_PYTHON_RELATED_EXCEPTION("Ressource not found: " + QFileInfo(resourceFile).absoluteFilePath());
+        PythonObject message("Ressource not found: " + QFileInfo(resourceFile).absoluteFilePath());
+        throw RuntimeError::create(MEDPYTHON_CODE_LOCATION, PythonTuple({message}));
     }
 
     QString sourceCode;

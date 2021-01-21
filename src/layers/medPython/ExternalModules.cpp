@@ -26,15 +26,15 @@ QStringList ModulePaths::getPaths()
 
 void ModulePaths::updateSysPath(QStringList newPaths, QStringList oldPaths)
 {
-    foreach (QString path, oldPaths)
-    {
-        Utils::removeSysPath(path);
-    }
+//    foreach (QString path, oldPaths)
+//    {
+//        Utils::removeSysPath(path);
+//    }
 
-    foreach (QString path, newPaths)
-    {
-        Utils::addSysPath(path);
-    }
+//    foreach (QString path, newPaths)
+//    {
+//        Utils::addSysPath(path);
+//    }
 }
 
 }

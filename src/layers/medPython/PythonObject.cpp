@@ -1,13 +1,13 @@
 #include "PythonObject.h"
 
-#include "Exception.h"
+#include "ExceptionManager.h"
 #include "swig_runtime.h"
 #include "PythonType.h"
 
 namespace medPython
 {
 
-class PythonObject
+class PythonObjectPrivate
 {
 public:
     PyObject* object;
@@ -21,20 +21,27 @@ PythonObject PythonObject::borrowed(PyObject* object)
 }
 
 PythonObject::PythonObject(PyObject* object) :
-    d(new PythonObject)
+    d(new PythonObjectPrivate)
 {
     setObject(object);
 }
 
 PythonObject::PythonObject(QString string) :
-    d(new PythonObject)
+    d(new PythonObjectPrivate)
 {
-    setObject(PyUnicode_FromString(TO_CSTRING(string)));
-    CHECK_PYTHON_ERROR();
+    setObject(PyUnicode_FromString(qUtf8Printable(string)));
+    MEDPYTHON_CHECK_ERROR();
+}
+
+PythonObject::PythonObject(long integer) :
+    d(new PythonObjectPrivate)
+{
+    setObject(PyLong_FromLong(integer));
+    MEDPYTHON_CHECK_ERROR();
 }
 
 PythonObject::PythonObject(const PythonObject& other) :
-    d(new PythonObject)
+    d(new PythonObjectPrivate)
 {
     internalBorrow(other.d->object);
 }
@@ -98,8 +105,13 @@ PyObject* PythonObject::newReference()
 PythonType PythonObject::getType()
 {
     PythonType type = PyObject_Type(data());
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
     return type;
+}
+
+bool PythonObject::hasAttribute(QString name)
+{
+    return PyObject_HasAttrString(data(), qUtf8Printable(name));
 }
 
 template<class TYPE>
@@ -110,15 +122,15 @@ TYPE PythonObject::cast()
 
 PythonObject PythonObject::getAttribute(QString name)
 {
-    PythonObject value = PyObject_GetAttrString(data(), TO_CSTRING(name));
-    CHECK_PYTHON_ERROR();
+    PythonObject value = PyObject_GetAttrString(data(), qUtf8Printable(name));
+    MEDPYTHON_CHECK_ERROR();
     return value;
 }
 
 void PythonObject::setAttribute(QString name, PythonObject value)
 {
-    PyObject_SetAttrString(data(), TO_CSTRING(name), value);
-    CHECK_PYTHON_ERROR();
+    PyObject_SetAttrString(data(), qUtf8Printable(name), value.data());
+    MEDPYTHON_CHECK_ERROR();
 }
 
 PythonObject PythonObject::callMethod(QString name, PythonObject args, PythonObject kwargs)
@@ -155,7 +167,7 @@ PythonObject PythonObject::call(PythonObject args, PythonObject kwargs)
         }
     }
 
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
     return result;
 }
 
@@ -171,7 +183,7 @@ QString PythonObject::toString()
     else if (PyUnicode_Check(data()))
     {
         stringAsPyBytes = PyUnicode_AsEncodedString(data(), "UTF-8", "strict");
-        CHECK_PYTHON_ERROR();
+        MEDPYTHON_CHECK_ERROR();
     }
 
     if (stringAsPyBytes)
@@ -180,9 +192,18 @@ QString PythonObject::toString()
     }
     else
     {
-        // object is not a string so apply str() and retry
+        // this object is not a string, so apply str() and retry
         result = PythonObject(PyObject_Str(data())).toString();
     }
+
+    return result;
+}
+
+long PythonObject::toInteger()
+{
+    long result = PyLong_AsLong(data());
+    MEDPYTHON_CHECK_ERROR();
+    return result;
 }
 
 void PythonObject::setObject(PyObject* object)
@@ -206,15 +227,16 @@ void PythonObject::internalBorrow(PyObject* object)
 }
 
 template<class TYPE>
-medPython::PythonObject::TYPE* PythonObject::internalCast(bool disown)
+TYPE* PythonObject::internalCast(bool disown)
 {
     QString castTypeName = TYPE::staticMetaObject.className();
 
-    swig_type_info* swigType = SWIG_TypeQuery(TO_CSTRING(castTypeName));
+    swig_type_info* swigType = SWIG_TypeQuery(qUtf8Printable(castTypeName));
 
     if (!swigType)
     {
-        THROW_PYTHON_RELATED_EXCEPTION("No wrapping found for " + castTypeName);
+        PythonObject message("No SWIG wrapping found for " + castTypeName);
+        throw RuntimeError::create(MEDPYTHON_CODE_LOCATION, PythonTuple({message}));
     }
 
     TYPE* castedInstance;
@@ -226,7 +248,8 @@ medPython::PythonObject::TYPE* PythonObject::internalCast(bool disown)
     }
     else
     {
-        THROW_PYTHON_RELATED_EXCEPTION("Cannot cast object of type " + Py_TYPE(d->object)->tp_name + " to " + castTypeName);
+        PythonObject message(QString("Cannot cast python object of type ") + Py_TYPE(d->object)->tp_name + " to C++ type " + castTypeName);
+        throw RuntimeError::create(MEDPYTHON_CODE_LOCATION, PythonTuple({message}));
     }
 }
 

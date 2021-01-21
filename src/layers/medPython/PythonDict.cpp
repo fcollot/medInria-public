@@ -3,8 +3,7 @@
 #include <QHashIterator>
 #include <QList>
 
-#include "Convert.h"
-#include "Exception.h"
+#include "ExceptionManager.h"
 
 namespace medPython
 {
@@ -22,44 +21,43 @@ PythonDict::PythonDict(const PythonObject& other) :
 PythonDict::PythonDict(QHash<PythonObject, PythonObject> items) :
     TypeCheckedPythonObject(PyDict_New())
 {
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
 
     foreach (PythonObject key, items.keys())
     {
         PyDict_SetItem(data(), key.data(), items[key].data());
-        CHECK_PYTHON_ERROR();
+        MEDPYTHON_CHECK_ERROR();
     }
 }
 
 PythonDict::PythonDict(QHash<QString, PythonObject> items) :
     TypeCheckedPythonObject(PyDict_New())
 {
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
 
     foreach (QString key, items.keys())
     {
-        const char* cString = TO_CSTRING(key);
+        const char* cString = qUtf8Printable(key);
         PyDict_SetItemString(data(), cString, items[cString].data());
-        CHECK_PYTHON_ERROR();
+        MEDPYTHON_CHECK_ERROR();
     }
 }
 
 int PythonDict::getSize()
 {
     int size = PyDict_Size(data());
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
     return size;
 }
 
 PythonObject PythonDict::getItem(PythonObject key)
 {
     PythonObject item = PyDict_GetItemWithError(data(), key.data());
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
 
     if (!item)
     {
-
-        Error.convertAndThrow();
+        throw KeyError::create(MEDPYTHON_CODE_LOCATION, PythonTuple({item}));
     }
 
     return item;
@@ -67,19 +65,19 @@ PythonObject PythonDict::getItem(PythonObject key)
 
 PythonObject PythonDict::getItem(QString key)
 {
-    return getItem(Convert::toPython(key));
+    return getItem(PythonObject(key));
 }
 
 void PythonDict::setItem(PythonObject key, PythonObject value)
 {
     PyDict_SetItem(data(), key.data(), value.data());
-    CHECK_PYTHON_ERROR();
+    MEDPYTHON_CHECK_ERROR();
 }
 
 void PythonDict::setItem(QString key, PythonObject value)
 {
-    PyDict_SetItemString(data(), TO_CSTRING(key), value.data());
-    CHECK_PYTHON_ERROR();
+    PyDict_SetItemString(data(), qUtf8Printable(key), value.data());
+    MEDPYTHON_CHECK_ERROR();
 }
 
 }

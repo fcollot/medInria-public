@@ -81,7 +81,7 @@ add_python_bindings_module(${TARGET_NAME}_BINDINGS
 
     SIMPLE_BINDINGS
     Manager
-    ModulePaths
+    ExternalModules
 
     DIRECTOR_BINDINGS
     CommandLineBase

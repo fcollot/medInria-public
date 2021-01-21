@@ -7,10 +7,9 @@
 #include <QVBoxLayout>
 
 #include "CommandLineBase.h"
-#include "Convert.h"
-#include "Exception.h"
+#include "ExceptionManager.h"
+#include "OutputStream.h"
 #include "PythonModule.h"
-#include "PythonOutputStream.h"
 
 namespace medPython
 {
@@ -34,9 +33,9 @@ ConsoleBase::~ConsoleBase()
     delete d;
 }
 
-void ConsoleBase::listenTo(PythonOutputStream* stream)
+void ConsoleBase::listenTo(OutputStream* stream)
 {
-    connect(stream, &PythonOutputStream::recieved, this, &ConsoleBase::print);
+    connect(stream, &OutputStream::recieved, this, &ConsoleBase::print);
 }
 
 void ConsoleBase::showEvent(QShowEvent* event)
