@@ -26,9 +26,9 @@ set(CMAKE_MODULE_PATH
 
 add_compile_definitions(
     PYTHON_PACKAGE_NAME="${PYTHON_PACKAGE_NAME}"
-    ${TARGET_NAME}_BINDINGS="${TARGET_NAME}_BINDINGS"
-    ${PROJECT_NAME}_GUI_BINDINGS="${PROJECT_NAME}_GUI_BINDINGS"
-    ${TARGET_NAME}_QT_BINDINGS="${TARGET_NAME}_QT_BINDINGS"
+    LOCAL_BINDINGS_MODULE="${TARGET_NAME}_BINDINGS"
+    GUI_BINDINGS_MODULE="${PROJECT_NAME}_GUI_BINDINGS"
+    QT_BINDINGS_MODULE="${TARGET_NAME}_QT_BINDINGS"
     RESOURCE_FILE_NAME="${RESOURCE_NAME}.rcc"
     )
 
@@ -49,6 +49,7 @@ find_package(Qt5 REQUIRED Core)
 
 list_source_files(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/internal
     )
 
 list_header_directories_to_include(${TARGET_NAME}
@@ -71,30 +72,30 @@ add_python_bindings_module(${TARGET_NAME}_QT_BINDINGS
 
 add_python_bindings_module(${TARGET_NAME}_BINDINGS
     PACKAGE ${PYTHON_PACKAGE_NAME}
-    REMOVE_BINDINGS_PREFIX med
+    HEADER_FILE_PREFIX med
 
-    INCLUDE_HEADERS
-    Conversion.h
+#    INCLUDE_HEADERS
+#    Conversion.h
 
     IMPORT_INTERFACES
     ${${TARGET_NAME}_QT_BINDINGS_INTERFACE}
 
     SIMPLE_BINDINGS
-    Manager
-    ExternalModules
+    Python
+    #ExternalPythonModules
 
     DIRECTOR_BINDINGS
-    CommandLineBase
-    Console
-    OutputStream
+    #PythonCommandLine
+    #PythonConsole
+    PythonOutputStream
     )
 
 add_python_bindings_module(${PROJECT_NAME}_GUI_BINDINGS
     PACKAGE ${PYTHON_PACKAGE_NAME}
     REMOVE_BINDINGS_PREFIX med
 
-    INCLUDE_HEADERS
-    Conversion.h
+#    INCLUDE_HEADERS
+#    Conversion.h
 
     IMPORT_INTERFACES
     ${${TARGET_NAME}_QT_BINDINGS_INTERFACE}

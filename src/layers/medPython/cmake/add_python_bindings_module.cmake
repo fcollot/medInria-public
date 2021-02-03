@@ -2,7 +2,7 @@ macro(add_python_bindings_module module_name)
 
     cmake_parse_arguments(${module_name}
         ""
-        "PACKAGE;REMOVE_BINDINGS_PREFIX"
+        "PACKAGE;REMOVE_BINDINGS_PREFIX;HEADER_FILE_PREFIX"
         "SIMPLE_BINDINGS;DIRECTOR_BINDINGS;INCLUDE_INTERFACES;IMPORT_INTERFACES;INCLUDE_HEADERS"
         ${ARGN})
 
@@ -56,9 +56,9 @@ macro(add_python_bindings_module module_name)
 
         string(CONCAT interface_content
             "%{\n"
-            "#include \"${binding}.h\"\n"
+            "#include \"${${module_name}_HEADER_FILE_PREFIX}${binding}.h\"\n"
             "%}\n\n"
-            "%include \"${binding}.h\"\n\n"
+            "%include \"${${module_name}_HEADER_FILE_PREFIX}${binding}.h\"\n\n"
             )
 
         file(APPEND ${${module_name}_INTERFACE} ${interface_content})
