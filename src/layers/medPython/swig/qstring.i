@@ -1,40 +1,17 @@
 %{
-#include <QString>
-
-QString convertPythonStringToQString(PyObject* pythonString)
-{
-    PyObject* stringAsPyBytes = nullptr;
-
-    if (PyBytes_Check(pythonString))
-    {
-        stringAsPyBytes = pythonString;
-    }
-    else if (PyUnicode_Check(pythonString))
-    {
-        stringAsPyBytes = PyUnicode_AsEncodedString(pythonString, "UTF-8", "strict");
-    }
-
-    if (stringAsPyBytes)
-    {
-        return strdup(PyBytes_AS_STRING(stringAsPyBytes));
-    }
-    else
-    {
-        return QString();
-    }
-}
+#include <medPython.h>
 %}
 
 %typemap(typecheck) QString = char *;
 
 %typemap(in) QString
 {
-    $1 = convertPythonStringToQString($input);
+    $1 = med::python::Object::borrowed($input).convert<QString>();
 }
 
 %typemap(directorout) QString
 {
-    $result = convertPythonStringToQString($input);
+    $result = med::python::Object::borrowed($input).convert<QString>();
 }
 
 %typemap(out) QString
@@ -52,13 +29,13 @@ QString convertPythonStringToQString(PyObject* pythonString)
 
 %typemap(in) const QString& (QString temp)
 {
-    temp = convertPythonStringToQString($input);
+    temp = med::python::Object::borrowed($input).convert<QString>();
     $1 = &temp;
 }
 
 %typemap(directorout) const QString& (QString temp)
 {
-    temp = convertPythonStringToQString($input);
+    temp = med::python::Object::borrowed($input).convert<QString>();
     $result = &temp;
 }
 

@@ -5,7 +5,7 @@ namespace med
 namespace python
 {
 
-bool initialize();
+void initialize();
 void finalize();
 
 }

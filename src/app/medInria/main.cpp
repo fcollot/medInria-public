@@ -29,7 +29,7 @@
 #include <medSettingsManager.h>
 #include <medStorage.h>
 #include <medPython.h>
-
+using namespace med;
 void forceShow(medMainWindow& mainwindow )
 {
     //Idea and code taken from the OpenCOR project, Thanks Allan for the code!
@@ -273,8 +273,18 @@ int main(int argc,char* argv[])
 
     forceShow(*mainwindow);
 
-    med::Python.initialize();
+    try
+    {
+        med::python::initialize();
             //.addConsoleShortcut(mainwindow, QKeySequence("Ctrl+Shift+P"));
+        python::Object datetime = python::import("datetime");
+        python::Object today = datetime.getAttribute("date").callMethod("today");
+        qDebug() << today.convert<QString>();
+    }
+    catch (std::exception& e)
+    {
+        qDebug() << e.what();
+    }
 
     qInfo() << "### Application is running...";
 

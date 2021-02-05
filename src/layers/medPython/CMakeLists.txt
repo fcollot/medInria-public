@@ -49,7 +49,10 @@ find_package(Qt5 REQUIRED Core)
 
 list_source_files(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/internal
+    ${CMAKE_CURRENT_SOURCE_DIR}/objects
+    ${CMAKE_CURRENT_SOURCE_DIR}/conversions
+    ${CMAKE_CURRENT_SOURCE_DIR}/errors
+    ${CMAKE_CURRENT_SOURCE_DIR}/modules
     )
 
 list_header_directories_to_include(${TARGET_NAME}
@@ -62,47 +65,47 @@ add_python_package(${PYTHON_PACKAGE_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/python)
 ### Python wrapping
 ### #################################################################
 
-add_python_bindings_module(${TARGET_NAME}_QT_BINDINGS
-    PACKAGE ${PYTHON_PACKAGE_NAME}
+#add_python_bindings_module(${TARGET_NAME}_QT_BINDINGS
+#    PACKAGE ${PYTHON_PACKAGE_NAME}
 
-    INCLUDE_INTERFACES
-    qstring.i
-    qwidget.i
-    )
+#    INCLUDE_INTERFACES
+##    qstring.i
+#    qwidget.i
+#    )
 
-add_python_bindings_module(${TARGET_NAME}_BINDINGS
-    PACKAGE ${PYTHON_PACKAGE_NAME}
-    HEADER_FILE_PREFIX med
-
-#    INCLUDE_HEADERS
-#    Conversion.h
-
-    IMPORT_INTERFACES
-    ${${TARGET_NAME}_QT_BINDINGS_INTERFACE}
-
-    SIMPLE_BINDINGS
-    Python
-    #ExternalPythonModules
-
-    DIRECTOR_BINDINGS
-    #PythonCommandLine
-    #PythonConsole
-    PythonOutputStream
-    )
-
-add_python_bindings_module(${PROJECT_NAME}_GUI_BINDINGS
-    PACKAGE ${PYTHON_PACKAGE_NAME}
-    REMOVE_BINDINGS_PREFIX med
+#add_python_bindings_module(${TARGET_NAME}_BINDINGS
+#    PACKAGE ${PYTHON_PACKAGE_NAME}
+#    HEADER_FILE_PREFIX med
 
 #    INCLUDE_HEADERS
-#    Conversion.h
+##    Conversion.h
 
-    IMPORT_INTERFACES
-    ${${TARGET_NAME}_QT_BINDINGS_INTERFACE}
+#    IMPORT_INTERFACES
+#    ${${TARGET_NAME}_QT_BINDINGS_INTERFACE}
 
-    DIRECTOR_BINDINGS
-    medToolBox
-    )
+#    SIMPLE_BINDINGS
+#    #ExternalPythonModules
+
+#    DIRECTOR_BINDINGS
+#    #PythonCommandLine
+#    #PythonConsole
+#    #PythonOutputStream
+#    )
+
+#add_python_bindings_module(${PROJECT_NAME}_GUI_BINDINGS
+#    PACKAGE ${PYTHON_PACKAGE_NAME}
+#    REMOVE_BINDINGS_PREFIX med
+
+##    INCLUDE_HEADERS
+##    medPython.h
+##    Conversion.h
+
+#    IMPORT_INTERFACES
+#    ${${TARGET_NAME}_QT_BINDINGS_INTERFACE}
+
+#    DIRECTOR_BINDINGS
+#    medToolBox
+#    )
 
 add_python_resource(${RESOURCE_NAME} PACKAGES ${PYTHON_PACKAGE_NAME})
 
@@ -127,23 +130,23 @@ target_include_directories(${TARGET_NAME}
     ${SWIG_RUNTIME_HEADER_DIRECTORY}
     )
 
-target_include_directories(${TARGET_NAME}_QT_BINDINGS
-    PUBLIC
-    ${${TARGET_NAME}_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/swig
-    )
+#target_include_directories(${TARGET_NAME}_QT_BINDINGS
+#    PUBLIC
+#    ${${TARGET_NAME}_INCLUDE_DIRS}
+#    ${CMAKE_CURRENT_SOURCE_DIR}/swig
+#    )
 
-target_include_directories(${TARGET_NAME}_BINDINGS
-    PUBLIC
-    ${${TARGET_NAME}_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/swig
-    )
+#target_include_directories(${TARGET_NAME}_BINDINGS
+#    PUBLIC
+#    ${${TARGET_NAME}_INCLUDE_DIRS}
+#    ${CMAKE_CURRENT_SOURCE_DIR}/swig
+#    )
 
-target_include_directories(${PROJECT_NAME}_GUI_BINDINGS
-    PUBLIC
-    ${${TARGET_NAME}_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/swig
-    )
+#target_include_directories(${PROJECT_NAME}_GUI_BINDINGS
+#    PUBLIC
+#    ${${TARGET_NAME}_INCLUDE_DIRS}
+#    ${CMAKE_CURRENT_SOURCE_DIR}/swig
+#    )
 
 ## #############################################################################
 ## Link
@@ -155,22 +158,22 @@ target_link_libraries(${TARGET_NAME}
     medCoreLegacy
     )
 
-link_python_bindings_library(${TARGET_NAME}_QT_BINDINGS
-    Qt5::Core
-    ${TARGET_NAME}
-    )
+#link_python_bindings_library(${TARGET_NAME}_QT_BINDINGS
+#    Qt5::Core
+#    ${TARGET_NAME}
+#    )
 
-link_python_bindings_library(${TARGET_NAME}_BINDINGS
-    Qt5::Core
-    medCoreLegacy
-    ${TARGET_NAME}
-    )
+#link_python_bindings_library(${TARGET_NAME}_BINDINGS
+#    Qt5::Core
+#    medCoreLegacy
+#    ${TARGET_NAME}
+#    )
 
-link_python_bindings_library(${PROJECT_NAME}_GUI_BINDINGS
-    Qt5::Core
-    medCoreLegacy
-    ${TARGET_NAME}
-    )
+#link_python_bindings_library(${PROJECT_NAME}_GUI_BINDINGS
+#    Qt5::Core
+#    medCoreLegacy
+#    ${TARGET_NAME}
+#    )
 
 ## #############################################################################
 ## install
@@ -180,8 +183,8 @@ set_lib_install_rules(${TARGET_NAME}
     ${${TARGET_NAME}_HEADERS}
     )
 
-set_lib_install_rules(${TARGET_NAME}_QT_BINDINGS)
+#set_lib_install_rules(${TARGET_NAME}_QT_BINDINGS)
 
-set_lib_install_rules(${TARGET_NAME}_BINDINGS)
+#set_lib_install_rules(${TARGET_NAME}_BINDINGS)
 
-set_lib_install_rules(${PROJECT_NAME}_GUI_BINDINGS)
+#set_lib_install_rules(${PROJECT_NAME}_GUI_BINDINGS)

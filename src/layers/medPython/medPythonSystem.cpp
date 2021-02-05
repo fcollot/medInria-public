@@ -3,19 +3,19 @@
 #include <QApplication>
 
 #include "medPythonCore.h"
-#include "medPythonError.h"
+#include "medPythonExceptions.h"
 
 namespace med
 {
 namespace python
 {
 
-bool initialize()
+void initialize()
 {
     if (!Py_IsInitialized())
     {
         Py_Initialize();
-        initializeErrorPropagation();
+        internal::initializeErrorHandling();
         QApplication::connect(qApp, &QApplication::aboutToQuit, &finalize);
     }
 }
@@ -24,6 +24,7 @@ void finalize()
 {
     if (Py_IsInitialized())
     {
+        internal::finalizeErrorHandling();
         Py_Finalize();
     }
 }

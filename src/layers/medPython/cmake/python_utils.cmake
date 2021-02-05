@@ -15,7 +15,6 @@ include(link_python_bindings_library)
 set(SWIG_RUNTIME_HEADER_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/swig)
 set(SWIG_RUNTIME_HEADER ${SWIG_RUNTIME_HEADER_DIRECTORY}/swig_runtime.h)
 
-
 add_custom_command(
     OUTPUT ${SWIG_RUNTIME_HEADER}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${SWIG_RUNTIME_HEADER_DIRECTORY}
