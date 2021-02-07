@@ -1,0 +1,93 @@
+/*=========================================================================
+
+ medInria
+
+ Copyright (c) INRIA 2021. All rights reserved.
+ See LICENSE.txt for details.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+=========================================================================*/
+
+#include "medPythonQHashConversions.h"
+
+#include "medPythonCore.h"
+
+using namespace med::python;
+
+bool medPython_convert(const QHash<PyObject*, PyObject*>& qHash, PyObject** output)
+{
+    bool success = true;
+    *output = PyDict_New();
+
+    if (*output)
+    {
+        foreach (PyObject* key, qHash.keys())
+        {
+            PyObject* value = qHash.value(key);
+
+            if (PyDict_SetItem(*output, key, value) == -1)
+            {
+                Py_CLEAR(*output);
+                success = false;
+                break;
+            }
+        }
+    }
+    else
+    {
+        success = false;
+    }
+
+    return success;
+}
+
+bool medPython_convert(const PyObject* object, QHash<PyObject*, PyObject*>* output)
+{
+    bool success = true;
+    PyObject* keys = PyMapping_Keys(const_cast<PyObject*>(object));
+
+    if (keys)
+    {
+        ssize_t numItems = PySequence_Length(keys);
+
+        if (numItems != -1)
+        {
+            for (ssize_t i = 0; i < numItems; i++)
+            {
+                PyObject* key = PySequence_GetItem(keys, i);
+
+                if (key)
+                {
+                    PyObject* value = PyObject_GetItem(const_cast<PyObject*>(object), key);
+
+                    if (value)
+                    {
+                        (*output)[key] = value;
+                        continue;
+                    }
+
+                    Py_CLEAR(key);
+                }
+
+                success = false;
+                break;
+            }
+        }
+        else
+        {
+            success = false;
+        }
+
+        Py_CLEAR(keys);
+    }
+    else
+    {
+        success = false;
+    }
+
+    return success;
+}
+
