@@ -12,6 +12,10 @@
 
 =========================================================================*/
 
-#include "medPythonConversions.h"
-#include "medPythonErrors.h"
-#include "medPythonInit.h"
+#include <QVariant>
+
+#include "medPythonCoreForward.h"
+#include "medPythonExport.h"
+
+MEDPYTHON_EXPORT bool medPython_convert(const QVariant& value, PyObject** output);
+MEDPYTHON_EXPORT bool medPython_convert(const PyObject* object, QVariant* output);
