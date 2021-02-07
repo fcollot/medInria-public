@@ -18,6 +18,8 @@
 
 #include "medPythonCore.h"
 #include "medPythonExceptionTypes.h"
+#include "medPythonContainerConversions.h"
+#include "medPythonPrimitiveConversions.h"
 
 namespace med::python
 {

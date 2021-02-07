@@ -18,6 +18,7 @@
 #include <QString>
 
 #include "medPythonCoreForward.h"
+#include "medPythonExceptions.h"
 #include "medPythonExport.h"
 
 namespace med::python

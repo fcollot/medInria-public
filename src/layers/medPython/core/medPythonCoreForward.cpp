@@ -13,7 +13,7 @@
 
 #include "medPythonCoreForward.h"
 
-#include "medPythonCore.h"
+#include "medPythonCoreWrappers.h"
 
 namespace med::python
 {
