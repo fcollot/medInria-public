@@ -12,6 +12,6 @@
 
 =========================================================================*/
 
-#include "medPythonErrors.h"
-#include "medPythonInit.h"
-#include "medPythonObjects.h"
+#include "medPythonContainerConversions.h"
+#include "medPythonObjectConversions.h"
+#include "medPythonPrimitiveConversions.h"

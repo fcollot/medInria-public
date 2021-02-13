@@ -139,7 +139,7 @@ bool convertToPython(QHash<KEY_TYPE, VALUE_TYPE> qHash, PyObject** output)
                 continue;
             }
 
-            core_forward::decref(pythonKey);
+            decref(pythonKey);
         }
 
         success = false;

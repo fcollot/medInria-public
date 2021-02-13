@@ -35,9 +35,10 @@ bool convertFromPython(PyObject* object, bool* output)
     return !PyErr_Occurred();
 }
 
-bool convertToPython(long value, PyObject** output)
+bool convertToPython(int value, PyObject** output)
 {
-    *output = PyLong_FromLong(value);
+    *output = PyLong_FromLong(static_cast<long>(value));
+
     return *output;
 }
 
@@ -94,9 +95,9 @@ bool convertFromPython(PyObject* object, QString* output)
 
             if (!PyErr_Occurred())
             {
-                convertFromPython(objectAsString, output);
+                bool success = convertFromPython(objectAsString, output);
                 Py_CLEAR(objectAsString);
-                return PyErr_Occurred();
+                return success;
             }
         }
     }
@@ -111,7 +112,7 @@ bool convertToPython(QVariant value, PyObject** output)
     case QMetaType::Bool:
         return convertToPython(value.toBool(), output);
     case QMetaType::Int:
-        return convertToPython(static_cast<long>(value.toInt()), output);
+        return convertToPython(value.toInt(), output);
     case QMetaType::Float:
     case QMetaType::Double:
         return convertToPython(value.toDouble(), output);

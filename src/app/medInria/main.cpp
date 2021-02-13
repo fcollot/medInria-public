@@ -272,6 +272,9 @@ int main(int argc,char* argv[])
     forceShow(*mainwindow);
 
     med::python::initialize();
+    med::python::Object foo = med::python::list();
+    foo += med::python::list(QList<int>({3}));
+    qDebug() << foo.convert<QString>();
 
     qInfo() << "### Application is running...";
 

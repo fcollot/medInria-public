@@ -26,9 +26,6 @@ bool convertToPython(bool value, PyObject** output);
 bool convertFromPython(PyObject* object, bool* output);
 
 bool convertToPython(int value, PyObject** output);
-bool convertFromPython(PyObject* object, int* output);
-
-bool convertToPython(long value, PyObject** output);
 bool convertFromPython(PyObject* object, long* output);
 
 bool convertToPython(double value, PyObject** output);

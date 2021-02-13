@@ -31,16 +31,14 @@ MEDPYTHON_EXPORT void incref(PyObject* object);
 MEDPYTHON_EXPORT void decref(PyObject* object);
 
 } // namespace med::python
-PyObject* createList(ssize_t length);
 
-void setNewListItem(PyObject* list, ssize_t index, PyObject* value);
+//void setNewListItem(PyObject* list, ssize_t index, PyObject* value);
 
-PyObject* getItem(PyObject* sequence, ssize_t index);
-void setItem(PyObject* sequence, ssize_t index, PyObject* value);
+//PyObject* getItem(PyObject* sequence, ssize_t index);
+//void setItem(PyObject* sequence, ssize_t index, PyObject* value);
 
-PyObject* getItem(PyObject* mapping, PyObject* key);
-void setItem(PyObject* mapping, PyObject* key, PyObject* value);
+//PyObject* getItem(PyObject* mapping, PyObject* key);
+//void setItem(PyObject* mapping, PyObject* key, PyObject* value);
 
-} // namespace core_forward
 } // namespace python
 } // namespace med
