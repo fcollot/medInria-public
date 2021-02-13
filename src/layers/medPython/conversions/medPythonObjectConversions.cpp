@@ -1,4 +1,3 @@
-#pragma once
 /*=========================================================================
 
  medInria
@@ -12,7 +11,20 @@
 
 =========================================================================*/
 
-#include "medPythonConversions.h"
-#include "medPythonErrors.h"
-#include "medPythonInit.h"
-#include "medPythonObjects.h"
+#include "medPythonObjectConversions.h"
+
+#include "medPythonObject.h"
+
+using namespace med::python;
+
+bool medPython_convert(const AbstractObject& object, PyObject** output)
+{
+    *output = object.newReference();
+    return true;
+}
+
+bool medPython_convert(const PyObject* nativeObject, Object* output)
+{
+    (*output).borrow(nativeObject);
+    return true;
+}

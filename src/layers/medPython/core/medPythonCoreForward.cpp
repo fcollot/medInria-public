@@ -28,9 +28,4 @@ void decref(PyObject* object)
     Py_CLEAR(object);
 }
 
-PyObject* none()
-{
-    Py_RETURN_NONE;
-}
-
 } // namespace med::python

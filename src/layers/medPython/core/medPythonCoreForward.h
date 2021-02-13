@@ -28,7 +28,4 @@ MEDPYTHON_EXPORT void incref(PyObject* object);
 // Decreases the reference count of a python object if it is non-null
 MEDPYTHON_EXPORT void decref(PyObject* object);
 
-// Returns a new reference to the None object.
-MEDPYTHON_EXPORT PyObject* none();
-
 } // namespace med::python
