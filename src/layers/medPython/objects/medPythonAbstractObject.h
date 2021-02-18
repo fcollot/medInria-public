@@ -50,16 +50,16 @@ public:
     // wrapped instead.
     virtual AbstractObject& operator=(PyObject* reference);
 
-    // Returns the raw python reference without increasing the reference count.
+    // Returns the raw python reference without increasing the reference count
+    // (the caller must increase it to take ownership).
     PyObject* operator*() const;
 
     // Returns the raw python reference with an increased reference count. The
-    // caller owns the returned reference and is responsible for decreasing the
-    // reference count when it is no longer needed.
+    // caller owns the returned reference.
     PyObject* newReference() const;
 
     // Replaces the wrapped object. The reference is borrowed, which means the
-    // caller must not increase the reference count before using this function.
+    // caller must not increase the reference count to use this function.
     void borrow(const PyObject* reference);
 
     Object type() const;
@@ -126,7 +126,7 @@ protected:
     virtual PyObject* getReference() const = 0;
     virtual void setReference(PyObject* reference) = 0;
 
-    void unsupportedFunctionError(QString functionName);
+    void unsupportedFunctionError(QString functionName) const;
 };
 
 template <class TYPE>

@@ -26,10 +26,14 @@ struct ObjectPrivate;
 class MEDPYTHON_EXPORT Object : public AbstractObject
 {
 public:
-    // Convert a C++ object to Python using the associated overload of the
-    // medPython_convert function.
+    // Convert a C++ object to a wrapped Python object using the associated
+    // overload of the medPython_convert function.
     template <class TYPE>
     static Object create(const TYPE& value);
+
+    // Wrap a Python object and increase its reference count (the caller keeps
+    // ownership of the reference).
+    static Object borrowed(const PyObject* reference);
 
     // Wrap a python object. This takes ownership of the reference. If the
     // reference is null then the Python None object is wrapped instead.

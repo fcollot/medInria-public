@@ -23,6 +23,12 @@ struct ObjectPrivate
     PyObject* reference;
 };
 
+Object Object::borrowed(const PyObject* reference)
+{
+    Py_INCREF(reference);
+    return const_cast<PyObject*>(reference);
+}
+
 Object::Object(PyObject* reference) :
     d(new ObjectPrivate)
 {

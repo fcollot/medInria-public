@@ -220,7 +220,7 @@ void AbstractObject::update(const AbstractObject& other)
     }
 }
 
-void AbstractObject::unsupportedFunctionError(QString functionName)
+void AbstractObject::unsupportedFunctionError(QString functionName) const
 {
     throw TypeError(QString("%1 does not support %2").arg((typeName())).arg(functionName));
 }
