@@ -114,6 +114,7 @@ add_executable(${TARGET_NAME} ${DEPLOYMENT_SYSTEM} # Empty for Linux
 
 if (APPLE)
   set_target_properties(${TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/cmake/MedInriaOSXBundleInfo.plist.in")
+  add_external_resources(${TARGET_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/resources/${TARGET_NAME}.icns")
 endif()
 
 ## #############################################################################
@@ -151,5 +152,4 @@ target_link_libraries(${TARGET_NAME}
 ## install
 ## #############################################################################
 
-## see cmake/module/set_lib_install_rules.Cmake
 set_exe_install_rules(${TARGET_NAME})
