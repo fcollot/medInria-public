@@ -25,6 +25,8 @@ void initialize()
 {
     if (!Py_IsInitialized())
     {
+//        auto path = Py_DecodeLocale("/Users/florent.collot/Work/MUSICardio/medInria-public/build/python/dist/foo/foo", nullptr);
+//        Py_SetProgramName(path);
         Py_Initialize();
         QApplication::connect(qApp, &QApplication::aboutToQuit, &finalize);
         qInfo() << "Python initialized: " << Py_GetVersion();
