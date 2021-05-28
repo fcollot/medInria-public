@@ -1,3 +1,4 @@
+#pragma once
 /*==============================================================================
 
  medInria
@@ -11,37 +12,16 @@
 
 ==============================================================================*/
 
-#include "medPythonInit.h"
+#include <QString>
 
-#include <QApplication>
-
-#include "medPythonCore.h"
-#include "medPythonError.h"
+#include <medPythonCoreAPI.h>
 
 namespace med::python
 {
 
-bool setup()
-{
-    bool success = core::setup();
-
-    if (success)
-    {
-        initializeExceptions();
-        QApplication::connect(qApp, &QApplication::aboutToQuit, &teardown);
-    }
-    else
-    {
-        teardownCore();
-    }
-
-    return success;
-}
-
-bool teardown()
-{
-    finalizeExceptions();
-    return teardownCore();
-}
+/// Retrieves the traceback of an exception and converts it to a user-readable
+/// string.
+///
+QString formatExceptionTraceback(PyObject* nativeException);
 
 } // namespace med::python

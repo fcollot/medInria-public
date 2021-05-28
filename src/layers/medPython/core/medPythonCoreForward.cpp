@@ -11,37 +11,21 @@
 
 ==============================================================================*/
 
-#include "medPythonInit.h"
+#include "medPythonCoreForward.h"
 
-#include <QApplication>
-
-#include "medPythonCore.h"
-#include "medPythonError.h"
+#include "medPythonCoreAPI.h"
 
 namespace med::python
 {
 
-bool setup()
+void incref(PyObject* object)
 {
-    bool success = core::setup();
-
-    if (success)
-    {
-        initializeExceptions();
-        QApplication::connect(qApp, &QApplication::aboutToQuit, &teardown);
-    }
-    else
-    {
-        teardownCore();
-    }
-
-    return success;
+    Py_XINCREF(object);
 }
 
-bool teardown()
+void decref(PyObject* object)
 {
-    finalizeExceptions();
-    return teardownCore();
+    Py_CLEAR(object);
 }
 
 } // namespace med::python

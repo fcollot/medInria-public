@@ -65,4 +65,4 @@ QStringList getPythonPath()
     return wideCharToQString(Py_GetPath()).split(PYTHON_PATH_DELIMITER);
 }
 
-} // namespace med::python::core
+} // namespace med::python
