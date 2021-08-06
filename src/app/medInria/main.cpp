@@ -29,7 +29,10 @@
 #include <medSettingsManager.h>
 #include <medStorage.h>
 
+#ifdef USE_PYTHON
 #include "medPython.h"
+#include "medPythonBindings.h"
+#endif
 
 void forceShow(medMainWindow& mainwindow )
 {
@@ -277,6 +280,8 @@ int main(int argc,char* argv[])
                      mainwindow,SLOT(processNewInstanceMessage(const QString&)));
 
 #ifdef USE_PYTHON
+
+
     bool testPython = application.arguments().contains("--test-python");
     bool testPythonWithCrash = application.arguments().contains("--test-python-crash");
 

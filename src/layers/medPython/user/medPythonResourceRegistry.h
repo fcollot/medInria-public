@@ -11,32 +11,15 @@
 
 ==============================================================================*/
 
-#include "medPythonCore.h"
+#include <QString>
 
-#include "medPythonCoreInit.h"
-#include "medPythonCoreLibrary.h"
+#include "medPythonExport.h"
 
 namespace med::python
 {
 
-bool setupCore()
-{
-    bool success = initializePython();
+void registerResourceLibrary(QString libraryName);
 
-    if (!success)
-    {
-        teardownCore();
-    }
-
-    return success;
-}
-
-bool teardownCore()
-{
-    // Bitwise AND is used to prevent short-circuit evaluation, so that the
-    // library is unloaded even if finalization failed.
-    //
-    return finalizePython();
-}
+void addResourceLibrariesToPath();
 
 } // namespace med::python

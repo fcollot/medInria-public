@@ -101,6 +101,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MACOSX_RPATH OFF)
 
 ## #############################################################################
+## Global policies
+## #############################################################################
+
+# Prevent warning of generated files not being moc'd
+cmake_policy(SET CMP0071 NEW)
+
+# Make the GENERATED source file property visible in all directories
+cmake_policy(SET CMP0118 NEW)
+
+## #############################################################################
 ## Additionals modules
 ## #############################################################################
 

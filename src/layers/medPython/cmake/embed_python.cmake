@@ -1,0 +1,89 @@
+function(embed_python target)
+
+    include(python_info)
+
+    get_target_property(binary_dir ${target} BINARY_DIR)
+    set(working_dir "${binary_dir}/python")
+    file(MAKE_DIRECTORY "${working_dir}")
+
+## #############################################################################
+## Download embeddable Python
+## #############################################################################
+
+    set(python_zip "${working_dir}/python.zip")
+
+    add_custom_command(OUTPUT ${python_zip}
+        COMMAND ${CMAKE_COMMAND} ARGS
+        -D PYTHON_ZIP=${python_zip}
+        -D PYTHON_VERSION_MINOR=${PYTHON_VERSION_MINOR}
+        -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/scripts/download_python.cmake"
+        VERBATIM
+        )
+
+## #############################################################################
+## List Python files
+## #############################################################################
+
+    foreach (file ${PYTHON_HEADERS})
+        list(APPEND python_headers "${working_dir}/${PYTHON_HEADERS_DIR}/${file}")
+    endforeach()
+
+    foreach (file ${PYTHON_LIBRARIES})
+        if (NOT file STREQUAL ${PYTHON_MAIN_LIBRARY})
+            list(APPEND python_libraries "${working_dir}/${PYTHON_LIBRARIES_DIR}/${file}")
+        endif()
+    endforeach()
+
+    set(python_main_library "${working_dir}/${PYTHON_LIBRARIES_DIR}/${PYTHON_MAIN_LIBRARY}")
+
+    foreach (file ${PYTHON_MODULES})
+        list(APPEND python_modules "${working_dir}/${PYTHON_MODULES_DIR}/${file}")
+    endforeach()
+
+    set(python_license_file "${working_dir}/${PYTHON_LICENSE_FILE}")
+
+## #############################################################################
+## Extract Python files
+## #############################################################################
+
+    add_custom_command(OUTPUT ${python_headers} ${python_libraries} ${python_main_library} ${python_modules} ${python_license_file}
+        COMMAND ${CMAKE_COMMAND} ARGS
+        -D PYTHON_ZIP=${python_zip}
+        -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/scripts/extract_python.cmake"
+        WORKING_DIRECTORY "${working_dir}"
+        DEPENDS ${python_zip}
+        VERBATIM
+        )
+
+    set(PYTHON_LINK_LIBRARIES "${working_dir}/${PYTHON_LIBRARIES_DIR}/${PYTHON_MAIN_LIBRARY}" PARENT_SCOPE)
+
+## #############################################################################
+## Import Python library
+## #############################################################################
+
+    set(library_path "${CMAKE_BINARY_DIR}/lib/${PYTHON_MAIN_LIBRARY}")
+
+    add_custom_command(OUTPUT ${library_path}
+      COMMAND ${CMAKE_COMMAND} ARGS -E copy "${python_main_library}" "${CMAKE_BINARY_DIR}/lib/"
+      COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id "${library_path}" "${library_path}"
+      DEPENDS "${python_main_library}"
+      )
+
+    INSTALL(FILES "${library_path}" TYPE LIB)
+
+## #############################################################################
+## Apply to target
+## #############################################################################
+
+    target_include_directories(${target} PUBLIC "${working_dir}/${PYTHON_HEADERS_DIR}")
+    target_sources(${target} PUBLIC ${python_headers} ${library_path})
+    target_link_libraries(${TARGET_NAME} PUBLIC "${library_path}")
+
+    target_compile_definitions(${target} PUBLIC
+        PYTHON_VERSION_MINOR=${PYTHON_VERSION_MINOR}
+        PYTHON_MAIN_LIBRARY="${PYTHON_MAIN_LIBRARY}"
+        )
+
+    add_external_resources(${target} ${python_libraries} ${python_modules} ${python_license_file})
+
+endfunction()

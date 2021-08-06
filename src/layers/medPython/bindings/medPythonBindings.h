@@ -1,3 +1,4 @@
+#pragma once
 /*==============================================================================
 
  medInria
@@ -11,32 +12,11 @@
 
 ==============================================================================*/
 
-#include "medPythonCore.h"
-
-#include "medPythonCoreInit.h"
-#include "medPythonCoreLibrary.h"
+#include "medPythonBindingsExport.h"
 
 namespace med::python
 {
 
-bool setupCore()
-{
-    bool success = initializePython();
-
-    if (!success)
-    {
-        teardownCore();
-    }
-
-    return success;
-}
-
-bool teardownCore()
-{
-    // Bitwise AND is used to prevent short-circuit evaluation, so that the
-    // library is unloaded even if finalization failed.
-    //
-    return finalizePython();
-}
+void registerBindings();
 
 } // namespace med::python

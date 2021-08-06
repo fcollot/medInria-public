@@ -13,23 +13,9 @@
 #
 ################################################################################
 
-set(TARGET_NAME medPython)
-
-set(CMAKE_MODULE_PATH
-    ${CMAKE_MODULE_PATH}
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-    )
-
-## #############################################################################
-## Find dependencies
-## #############################################################################
-
-find_package(dtk REQUIRED)
-include_directories(${dtk_INCLUDE_DIRS})
-
-find_package(Qt5 REQUIRED COMPONENTS Core)
-
-include(python_utils)
+set(PARENT_TARGET ${TARGET_NAME})
+set(TARGET_NAME ${PARENT_TARGET}Bindings)
+set(PYTHON_PACKAGE ${PARENT_TARGET})
 
 ## #############################################################################
 ## List sources
@@ -37,11 +23,6 @@ include(python_utils)
 
 list_source_files(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/conversion
-    ${CMAKE_CURRENT_SOURCE_DIR}/core
-    ${CMAKE_CURRENT_SOURCE_DIR}/error
-    ${CMAKE_CURRENT_SOURCE_DIR}/objects
-    ${CMAKE_CURRENT_SOURCE_DIR}/user
     )
 
 list_header_directories_to_include(${TARGET_NAME}
@@ -53,22 +34,42 @@ list_header_directories_to_include(${TARGET_NAME}
 ## #############################################################################
 
 add_library(${TARGET_NAME} SHARED
+    ${CMAKE_CURRENT_SOURCE_DIR}/../medPythonExport.h
     ${${TARGET_NAME}_CFILES}
     )
 
-target_compile_definitions(${TARGET_NAME} PUBLIC TARGET_NAME="${TARGET_NAME}")
-
 ## #############################################################################
-## Embed Python
+## Add Python modules
 ## #############################################################################
 
-embed_python(${TARGET_NAME})
+add_python_bindings(${TARGET_NAME} ${TARGET_NAME}_QT_BINDINGS
+    INCLUDE_INTERFACES
+    #    qstring.i
+    qwidget.i
+    )
+
+add_python_bindings(${TARGET_NAME} ${TARGET_NAME}_CORE_BINDINGS
+    DIRECTOR_BINDINGS
+    medAbstractWorkspaceLegacy
+    )
+
+#generate_python_resources(${TARGET_NAME})
 
 ## #############################################################################
 ## Include directories
 ## #############################################################################
 
 target_include_directories(${TARGET_NAME}
+    PUBLIC
+    ${${TARGET_NAME}_INCLUDE_DIRS}
+    )
+
+target_include_directories(${TARGET_NAME}_QT_BINDINGS
+    PUBLIC
+    ${${TARGET_NAME}_INCLUDE_DIRS}
+    )
+
+target_include_directories(${TARGET_NAME}_CORE_BINDINGS
     PUBLIC
     ${${TARGET_NAME}_INCLUDE_DIRS}
     )
@@ -80,6 +81,16 @@ target_include_directories(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
     PUBLIC
     Qt5::Core
+    )
+
+target_link_libraries(${TARGET_NAME}_QT_BINDINGS
+    PUBLIC
+    Qt5::Widgets
+    )
+
+target_link_libraries(${TARGET_NAME}_CORE_BINDINGS
+    PUBLIC
+    Qt5::Widgets
     medCoreLegacy
     )
 
@@ -90,9 +101,3 @@ target_link_libraries(${TARGET_NAME}
 set_lib_install_rules(${TARGET_NAME}
     ${${TARGET_NAME}_HEADERS}
     )
-
-## #############################################################################
-## Bindings
-## #############################################################################
-
-add_subdirectory(bindings)

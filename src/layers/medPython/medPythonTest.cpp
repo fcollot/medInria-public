@@ -212,6 +212,8 @@ void runEmbeddedPythonTest()
     printEmptyLine();
     testModuleImport("json");
     printEmptyLine();
+    //testModuleImport("medPython");
+    printEmptyLine();
     testSysPath();
     printEmptyLine();
     testSysModules();

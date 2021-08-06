@@ -31,7 +31,7 @@ void clearList(QList<PyObject*> list)
 
 bool medPythonConvert(const QList<PyObject*>& qList, PyObject** output)
 {
-    *output = med::python::PyList_New(qList.length());
+    *output = PyList_New(qList.length());
 
     if (*output)
     {
@@ -53,13 +53,13 @@ bool medPythonConvert(const QList<PyObject*>& qList, PyObject** output)
 bool medPythonConvert(const PyObject* object, QList<PyObject*>* output)
 {
     bool success = true;
-    ssize_t numItems = med::python::PySequence_Size(const_cast<PyObject*>(object));
+    ssize_t numItems = PySequence_Size(const_cast<PyObject*>(object));
 
     if (numItems != -1)
     {
         for (ssize_t i = 0; i < numItems; i++)
         {
-            PyObject* item = med::python::PySequence_GetItem(const_cast<PyObject*>(object), i);
+            PyObject* item = PySequence_GetItem(const_cast<PyObject*>(object), i);
 
             if (item)
             {
