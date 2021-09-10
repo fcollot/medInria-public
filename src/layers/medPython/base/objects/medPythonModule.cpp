@@ -62,9 +62,7 @@ PyObject* Module::ensureModuleObject(PyObject* reference)
     if (!PyModule_Check(reference))
     {
         QString typeName = Py_TYPE(reference)->tp_name;
-        qDebug() << Py_TYPE(reference);
         Py_CLEAR(reference);
-        qDebug() << &PyModule_Type;
 
         throw TypeError(QString("'%1' is not a module").arg(typeName));
     }

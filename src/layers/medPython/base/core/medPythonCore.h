@@ -17,7 +17,7 @@
 namespace med::python
 {
 
-bool setupCore();
-bool teardownCore();
+bool initializeCore();
+bool finalizeCore();
 
 } // namespace med::python

@@ -1,3 +1,4 @@
+#pragma once
 /*==============================================================================
 
  medInria
@@ -11,28 +12,11 @@
 
 ==============================================================================*/
 
-#include "medPythonCore.h"
-
-#include "medPythonCoreInit.h"
+#include "medPythonExport.h"
 
 namespace med::python
 {
 
-bool initializeCore()
-{
-    bool success = initializeInterpreter();
-
-    if (!success)
-    {
-        finalizeCore();
-    }
-
-    return success;
-}
-
-bool finalizeCore()
-{
-    return finalizeInterpreter();
-}
+MEDPYTHON_EXPORT void loadPlugins();
 
 } // namespace med::python

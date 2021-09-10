@@ -1,3 +1,4 @@
+#pragma once
 /*==============================================================================
 
  medInria
@@ -11,28 +12,11 @@
 
 ==============================================================================*/
 
-#include "medPythonCore.h"
+#include "medPythonCoreAPI.h"
 
-#include "medPythonCoreInit.h"
+#include <QObject>
 
-namespace med::python
-{
+#include "medPythonExport.h"
 
-bool initializeCore()
-{
-    bool success = initializeInterpreter();
-
-    if (!success)
-    {
-        finalizeCore();
-    }
-
-    return success;
-}
-
-bool finalizeCore()
-{
-    return finalizeInterpreter();
-}
-
-} // namespace med::python
+//MEDPYTHON_EXPORT bool medPythonConvert(const QObject& qObject, PyObject** output);
+//MEDPYTHON_EXPORT bool medPythonConvert(const PyObject* object, QObject** output);

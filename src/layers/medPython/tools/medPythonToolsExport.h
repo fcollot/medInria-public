@@ -1,3 +1,4 @@
+#pragma once
 /*==============================================================================
 
  medInria
@@ -11,28 +12,12 @@
 
 ==============================================================================*/
 
-#include "medPythonCore.h"
-
-#include "medPythonCoreInit.h"
-
-namespace med::python
-{
-
-bool initializeCore()
-{
-    bool success = initializeInterpreter();
-
-    if (!success)
-    {
-        finalizeCore();
-    }
-
-    return success;
-}
-
-bool finalizeCore()
-{
-    return finalizeInterpreter();
-}
-
-} // namespace med::python
+#ifdef WIN32
+    #ifdef MEDPYTHONTOOLS_EXPORTS
+        #define MEDPYTHONTOOLS_EXPORT __declspec(dllexport)
+    #else
+        #define MEDPYTHONTOOLS_EXPORT __declspec(dllimport)
+    #endif
+#else
+    #define MEDPYTHONTOOLS_EXPORT
+#endif

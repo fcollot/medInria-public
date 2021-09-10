@@ -13,7 +13,10 @@
 ==============================================================================*/
 
 #include "medPythonConversion.h"
+#include "medPythonCoreAPI.h"
+#include "medPythonCoreFunction.h"
 #include "medPythonError.h"
 #include "medPythonInit.h"
 #include "medPythonObjects.h"
+#include "medPythonPlugins.h"
 #include "medPythonTest.h"

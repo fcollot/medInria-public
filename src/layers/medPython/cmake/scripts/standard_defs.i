@@ -45,11 +45,17 @@
 #undef  Q_PROPERTY
 #define Q_PROPERTY(type, mode)
 
+#undef QT_REQUIRE_CONFIG
+#define QT_REQUIRE_CONFIG(feature)
+
 #undef  Q_DECLARE_INTERFACE
 #define Q_DECLARE_INTERFACE(IFace, IId)
 
 #undef  Q_DECLARE_METATYPE
 #define Q_DECLARE_METATYPE(type)
+
+#undef Q_FLAG
+#define Q_FLAG(x)
 
 #undef Q_DECLARE_FLAGS
 #define Q_DECLARE_FLAGS(Flags, Enum)
@@ -65,6 +71,9 @@
 
 #undef Q_PROPERTY
 #define Q_PROPERTY(text)
+
+#undef Q_ENUM
+#define Q_ENUM(x)
 
 #undef Q_DISABLE_COPY
 #define Q_DISABLE_COPY(Class)

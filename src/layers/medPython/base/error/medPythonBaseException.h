@@ -58,7 +58,7 @@ protected:
 private:
     BaseExceptionPrivate* const d;
 
-    // These functions use the private constructor and so must be friends
+    // These functions use the protected constructor and so must be friends
     template <class EXCEPTION>
     friend void registerExceptionThrower();
     friend void throwException(PyObject* nativeException);

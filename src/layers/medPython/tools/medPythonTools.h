@@ -1,3 +1,4 @@
+#pragma once
 /*==============================================================================
 
  medInria
@@ -11,28 +12,20 @@
 
 ==============================================================================*/
 
-#include "medPythonCore.h"
+#include <QString>
 
-#include "medPythonCoreInit.h"
+#include "medPythonToolsExport.h"
 
 namespace med::python
 {
 
-bool initializeCore()
-{
-    bool success = initializeInterpreter();
+inline const char* CONSOLE_TITLE = "Python console";
+inline const char* CONSOLE_SHORTCUT = "Ctrl+Shift+P";
+inline const int CONSOLE_WIDTH = 800;
+inline const int CONSOLE_HEIGHT = 600;
 
-    if (!success)
-    {
-        finalizeCore();
-    }
+MEDPYTHONTOOLS_EXPORT void registerToolsPaths();
 
-    return success;
-}
-
-bool finalizeCore()
-{
-    return finalizeInterpreter();
-}
+MEDPYTHONTOOLS_EXPORT void initializeTools();
 
 } // namespace med::python

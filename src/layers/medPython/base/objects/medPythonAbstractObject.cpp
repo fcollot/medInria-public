@@ -19,6 +19,7 @@
 #include "medPythonCoreFunction.h"
 #include "medPythonObject.h"
 #include "medPythonInit.h"
+#include "medPythonSWIGCore.h"
 
 namespace med::python
 {
@@ -222,14 +223,31 @@ void AbstractObject::update(const AbstractObject& other)
     }
 }
 
-AbstractObject::AbstractObject()
-{
-    lazyLoadPython();
-}
-
 void AbstractObject::unsupportedFunctionError(QString functionName) const
 {
     throw TypeError(QString("%1 does not support %2").arg(typeName(), functionName));
+}
+
+void* AbstractObject::cast(QString cppTypeName) const
+{
+    swig_type_info* swigType = SWIG_TypeQuery(qUtf8Printable(cppTypeName));
+
+    if (!swigType)
+    {
+        throw TypeError(QString("No SWIG wrapping found for ") + cppTypeName);
+    }
+
+    void* castedInstance;
+    int conversionResult = SWIG_Python_ConvertPtr(getReference(), &castedInstance, swigType, SWIG_POINTER_DISOWN);
+
+    if (SWIG_IsOK(conversionResult))
+    {
+        return castedInstance;
+    }
+    else
+    {
+        throw TypeError(QString("Cannot cast %1 to C++ type %2").arg(typeName(), cppTypeName));
+    }
 }
 
 } // namespace med::python

@@ -17,8 +17,8 @@
 namespace med::python
 {
 
-bool initializePython();
-bool finalizePython();
+bool initializeInterpreter();
+bool finalizeInterpreter();
 
 namespace test
 {

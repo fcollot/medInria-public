@@ -1,3 +1,4 @@
+#pragma once
 /*==============================================================================
 
  medInria
@@ -11,28 +12,4 @@
 
 ==============================================================================*/
 
-#include "medPythonCore.h"
-
-#include "medPythonCoreInit.h"
-
-namespace med::python
-{
-
-bool initializeCore()
-{
-    bool success = initializeInterpreter();
-
-    if (!success)
-    {
-        finalizeCore();
-    }
-
-    return success;
-}
-
-bool finalizeCore()
-{
-    return finalizeInterpreter();
-}
-
-} // namespace med::python
+#include "swig_runtime.h"

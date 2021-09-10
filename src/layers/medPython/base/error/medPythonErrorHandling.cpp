@@ -14,7 +14,7 @@
 #include "medPythonErrorHandling.h"
 
 #include "medPythonExceptionThrower.h"
-#include <QDebug>
+
 namespace med::python
 {
 
@@ -63,8 +63,6 @@ PyObject* retrieveNativeException()
     }
 
     Py_CLEAR(exceptionClass);
-    Py_CLEAR(traceback);
-
     return exceptionInstance;
 }
 

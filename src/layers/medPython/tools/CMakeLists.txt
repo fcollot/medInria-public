@@ -13,7 +13,8 @@
 #
 ################################################################################
 
-set(TARGET_NAME ${PYTHON_PROJECT_NAME}Base)
+set(TARGET_NAME ${PYTHON_PROJECT_NAME}Tools)
+set(PYTHON_PACKAGE_NAME ${PYTHON_PLUGIN_PREFIX}${TARGET_NAME})
 
 ## #############################################################################
 ## List sources
@@ -21,33 +22,23 @@ set(TARGET_NAME ${PYTHON_PROJECT_NAME}Base)
 
 list_source_files(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/conversion
-    ${CMAKE_CURRENT_SOURCE_DIR}/core
-    ${CMAKE_CURRENT_SOURCE_DIR}/error
-    ${CMAKE_CURRENT_SOURCE_DIR}/objects
     )
 
 list_header_directories_to_include(${TARGET_NAME}
     ${${TARGET_NAME}_HEADERS}
     )
 
-## #############################################################################
-## Generate SWIG Runtime header
-## #############################################################################
-
-set(SWIG_RUNTIME_HEADER_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/swig)
-set(SWIG_RUNTIME_HEADER ${SWIG_RUNTIME_HEADER_DIRECTORY}/swig_runtime.h)
-
-add_custom_command(
-    OUTPUT ${SWIG_RUNTIME_HEADER}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${SWIG_RUNTIME_HEADER_DIRECTORY}
-    COMMAND ${SWIG_EXECUTABLE}
-    ARGS
-    "-python"
-    "-c++"
-    "-external-runtime"
-    ${SWIG_RUNTIME_HEADER}
+set(qt_bindings_sources
+    qt/string.i
+    qt/variant.i
+    qt/base.i
+    qt/object.i
+    qt/widgets.i
+    qt/application.i
     )
+
+set(medInria_bindings_sources
+    medInria/base.i)
 
 ## #############################################################################
 ## Add targets
@@ -55,10 +46,39 @@ add_custom_command(
 
 add_library(${TARGET_NAME} SHARED
     ${${TARGET_NAME}_CFILES}
-    ${SWIG_RUNTIME_HEADER}
     )
 
-target_compile_definitions(${TARGET_NAME} PRIVATE TARGET_NAME="${TARGET_NAME}")
+target_compile_definitions(${TARGET_NAME} PRIVATE
+    TARGET_NAME="${TARGET_NAME}"
+    PYTHON_PACKAGE_NAME="${PYTHON_PACKAGE_NAME}"
+    )
+
+## #############################################################################
+## Add Python modules
+## #############################################################################
+
+set_property(TARGET ${TARGET_NAME} PROPERTY
+    PYTHON_PACKAGE_NAME ${PYTHON_PACKAGE_NAME})
+
+add_python_bindings(${TARGET_NAME} qt_bindings
+    INCLUDE
+    ${qt_bindings_sources}
+    )
+
+add_python_bindings(${TARGET_NAME} medInria_bindings
+    IMPORT
+    ${qt_bindings_sources}
+    INCLUDE
+    ${medInria_bindings_sources}
+    )
+
+add_python_modules(${TARGET_NAME}
+    SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python
+    __init__.py
+    console.py
+    )
+
+generate_python_resources(${TARGET_NAME})
 
 ## #############################################################################
 ## Include directories
@@ -67,14 +87,19 @@ target_compile_definitions(${TARGET_NAME} PRIVATE TARGET_NAME="${TARGET_NAME}")
 target_include_directories(${TARGET_NAME}
     PUBLIC
     ${${TARGET_NAME}_INCLUDE_DIRS}
-    ${SWIG_RUNTIME_HEADER_DIRECTORY}
     )
 
-## #############################################################################
-## Embed Python
-## #############################################################################
+target_include_directories(qt_bindings
+    PUBLIC
+    ${${TARGET_NAME}_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/bindings
+    )
 
-embed_python(${TARGET_NAME})
+target_include_directories(medInria_bindings
+    PUBLIC
+    ${${TARGET_NAME}_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/bindings
+    )
 
 ## #############################################################################
 ## Link
@@ -82,7 +107,17 @@ embed_python(${TARGET_NAME})
 
 target_link_libraries(${TARGET_NAME}
     PUBLIC
-    Qt5::Core
+    ${PYTHON_PROJECT_NAME}Base
+    )
+
+target_link_libraries(qt_bindings
+    PUBLIC
+    Qt5::Widgets
+    )
+
+target_link_libraries(medInria_bindings
+    PUBLIC
+    Qt5::Widgets
     medCoreLegacy
     )
 
