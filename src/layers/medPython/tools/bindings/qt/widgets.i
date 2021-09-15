@@ -18,9 +18,10 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QMainWindow>
-#include <QShortcut>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QShortcut>
+#include <QSizePolicy>
 #include <QTextDocument>
 #include <QTextEdit>
 #include <QVBoxLayout>
@@ -29,6 +30,8 @@
 
 %include "qtwidgets-config.h"
 %include "qtwidgetsglobal.h"
+
+%include "qsizepolicy.h"
 
 %feature("director") QWidget;
 %include "qwidget.h"

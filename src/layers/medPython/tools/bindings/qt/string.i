@@ -5,29 +5,7 @@
 
 %typemap(typecheck) QString = char *;
 
-%typemap(in) QString
-{
-    medPythonConvert($input, &$1);
-    med::python::propagateErrorIfOccurred();
-}
-
-%typemap(directorout) QString
-{
-    medPythonConvert($input, &$result);
-    med::python::propagateErrorIfOccurred();
-}
-
-%typemap(out) QString
-{
-    medPythonConvert($1, &$result);
-    med::python::propagateErrorIfOccurred();
-}
-
-%typemap(directorin) QString
-{
-    medPythonConvert($1, $input);
-    med::python::propagateErrorIfOccurred();
-}
+%medPythonTypemaps(QString);
 
 %apply QString { const QString };
 %apply QString { const QString& };
