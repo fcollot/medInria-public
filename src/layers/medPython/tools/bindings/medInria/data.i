@@ -75,8 +75,25 @@ public:
 %include "dtkCoreSupport/dtkSmartPointer.h"
 %include "dtkCoreSupport/dtkAbstractData.h"
 
+%feature("director") medAbstractData;
 %rename(AbstractData) medAbstractData;
 %include "medAbstractData.h"
+
+%pythoncode
+%{
+
+    def data_interface(name, description):
+        def decorator_data(cls):
+            cls.staticIdentifier = classmethod(lambda _cls : sys.modules[cls.__module__].__package__ + '.' + cls.__name__)
+            cls.staticName = staticmethod(lambda : name)
+            cls.staticDescription = staticmethod(lambda : description)
+            cls.identifier = lambda self : self.staticIdentifier()
+            cls.name = lambda self : self.staticName()
+            cls.description = lambda self : self.staticDescription()
+            return cls
+        return decorator_data
+
+%}
 
 %rename(AbstractMeshData) medAbstractMeshData;
 %include "medAbstractMeshData.h"

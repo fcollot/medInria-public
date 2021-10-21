@@ -4,7 +4,7 @@ import qt
 from .selection_toolbox import SelectionToolBox
 
 
-@med.workspace("Pipeline", "Execute Python pipelines", "Methodology")
+@med.workspace_interface("Pipeline", "Execute Python pipelines", "Methodology")
 class Workspace(med.Workspace):
 
     def __init__(self, parent=None):
@@ -19,6 +19,7 @@ class Workspace(med.Workspace):
         self.addToolBox(self.selectionToolBox)
         self._createMainDropContainer()
         self.tabbedViewContainers().lockTabs()
+        self.activeStudy = None
 
     def _createMainDropContainer(self):
         self.mainDropContainer = self.tabbedViewContainers().addContainerInTabNamed("Pipeline")
@@ -31,7 +32,7 @@ class Workspace(med.Workspace):
         dropSite = med.DropSite()
         dropSite.setStyleSheet("background-color: rgba(255, 255, 255, 0);")
         dropSite.setSizePolicy(qt.QSizePolicy.Expanding, qt.QSizePolicy.Preferred)
-        dropSite.setText("To load a previous pipeline, drag'n drop its study here.")
+        dropSite.setText("Drag'n drop an existing study here\nOR\nCreate a new one with the button on the top right")
         dropSite.acceptDrops()
         dropSite.connect('objectDropped', self.loadData)
         
@@ -50,10 +51,6 @@ class Workspace(med.Workspace):
                     print(seriesType.className())
                     if seriesType.inherits(med.AbstractMeshData.staticMetaObject):
                         self.meshContainer.addData(med.DataManager.instance().retrieveData(seriesIndex))
-#            if meshList:
-#                self.createMeshContainer()
-#                for meshIndex in meshList:
-#                    self.meshContainer.addData(meshIndex)
 
     def createMeshContainer(self):
         self.meshContainer = self.tabbedViewContainers().addContainerInTabNamed("Meshes")

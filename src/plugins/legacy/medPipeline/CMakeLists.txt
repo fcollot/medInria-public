@@ -56,6 +56,7 @@ set_property(TARGET ${TARGET_NAME} PROPERTY
 add_python_modules(${TARGET_NAME}
     SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python
     __init__.py
+    json_data.py
     selection_toolbox.py
     workspace.py
     )

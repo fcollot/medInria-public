@@ -29,7 +29,7 @@ SIGNAL(medDropSite, objectDropped, medDataIndex)
 %pythoncode
 %{
 
-    def toolbox(name, description, categories):
+    def toolbox_interface(name, description, categories):
         def decorator_toolBox(cls):
             cls.staticIdentifier = classmethod(lambda _cls : sys.modules[cls.__module__].__package__ + '.' + cls.__name__)
             cls.staticName = staticmethod(lambda : name)
@@ -79,7 +79,7 @@ SIGNAL(medDropSite, objectDropped, medDataIndex)
 %pythoncode
 %{
 
-    def workspace(name, description, category):
+    def workspace_interface(name, description, category):
         def decorator_workspace(cls):
             cls.staticIdentifier = classmethod(lambda _cls : sys.modules[cls.__module__].__package__ + '.' + cls.__name__)
             cls.staticName = staticmethod(lambda : name)

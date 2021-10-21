@@ -18,6 +18,7 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QMainWindow>
+#include <QPushButton>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QShortcut>
@@ -50,6 +51,11 @@ SIGNAL(QAbstractSlider, rangeChanged, int, int)
 
 %include "qscrollarea.h"
 %include "qlabel.h"
+%include "qabstractbutton.h"
+
+SIGNAL(QAbstractButton, clicked, bool)
+
+%include "qpushbutton.h"
 %include "qtextdocument.h"
 %include "qtextedit.h"
 

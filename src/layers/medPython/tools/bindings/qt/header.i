@@ -104,26 +104,37 @@
 
     %typemap(in) TYPE
     {
+        // in
         medPythonConvert($input, &$1);
         med::python::propagateErrorIfOccurred();
     }
 
     %typemap(directorout) TYPE
     {
+        // director out
         medPythonConvert($input, &$result);
         med::python::propagateErrorIfOccurred();
     }
 
     %typemap(out) TYPE
     {
+        // out
         medPythonConvert($1, &$result);
         med::python::propagateErrorIfOccurred();
     }
 
     %typemap(directorin) TYPE
     {
+        / director in
         medPythonConvert($1, $input);
         med::python::propagateErrorIfOccurred();
     }
 
 %enddef
+
+%pythoncode
+%{
+
+    import inspect
+
+%}

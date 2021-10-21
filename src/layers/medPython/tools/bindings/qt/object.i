@@ -36,7 +36,7 @@ template void connect(cls*, void (cls ## :: ## *)(), PyObject*);
 
 %extend cls
 {
-    void connect_ ## signal(PyObject* receiver)
+    void connect_noargs_ ## signal(PyObject* receiver)
     {
         connect($self, & ## cls ## :: ## signal, receiver);
     }
@@ -98,7 +98,9 @@ public:
             if slot:
                 self.connectOldStyle(signal, receiver, slot)
             else:
-                connect = getattr(self, f'connect_{signal}')
+                connect = getattr(self, f'connect_{signal}', None)
+                if not connect:
+                    connect = getattr(self, f'connect_noargs_{signal}')
                 connect(receiver)
 
         def parent(self):

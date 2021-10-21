@@ -29,6 +29,8 @@ public:
                                                         create<dataType>);
     }
 
+    using dtkAbstractDataFactory::registerDataType;
+
 public slots:
     medAbstractData *create(const QString& type);
 
@@ -43,7 +45,4 @@ private:
     {
         return ( new T() );
     }
-
-    bool registerDataType(const QString& type, dtkAbstractDataCreator func);
-    bool registerDataType(const QString& type, dtkAbstractDataCreator func, const QString& nameInterface);
 };

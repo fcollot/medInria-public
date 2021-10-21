@@ -13,16 +13,39 @@
 
 #include "medPipelinePlugin.h"
 
+#include "medAbstractDataFactory.h"
+
 #include <medExternalResources.h>
 #include <medPython.h>
 
 namespace med::pipeline
 {
 
+namespace
+{
+
+QString staticIdentifier(QString className)
+{
+    python::Object identifier = python::import(PYTHON_PACKAGE_NAME).attribute(className).callMethod("staticIdentifier");
+    return identifier.convert<QString>();
+}
+
+template <class TYPE>
+TYPE* createPythonInstance(QString className)
+{
+    python::Object instance = python::import(PYTHON_PACKAGE_NAME).attribute(className)();
+    return instance.cast<TYPE>();
+}
+
+} // namespace
+
 Plugin::Plugin(QObject *parent) : medPluginLegacy(parent)
 {
     python::registerModulePath(getExternalResourcePath(QString(TARGET_NAME) + ".zip", TARGET_NAME));
-    python::import(PYTHON_PACKAGE_NAME);
+    python::Module pipelineModule = python::import(PYTHON_PACKAGE_NAME);
+
+    medAbstractDataFactory::instance()->registerDataType(staticIdentifier("JSONData"),
+                                                         []() { return createPythonInstance<dtkAbstractData>("JSONData"); });
 }
 
 bool Plugin::initialize()
