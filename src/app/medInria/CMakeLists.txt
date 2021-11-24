@@ -151,6 +151,8 @@ if (USE_PYTHON)
     target_link_libraries(${TARGET_NAME}
         medPythonBase
         medPythonTools
+        medPipeline
+        medPipeline_bindings
         )
 endif()
 

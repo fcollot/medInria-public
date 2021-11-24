@@ -190,7 +190,7 @@ bool medPluginGenerator::run()
         return generateFile("CMakeLists.txt", CMakelistTemplate)
                 && generateFile(QString(d->plugin).append("Plugin.h"), pluginTemplate +".h")
                 && generateFile(QString(d->plugin).append("Plugin.cpp"), pluginTemplate +".cpp")
-                && generateFile(QString(d->plugin).append("PluginExport.h"),":/template/export.h")
+                && generateFile(QString(d->plugin).append("medPipelineExport.h"),":/template/export.h")
                 && generateReadmeFile();
     }
     else return res;
