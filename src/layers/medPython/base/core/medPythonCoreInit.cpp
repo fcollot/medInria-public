@@ -215,6 +215,16 @@ bool preInitialize()
     return checkStatus(Py_PreInitialize(&preConfig));
 }
 
+bool foo(PyConfig* config)
+{
+    QStringList args;
+
+    //args << "--no-setuptools";
+
+    wchar_t** argv = qStringListToWideChar(args);
+    return checkStatus(PyConfig_SetArgv(config, args.length(), argv));
+}
+
 bool setConfigOptions(PyConfig* config, QStringList modulePaths)
 {
     wchar_t** moduleSearchPaths = qStringListToWideChar(modulePaths);
@@ -229,7 +239,8 @@ bool setConfigOptions(PyConfig* config, QStringList modulePaths)
                    && checkStatus(PyConfig_SetBytesString(config, &config->base_exec_prefix, qUtf8Printable("")))
                    && checkStatus(PyConfig_SetBytesString(config, &config->base_prefix, qUtf8Printable("")))
                    && checkStatus(PyConfig_SetBytesString(config, &config->exec_prefix, qUtf8Printable("")))
-                   && checkStatus(PyConfig_SetWideStringList(config, &config->module_search_paths, modulePaths.size(), moduleSearchPaths));
+                   && checkStatus(PyConfig_SetWideStringList(config, &config->module_search_paths, modulePaths.size(), moduleSearchPaths))
+                   && foo(config);
 
     freeWideCharList(moduleSearchPaths, modulePaths.size());
     return success;

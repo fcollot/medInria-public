@@ -14,6 +14,7 @@
 
 #include <QString>
 
+#include "medPythonObjects.h"
 #include "medPythonExport.h"
 
 namespace med::python
@@ -22,5 +23,7 @@ namespace med::python
 MEDPYTHON_EXPORT void registerModulePath(QString path);
 
 MEDPYTHON_EXPORT void loadPlugins();
+
+MEDPYTHON_EXPORT Object runSourceCode(QString sourceCode);
 
 } // namespace med::python

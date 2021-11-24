@@ -13,10 +13,10 @@
 
 #include "medPythonCoreAPI.h"
 
-#include "medPythonModules.h"
+#include "medPythonUtils.h"
 
 #include "medPythonCoreFunction.h"
-#include "medPythonObjects.h"
+#include "medPythonStandardObjects.h"
 
 namespace med::python
 {
@@ -44,6 +44,13 @@ void loadPlugins()
 
         moduleInfo = coreFunction(PyIter_Next, *moduleIterator);
     }
+}
+
+Object runSourceCode(QString sourceCode)
+{
+    Object globals = dict();
+    coreFunction(PyRun_String, qUtf8Printable(sourceCode), Py_file_input, *globals, nullptr);
+    return globals;
 }
 
 } // namespace med::python
