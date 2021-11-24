@@ -12,15 +12,12 @@
 
 ==============================================================================*/
 
-#include <QString>
-
-#include "medPythonExport.h"
-
-namespace med::python
-{
-
-MEDPYTHON_EXPORT void registerModulePath(QString path);
-
-MEDPYTHON_EXPORT void loadPlugins();
-
-} // namespace med::python
+#ifdef WIN32
+    #ifdef MEDPIPELINE_EXPORTS
+        #define MEDPIPELINE_EXPORT __declspec(dllexport)
+    #else
+        #define MEDPIPELINE_EXPORT __declspec(dllimport)
+    #endif
+#else
+    #define MEDPIPELINE_EXPORT
+#endif

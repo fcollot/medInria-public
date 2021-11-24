@@ -12,21 +12,11 @@
 
 ==============================================================================*/
 
-#include <QString>
+#include "medPipelineExport.h"
 
-namespace med::python
+namespace med::pipeline
 {
 
-bool initializeInterpreter(QStringList additionalModulePaths);
-bool finalizeInterpreter();
+MEDPIPELINE_EXPORT void initialize();
 
-namespace test
-{
-
-/// Returns the temporary directories used by the embedded interpreter.
-///
-QStringList getTemporaryDirectories();
-
-}
-
-} // namespace med::python
+} // namespace med::pipeline

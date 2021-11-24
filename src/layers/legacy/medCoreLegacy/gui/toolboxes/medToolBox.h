@@ -104,6 +104,9 @@ public:
         return dynamic_cast<TYPE>(getComponent(name));
     }
 
+    QWidget* getWidget(QString name);
+    QAbstractButton* getButton(QString name);
+
 signals:
     /**
      * @brief Emitted when an action from the toolbox succeeded.

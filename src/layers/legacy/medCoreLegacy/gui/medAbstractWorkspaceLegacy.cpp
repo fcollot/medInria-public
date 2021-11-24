@@ -135,7 +135,7 @@ void medAbstractWorkspaceLegacy::addToolBox(medToolBox *toolbox)
     insertToolBox(toolBoxes().count(), toolbox);
 }
 
- void medAbstractWorkspaceLegacy::insertToolBox(int index, medToolBox* toolbox)
+void medAbstractWorkspaceLegacy::insertToolBox(int index, medToolBox* toolbox)
 {
     toolbox->setWorkspace(this);
     toolbox->setParent(d->parent);
@@ -149,7 +149,7 @@ void medAbstractWorkspaceLegacy::addToolBox(medToolBox *toolbox)
     emit toolBoxInserted(index, toolbox);
  }
 
- void medAbstractWorkspaceLegacy::removeToolBox(medToolBox *toolbox)
+void medAbstractWorkspaceLegacy::removeToolBox(medToolBox *toolbox)
 {
     toolbox->setWorkspace(nullptr);
     d->toolBoxes.removeOne(toolbox);

@@ -14,19 +14,22 @@
 
 #include <QString>
 
+#include "medPythonObjects.h"
+#include "medPythonExport.h"
+
 namespace med::python
 {
 
-bool initializeInterpreter(QStringList additionalModulePaths);
-bool finalizeInterpreter();
+inline const char* PYTHON_SETTINGS_ID = "python";
 
-namespace test
-{
+MEDPYTHON_EXPORT void addPythonPath(QString path);
 
-/// Returns the temporary directories used by the embedded interpreter.
-///
-QStringList getTemporaryDirectories();
+MEDPYTHON_EXPORT void setStartupPythonPaths(QStringList paths);
 
-}
+MEDPYTHON_EXPORT QStringList getStartupPythonPaths();
+
+MEDPYTHON_EXPORT void loadPythonPlugins();
+
+MEDPYTHON_EXPORT Object runSourceCode(QString sourceCode);
 
 } // namespace med::python
