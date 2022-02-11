@@ -162,5 +162,6 @@ public:
 %include "medAbstractImageData.h"
 %include "medAbstractMeshData.h"
 
+%feature("nodirector") medDataManager;
 %rename(DataManager) medDataManager;
 %include "medDataManager.h"

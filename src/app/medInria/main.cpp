@@ -32,6 +32,8 @@
 #if (USE_PYTHON)
   #include <medPython.h>
   #include <medPythonTools.h>
+  #include <medPipeline.h>
+  #include <medPipelineBindings.h>
 #endif
 
 #include <dtkCoreSupport/dtkGlobal.h>
@@ -209,6 +211,8 @@ int main(int argc,char* argv[])
     }
 
     med::python::initializeTools();
+    med::pipeline::initialize();
+    med::pipeline::initializeBindings();
     med::python::loadPythonPlugins();
 #endif
 
