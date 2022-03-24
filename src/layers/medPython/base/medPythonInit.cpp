@@ -15,49 +15,76 @@
 
 #include <QApplication>
 
-#include "medPythonCore.h"
-#include "medPythonError.h"
-#include "medPythonUtils.h"
+#include "medPython.h"
+#include "medPythonCoreInit.h"
 
 namespace med::python
 {
 
-namespace
+bool initializeCore()
 {
+    bool success = true;
 
-bool isRunning = false;
-
-} // namespace
-
-bool initialize()
-{
-    if (!isRunning)
+    if (!isRunning())
     {
-        QStringList startupPaths = getStartupPythonPaths();
-        isRunning = initializeInterpreter(startupPaths);
+        success = initializeInterpreter(getUserPythonPaths());
 
-        if (isRunning)
+        if (success)
         {
             initializeExceptions();
             QApplication::connect(qApp, &QApplication::aboutToQuit, &finalize);
         }
     }
 
-    return isRunning;
+    return success;
+}
+
+bool initializeToolsAndPlugins()
+{
+    bool success = false;
+
+    if (isRunning())
+    {
+        try
+        {
+            import("medPythonTools").callMethod("initialize");
+            success = true;
+        }
+        catch (Exception& e)
+        {
+            qCritical() << QString("Error during initialization of the Python components: %1").arg(e.what());
+        }
+    }
+
+    return success;
 }
 
 bool finalize()
 {
     bool success = true;
 
-    if (isRunning)
+    if (isRunning())
     {
-        isRunning = false;
+        try
+        {
+            import("medPythonTools").callMethod("finalize");
+        }
+        catch (Exception& e)
+        {
+            qCritical() << QString("Error during finalization of the Python components: %1").arg(e.what());
+            success = false;
+        }
+
         finalizeExceptions();
         success = finalizeInterpreter();
     }
 
     return success;
+}
+
+bool isRunning()
+{
+    return isInterpreterInitialized();
 }
 
 } // namespace med::python

@@ -13,12 +13,6 @@
 #
 ################################################################################
 
-if (UNIX)
-    if (APPLE)
-        include(python_files_info_mac)
-    else()
-        include(python_files_info_linux)
-    endif()
-elseif (WIN32)
-    include(python_files_info_win)
-endif()
+add_subdirectory(console)
+add_subdirectory(pipelines)
+add_subdirectory(settings_widget)

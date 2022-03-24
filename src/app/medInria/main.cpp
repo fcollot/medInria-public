@@ -31,7 +31,6 @@
 
 #if (USE_PYTHON)
   #include <medPython.h>
-  #include <medPythonTools.h>
 #endif
 
 #include <dtkCoreSupport/dtkGlobal.h>
@@ -196,20 +195,18 @@ int main(int argc,char* argv[])
     }
 
     medDataManager::instance()->setDatabaseLocation();
-    
+
 #ifdef USE_PYTHON
-    med::python::initialize();
-
-    bool testPython = application.arguments().contains("--test-python");
-    bool testPythonWithCrash = application.arguments().contains("--test-python-with-crash");
-
-    if (testPython || testPythonWithCrash)
+    if (med::python::initializeCore())
     {
-        return med::python::test::testEmbeddedPython(testPythonWithCrash);
-    }
+        bool testPython = application.arguments().contains("--test-python");
+        bool testPythonWithCrash = application.arguments().contains("--test-python-with-crash");
 
-    med::python::initializeTools();
-    med::python::loadPythonPlugins();
+        if (testPython || testPythonWithCrash)
+        {
+            return med::python::test::testEmbeddedPython(testPythonWithCrash);
+        }
+    }
 #endif
 
     medPluginManager::instance()->setVerboseLoading(true);
@@ -274,11 +271,11 @@ int main(int argc,char* argv[])
 
     application.setMainWindow(mainwindow);
 
-#ifdef USE_PYTHON
-    med::python::startConsole();
-#endif
-
     forceShow(*mainwindow);
+
+#ifdef USE_PYTHON
+    med::python::initializeToolsAndPlugins();
+#endif
 
     qInfo() << "### Application is running...";
 
