@@ -23,6 +23,4 @@ find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
 
 include(embed_python)
-include(add_python_bindings)
-include(add_python_modules)
-include(generate_python_resources)
+include(add_python_module)

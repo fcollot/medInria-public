@@ -15,7 +15,6 @@
 
 #include "medPythonUtils.h"
 
-#include <medMessageController.h>
 #include <medSettingsManager.h>
 
 #include "medPythonCoreFunction.h"
@@ -27,41 +26,7 @@ namespace med::python
 namespace
 {
 
-const char* STARTUP_PATHS_SETTINGS_ID = "startup_paths";
-
-void tryLoadPlugins()
-{
-    Module pkgutil = import("pkgutil");
-    Object moduleIterator = pkgutil.callMethod("iter_modules");
-    Object moduleInfo = coreFunction(PyIter_Next, *moduleIterator);
-    Module medInriaModule = import(PROJECT_NAME);
-
-    while (moduleInfo)
-    {
-        // moduleInfo[2] is True if the module is a package
-        if (moduleInfo[2])
-        {
-            QString moduleName = moduleInfo[1].convert<QString>();
-
-            if (moduleName.startsWith(PYTHON_PLUGIN_PREFIX))
-            {
-                try
-                {
-                    Object plugin = Module::import(moduleName);
-                    medInriaModule.attribute("loaded_plugins")[moduleName] = plugin;
-                }
-                catch (Exception& e)
-                {
-                    medInriaModule.attribute("failed_plugins")[moduleName] = Object(e.what());
-                    qCritical() << QString("Error while loading Python plugin %1: %2")
-                                   .arg(moduleName, e.what());
-                }
-            }
-        }
-
-        moduleInfo = coreFunction(PyIter_Next, *moduleIterator);
-    }
-}
+const char* USER_PATHS_SETTINGS_ID = "user_paths";
 
 } // namespace
 
@@ -77,27 +42,14 @@ void addPythonPath(QString path)
     }
 }
 
-void setStartupPythonPaths(QStringList paths)
+void setUserPythonPaths(QStringList paths)
 {
-    medSettingsManager::instance()->setValue(PYTHON_SETTINGS_ID, STARTUP_PATHS_SETTINGS_ID, paths);
+    medSettingsManager::instance()->setValue(PYTHON_SETTINGS_ID, USER_PATHS_SETTINGS_ID, paths);
 }
 
-QStringList getStartupPythonPaths()
+QStringList getUserPythonPaths()
 {
-    return medSettingsManager::instance()->value(PYTHON_SETTINGS_ID, STARTUP_PATHS_SETTINGS_ID).toStringList();
-}
-
-void loadPythonPlugins()
-{
-    try
-    {
-        tryLoadPlugins();
-        Object failed_plugins = import(PROJECT_NAME).attribute("failed_plugins");
-    }
-    catch (Exception& e)
-    {
-        qCritical() << QString("Error while loading Python plugins: %1").arg(e.what());
-    }
+    return medSettingsManager::instance()->value(PYTHON_SETTINGS_ID, USER_PATHS_SETTINGS_ID).toStringList();
 }
 
 Object runSourceCode(QString sourceCode)

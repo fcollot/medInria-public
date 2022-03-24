@@ -1,0 +1,38 @@
+%{
+#include "medPipelineUtils.h"
+%}
+
+%include "medPipelineUtils.h"
+
+%forwardFunction(mask, medPipelineUtils)
+%forwardFunction(createMeshFromMask, medPipelineUtils)
+%forwardFunction(gaussianBlur, medPipelineUtils)
+%forwardFunction(normalize, medPipelineUtils)
+%forwardFunction(median, medPipelineUtils)
+%forwardFunction(invert, medPipelineUtils)
+%forwardFunction(shrink, medPipelineUtils)
+%forwardFunction(intensityWindowing, medPipelineUtils)
+%forwardFunction(threshold, medPipelineUtils)
+%forwardFunction(binaryThreshold, medPipelineUtils)
+%forwardFunction(sizeThreshold, medPipelineUtils)
+%forwardFunction(addConstant, medPipelineUtils)
+%forwardFunction(subtractConstant, medPipelineUtils)
+%forwardFunction(multiplyByConstant, medPipelineUtils)
+%forwardFunction(divideByConstant, medPipelineUtils)
+%forwardFunction(notImage, medPipelineUtils)
+%forwardFunction(andImage, medPipelineUtils)
+%forwardFunction(orImage, medPipelineUtils)
+%forwardFunction(xorImage, medPipelineUtils)
+%forwardFunction(morphologicalFilter, medPipelineUtils)
+%forwardFunction(dilate, medPipelineUtils)
+%forwardFunction(erode, medPipelineUtils)
+%forwardFunction(binaryClose, medPipelineUtils)
+%forwardFunction(binaryOpen, medPipelineUtils)
+%forwardFunction(grayscaleClose, medPipelineUtils)
+%forwardFunction(grayscaleOpen, medPipelineUtils)
+%forwardFunction(resampleByDimension, medPipelineUtils)
+%forwardFunction(resampleBySpacing, medPipelineUtils)
+%forwardFunction(binaryFillhole, medPipelineUtils)
+%forwardFunction(copyWindowLevel, medPipelineUtils)
+%forwardFunction(getAttachedData, medPipelineUtils)
+%forwardFunction(castImage, medPipelineUtils)
