@@ -16,6 +16,7 @@
 
 #include "medPythonCoreInit.h"
 
+#include <QApplication>
 #include <QDebug>
 #include <QDir>
 
@@ -31,13 +32,74 @@ namespace
 
 bool getPythonHome(QString& pythonHome)
 {
-    pythonHome = med::getExternalResourcesDirectory("python", TARGET_NAME);
+    QString resourcePath = QString("python/python%1").arg(PYTHON_VERSION_STRING);
+    pythonHome = med::getExternalResourcesDirectory(resourcePath);
     bool success = !pythonHome.isEmpty();
 
     if (!success)
     {
-        qCritical() << QString("Cannot find the embedded Python in the resources of %1.")
-                       .arg(TARGET_NAME);
+        qCritical() << QString("Cannot find the embedded Python in the application resources at %1.")
+                       .arg(resourcePath);
+    }
+
+    return success;
+}
+
+bool getResourceModulesPath(QString& modulesPath)
+{
+    QString resourcePath = "python/lib";
+    modulesPath = getExternalResourcesDirectory("python/lib");
+    bool success = !modulesPath.isEmpty();
+
+    if (!success)
+    {
+        qCritical() << QString("Cannot find the Python modules path in the application resources at %1.")
+                       .arg(resourcePath);
+    }
+
+    return success;
+}
+
+bool getLibraryPath(QString& libraryPath)
+{
+    QDir applicationDirectory = qApp->applicationDirPath();
+    QDir libraryDirectory = applicationDirectory;
+    bool success = true;
+
+#if defined(Q_OS_MACOS)
+    success = libraryDirectory.cd("../Frameworks")
+              && !libraryDirectory.isEmpty();
+
+    if (!success)
+    {
+        libraryDirectory = applicationDirectory;
+        success = libraryDirectory.cd("../../../../lib/resource_libs");
+    }
+#elif defined(Q_OS_LINUX)
+    success = libraryDirectory.cd("../lib");
+#endif
+
+    if (success)
+    {
+        libraryPath = libraryDirectory.absolutePath();
+    }
+    else
+    {
+        qCritical() << QString("Cannot find the application's library path.");
+    }
+
+    return success;
+}
+
+bool getModulePaths(QStringList& modulePaths)
+{
+    QString libraryPath;
+    QString resourceModulesPath;
+    bool success = getLibraryPath(libraryPath) && getResourceModulesPath(resourceModulesPath);
+
+    if (success)
+    {
+        modulePaths = QStringList{ libraryPath, resourceModulesPath };
     }
 
     return success;
@@ -95,12 +157,13 @@ bool setConfigOptions(PyConfig* config, QString pythonHome, QStringList modulePa
 bool prepareConfig(PyConfig* config, QStringList additionalModulePaths)
 {
     QString pythonHome;
-    bool success = getPythonHome(pythonHome);
+    QStringList modulePaths;
+    bool success = getPythonHome(pythonHome) && getModulePaths(modulePaths);
 
     if (success)
     {
         PyConfig_InitIsolatedConfig(config);
-        success = setConfigOptions(config, pythonHome, additionalModulePaths);
+        success = setConfigOptions(config, pythonHome, modulePaths << additionalModulePaths);
     }
 
     return success;

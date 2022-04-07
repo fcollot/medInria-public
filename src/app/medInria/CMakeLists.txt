@@ -114,7 +114,17 @@ add_executable(${TARGET_NAME} ${DEPLOYMENT_SYSTEM} # Empty for Linux
 
 if (APPLE)
   set_target_properties(${TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/cmake/MedInriaOSXBundleInfo.plist.in")
-  add_external_resources(${TARGET_NAME} FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/${TARGET_NAME}.icns")
+  import_external_resources(${TARGET_NAME} FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/${TARGET_NAME}.icns")
+endif()
+
+if (USE_PYTHON)
+    import_external_resources(${TARGET_NAME} DESTINATION python
+        FROM_TARGETS
+        medPythonBase
+        qtBindings
+        medInriaBindings
+        medPythonTools
+        )
 endif()
 
 ## #############################################################################
@@ -148,10 +158,7 @@ target_link_libraries(${TARGET_NAME}
   )
 
 if (USE_PYTHON)
-    target_link_libraries(${TARGET_NAME}
-        medPythonBase
-        medPythonTools
-        )
+    target_link_libraries(${TARGET_NAME} medPythonBase)
 endif()
 
 

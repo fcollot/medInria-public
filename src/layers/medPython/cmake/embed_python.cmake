@@ -62,6 +62,7 @@ function(embed_python target)
            )
    endif()
 
+   set(core_python_libraries)
    foreach (library ${libraries})
        list(APPEND core_python_libraries "${working_dir}/lib/${library}")
    endforeach()
@@ -116,13 +117,15 @@ function(embed_python target)
 ## Embed Python as external resource
 ## #############################################################################
 
-   add_external_resources(${target} SUBDIRECTORY python FILES "${working_dir}/LICENSE.txt")
-   add_external_resources(${target} SUBDIRECTORY python/lib DIRECTORIES "${working_dir}/lib")
+set(vname python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
+
+set_external_resources(${target} APPEND DESTINATION ${vname} FILES "${working_dir}/LICENSE.txt")
+set_external_resources(${target} APPEND DESTINATION ${vname}/lib/${vname} DIRECTORIES "${working_dir}/lib/${vname}")
 
 ## #############################################################################
 ## Include directories
 ## #############################################################################
 
-   target_include_directories(${target} PUBLIC "${working_dir}/include/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+target_include_directories(${target} PUBLIC "${working_dir}/include/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
 
 endfunction()

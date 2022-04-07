@@ -14,77 +14,36 @@
 ################################################################################
 
 set(TARGET_NAME ${PYTHON_PROJECT_NAME}Tools)
-set(PYTHON_PACKAGE_NAME ${PROJECT_NAME})
 
 ## #############################################################################
 ## List sources
 ## #############################################################################
 
 list_source_files(${TARGET_NAME}
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpp
     )
 
 list_header_directories_to_include(${TARGET_NAME}
     ${${TARGET_NAME}_HEADERS}
     )
 
-set(qt_bindings_sources
-    qt/header.i
-    qt/string.i
-    qt/variant.i
-    qt/list.i
-    qt/hash.i
-    qt/base.i
-    qt/object.i
-    qt/widgets.i
-    qt/application.i
-    )
+file(GLOB swig_sources
+    ${CMAKE_CURRENT_SOURCE_DIR}/swig/*.i
+    ${CMAKE_CURRENT_SOURCE_DIR}/swig/*.i.in)
 
-set(medInria_bindings_sources
-    medInria/header.i
-    medInria/data.i
-    medInria/gui.i
+file(GLOB python_sources
+    ${CMAKE_CURRENT_SOURCE_DIR}/python/*.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/python/*.py.in
     )
 
 ## #############################################################################
 ## Add targets
 ## #############################################################################
 
-add_library(${TARGET_NAME} SHARED
-    ${${TARGET_NAME}_CFILES}
+add_python_module(${TARGET_NAME}
+    PACKAGE ${TARGET_NAME}
+    SOURCES ${python_sources} ${swig_sources} ${${TARGET_NAME}_CFILES}
     )
-
-target_compile_definitions(${TARGET_NAME} PRIVATE
-    TARGET_NAME="${TARGET_NAME}"
-    PYTHON_PACKAGE_NAME="${PYTHON_PACKAGE_NAME}"
-    )
-
-## #############################################################################
-## Add Python modules
-## #############################################################################
-
-set_property(TARGET ${TARGET_NAME} PROPERTY
-    PYTHON_PACKAGE_NAME ${PYTHON_PACKAGE_NAME})
-
-add_python_bindings(${TARGET_NAME} qt_bindings
-    INCLUDE
-    ${qt_bindings_sources}
-    )
-
-add_python_bindings(${TARGET_NAME} medInria_bindings
-    IMPORT
-    qt_bindings
-    INCLUDE
-    ${medInria_bindings_sources}
-    )
-
-add_python_modules(${TARGET_NAME}
-    SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python
-    __init__.py
-    console.py
-    )
-
-generate_python_resources(${TARGET_NAME})
 
 ## #############################################################################
 ## Include directories
@@ -93,19 +52,6 @@ generate_python_resources(${TARGET_NAME})
 target_include_directories(${TARGET_NAME}
     PUBLIC
     ${${TARGET_NAME}_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/bindings
-    )
-
-target_include_directories(qt_bindings
-    PUBLIC
-    ${${TARGET_NAME}_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/bindings
-    )
-
-target_include_directories(medInria_bindings
-    PUBLIC
-    ${${TARGET_NAME}_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/bindings
     )
 
 ## #############################################################################
@@ -115,23 +61,4 @@ target_include_directories(medInria_bindings
 target_link_libraries(${TARGET_NAME}
     PUBLIC
     ${PYTHON_PROJECT_NAME}Base
-    )
-
-target_link_libraries(qt_bindings
-    PUBLIC
-    Qt5::Widgets
-    )
-
-target_link_libraries(medInria_bindings
-    PUBLIC
-    Qt5::Widgets
-    medCoreLegacy
-    )
-
-## #############################################################################
-## Install
-## #############################################################################
-
-set_lib_install_rules(${TARGET_NAME}
-    ${${TARGET_NAME}_HEADERS}
     )

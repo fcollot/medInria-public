@@ -130,7 +130,7 @@ include(set_exe_install_rules)
 include(set_lib_install_rules)
 include(set_lib_properties_variables)
 include(set_plugin_install_rules)
-include(add_external_resources)
+include(external_resources)
 
 include(add_plugins)
 if(APPLE)

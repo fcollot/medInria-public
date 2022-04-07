@@ -113,10 +113,33 @@ QString getResourcePathForMacPackage(QString filename, QString subdirectory, QSt
     return result;
 }
 
+#endif
+
+// Return the 'resources/[libraryName/]' directory relative to the specified
+// base directory (or 'Resources/[libraryName/]' when on macOS in the build
+// environment).
+QString getResourcesDirectoryFromBaseDirectory(QDir baseDirectory, QString libraryName)
+{
+    QString result;
+
+#if defined(Q_OS_MACOS)
+            QString subdirectory = "Resources";
 #else
+            QString subdirectory = "resources";
+#endif
+
+    if (baseDirectory.cd("resources")
+        && (libraryName.isEmpty() || baseDirectory.cd(libraryName)))
+    {
+        result = baseDirectory.path();
+    }
+
+    return result;
+}
 
 // Return the '../resources/[libraryName/]' directory relative to the
-// application directory.
+// application directory (or '../../../../Resources/[libraryName/]' when on
+// macOS in the build environment).
 QString getResourcesDirectoryFromApplicationDirectory(QString libraryName)
 {
     QString result;
@@ -124,13 +147,15 @@ QString getResourcesDirectoryFromApplicationDirectory(QString libraryName)
 
     if (!applicationDirectory.isEmpty())
     {
-        QDir resourcesDirectory = applicationDirectory;
+        QDir baseDirectory = applicationDirectory;
 
-        if (resourcesDirectory.cdUp()
-            && resourcesDirectory.cd("resources")
-            && (libraryName.isEmpty() || resourcesDirectory.cd(libraryName)))
+        if (baseDirectory.cdUp()
+#if defined(Q_OS_MACOS)
+            && baseDirectory.cdUp() && baseDirectory.cdUp() && baseDirectory.cdUp()
+#endif
+            )
         {
-            result = resourcesDirectory.path();
+            result = getResourcesDirectoryFromBaseDirectory(baseDirectory, libraryName);
         }
     }
 
@@ -138,7 +163,8 @@ QString getResourcesDirectoryFromApplicationDirectory(QString libraryName)
 }
 
 // Search for the resource in the '../resources/[libraryName/]' directory
-// relative to the application directory.
+// relative to the application directory (or '../../../../Resources/[libraryName/]'
+// when on macOS in the build environment).
 QString getResourcePathFromApplicationDirectory(QString filename, QString subdirectory, QString libraryName)
 {
     QString result;
@@ -162,24 +188,33 @@ QString getResourcePathFromApplicationDirectory(QString filename, QString subdir
     return result;
 }
 
-#endif
-
 } // namespace
 
 QString getExternalResourcesDirectory(QString subdirectory, QString libraryName)
 {
     QString result;
-    QDir resourcesDirectory;
 
 #if defined(Q_OS_MACOS)
-    resourcesDirectory.setPath(getResourcesDirectoryForMacPackage(libraryName));
+    QString path = getResourcesDirectoryForMacPackage(libraryName);
+
+    if (path.isEmpty())
+    {
+        // We might be in the build environment so try searching in the build
+        // resource directory.
+        path = getResourcesDirectoryFromApplicationDirectory(libraryName);
+    }
 #else
-    resourcesDirectory.setPath(getResourcesDirectoryFromApplicationDirectory(libraryName));
+    QString path = getResourcesDirectoryFromApplicationDirectory(libraryName);
 #endif
 
-    if (subdirectory.isEmpty() || resourcesDirectory.cd(subdirectory))
+    if (!path.isEmpty())
     {
-        result = resourcesDirectory.absolutePath();
+        QDir resourcesDirectory = path;
+
+        if (subdirectory.isEmpty() || resourcesDirectory.cd(subdirectory))
+        {
+            result = resourcesDirectory.absolutePath();
+        }
     }
 
     return result;
@@ -199,6 +234,13 @@ QString getExternalResourcePath(QString filepath, QString libraryName)
 
 #if defined(Q_OS_MACOS)
     result = getResourcePathForMacPackage(filename, subdirectory, libraryName);
+
+    if (result.isEmpty())
+    {
+        // We might be in the build environment so try searching in the build
+        // resource directory.
+        result = getResourcePathFromApplicationDirectory(filename, subdirectory, libraryName);
+    }
 #else
     result = getResourcePathFromApplicationDirectory(filename, subdirectory, libraryName);
 #endif
