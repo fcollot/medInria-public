@@ -46,14 +46,11 @@ void printEmptyLine()
 
 bool isEmbeddedPath(QString path)
 {
-    static QStringList embeddedPathRoots = getTemporaryDirectories() << med::getExternalResourcesDirectory(TARGET_NAME);
+    static QString embeddedPathRoot = med::getExternalResourcesDirectory(".", TARGET_NAME);
 
-    foreach (QString pathRoot, embeddedPathRoots)
+    if (path.startsWith(embeddedPathRoot))
     {
-        if (path.startsWith(pathRoot))
-        {
-            return true;
-        }
+        return true;
     }
 
     return false;
@@ -219,7 +216,7 @@ void runEmbeddedPythonTest()
     printEmptyLine();
     testModuleImport("json");
     printEmptyLine();
-    //testSysPath();
+    testSysPath();
     printEmptyLine();
     testSysModules();
     printEmptyLine();
