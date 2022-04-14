@@ -28,6 +28,7 @@ list(APPEND ${ep}_dependencies
   QtDCM
   RPI
   LogDemons
+  python
   )
 
 if (USE_DTKIMAGING)
@@ -95,6 +96,11 @@ set(cmake_cache_args
   -DQt5_DIR:PATH=${Qt5_DIR}
   -DLogDemons_DIR:PATH=${LogDemons_DIR}
   -DBoost_INCLUDE_DIR:PATH=${Boost_INCLUDE_DIR}
+  -Dpython_BINARY_DIR:PATH=${python_BINARY_DIR}
+  -Dpython_SOURCE_DIR:PATH=${python_SOURCE_DIR}
+  -Dpython_VERSION_MAJOR:STRING=${PYTHON_VERSION_MAJOR}
+  -Dpython_VERSION_MINOR:STRING=${PYTHON_VERSION_MINOR}
+  -Dpython_VERSION_PATCH:STRING=${PYTHON_VERSION_PATCH}
   )
 
 if (${USE_FFmpeg})

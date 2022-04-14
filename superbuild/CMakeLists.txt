@@ -63,6 +63,7 @@ list(APPEND external_projects
   QtDCM 
   dtk
   LogDemons
+  python
   )
 
 if (USE_DTKIMAGING)
