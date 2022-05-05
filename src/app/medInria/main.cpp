@@ -206,11 +206,17 @@ int main(int argc,char* argv[])
         {
             return med::python::test::testEmbeddedPython(testPythonWithCrash);
         }
+
+        med::python::initializeTools();
     }
 #endif
 
     medPluginManager::instance()->setVerboseLoading(true);
     medPluginManager::instance()->initialize();
+
+#ifdef USE_PYTHON
+    med::python::loadPlugins();
+#endif
 
     //Use Qt::WA_DeleteOnClose attribute to be sure to always have only one closeEvent.
     medMainWindow *mainwindow = new medMainWindow;
@@ -274,7 +280,7 @@ int main(int argc,char* argv[])
     forceShow(*mainwindow);
 
 #ifdef USE_PYTHON
-    med::python::initializeToolsAndPlugins();
+    med::python::runConsole();
 #endif
 
     qInfo() << "### Application is running...";

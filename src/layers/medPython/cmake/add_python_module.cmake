@@ -88,7 +88,7 @@ function(add_python_module target_name)
         set_target_properties(${target_name} PROPERTIES ${PROJECT_NAME}_PYTHON_PACKAGE_NAME ${ARG_PACKAGE})
     endif()
 
-    target_sources(${target_name} PUBLIC ${ARG_SOURCES})
+    target_sources(${target_name} PRIVATE ${ARG_SOURCES})
 
     if (ARG_PARENT_PACKAGE)
         set_property(TARGET ${ARG_PARENT_PACKAGE} APPEND PROPERTY ${PROJECT_NAME}_PYTHON_PACKAGE_SUB_TARGETS ${target_name})

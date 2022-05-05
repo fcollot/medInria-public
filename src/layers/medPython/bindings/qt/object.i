@@ -24,33 +24,17 @@ template void connect_noargs(cls*, void (cls ## :: ## *)(), PyObject*);
 
 %enddef
 
-%define SIGNAL_NOARGS_PRIVATE(cls, signal)
-
-%{
-template void connect_noargs_private(cls*, void (cls ## :: ## *)(cls ## :: ## QPrivateSignal), PyObject*);
-%}
-
-%extend cls
-{
-    void connect_noargs_ ## signal(PyObject* receiver)
-    {
-        connect_noargs_private($self, & ## cls ## :: ## signal, receiver);
-    }
-}
-
-%enddef
-
 %define SIGNAL(cls, signal, ...)
 
 %{
-    template void connect(cls*, void (cls ## :: ## *)(__VA_ARGS__), PyObject*);
+    template void connect_args(cls*, void (cls ## :: ## *)(__VA_ARGS__), PyObject*);
 %}
 
 %extend cls
 {
-    void connect_ ## signal(PyObject* receiver)
+    void connect_args_ ## signal(PyObject* receiver)
     {
-        connect($self, & ## cls ## :: ## signal, receiver);
+        connect_args($self, & ## cls ## :: ## signal, receiver);
     }
 }
 
@@ -94,9 +78,11 @@ public:
             if slot:
                 self.connectOldStyle(signal, receiver, slot)
             else:
-                connect = getattr(self, f'connect_{signal}', None)
+                connect = getattr(self, f'connect_args_{signal}', None)
                 if not connect:
-                    connect = getattr(self, f'connect_noargs_{signal}')
+                    connect = getattr(self, f'connect_noargs_{signal}', None)
+                if not connect:
+                    raise AttributeError(f'\'{self.__class__.__name__}\' object has no signal \'{signal}\'')
                 connect(receiver)
 
         def parent(self):

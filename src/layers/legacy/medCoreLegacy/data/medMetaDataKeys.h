@@ -109,7 +109,6 @@ namespace medMetaDataKeys
     // SERIES
     extern MEDCORELEGACY_EXPORT const Key SeriesID;
     extern MEDCORELEGACY_EXPORT const Key SeriesInstanceUID;
-    extern MEDCORELEGACY_EXPORT const Key SeriesStoreId;
     extern MEDCORELEGACY_EXPORT const Key SeriesNumber;
     extern MEDCORELEGACY_EXPORT const Key Modality;
     extern MEDCORELEGACY_EXPORT const Key Performer;

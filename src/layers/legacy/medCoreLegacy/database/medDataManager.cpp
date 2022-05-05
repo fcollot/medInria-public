@@ -734,7 +734,6 @@ QPixmap medDataManager::thumbnail(const medDataIndex &index)
 void medDataManager::setWriterPriorities()
 {
     QList<QString> writers = medAbstractDataFactory::instance()->writers();
-    QMap<int, QString> writerPriorites;
 
     // set vtkDataMeshWriter as a top priority writer
     if (writers.contains("vtkDataMeshWriter"))
@@ -748,12 +747,7 @@ void medDataManager::setWriterPriorities()
         writers.move(writers.indexOf("itkMetaDataImageWriter"), 1);
     }
 
-    for (int i = 0; i < writers.size(); i++)
-    {
-        writerPriorites.insert(i, writers[i]);
-    }
-
-    medAbstractDataFactory::instance()->setWriterPriorities(writerPriorites);
+    medAbstractDataFactory::instance()->setWriterPriorities(writers);
 }
 
 medDataManager::medDataManager() : d_ptr(new medDataManagerPrivate(this))

@@ -23,9 +23,13 @@ namespace med::python
 ///
 MEDPYTHON_EXPORT bool initializeCore();
 
-/// Initializes the Python tools module and loads the Python plugins.
+/// Initializes the Python tools module.
 ///
-MEDPYTHON_EXPORT bool initializeToolsAndPlugins();
+MEDPYTHON_EXPORT bool initializeTools();
+
+MEDPYTHON_EXPORT bool loadPlugins();
+
+MEDPYTHON_EXPORT bool runConsole();
 
 /// Terminates the Python interpreter and releases all allocated resources. This
 /// function does nothing if the interpreter is not running.

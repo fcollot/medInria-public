@@ -40,13 +40,24 @@ FunctionCall::FunctionCall(const AbstractObject& callable, const AbstractObject&
     d->evaluated = false;
 }
 
-FunctionCall::~FunctionCall()
+FunctionCall::~FunctionCall() noexcept(false)
 {
     if (!d->evaluated)
     {
         PyObject* result = evaluate();
         Py_CLEAR(result);
-        propagateErrorIfOccurred();
+
+        if (errorOccurred())
+        {
+            if (std::current_exception())
+            {
+                qDebug() << "oh crap";
+            }
+            else
+            {
+                propagateCurrentError();
+            }
+        }
     }
 }
 

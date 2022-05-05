@@ -9,3 +9,4 @@
 %include "object.i"
 %include "widgets.i"
 %include "application.i"
+%include "sql.i"

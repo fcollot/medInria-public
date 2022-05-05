@@ -29,3 +29,4 @@
 %include "qevent.h"
 %include "qfont.h"
 %include "qicon.h"
+%include "qimage.h"

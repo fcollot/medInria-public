@@ -4,16 +4,21 @@
 #include <dtkCoreSupport/dtkSmartPointer.h>
 
 #include <medAbstractData.h>
+#include <medAbstractDataFactory.h>
 #include <medAbstractImageData.h>
 #include <medAbstractMeshData.h>
 #include <medDataIndex.h>
 #include <medDataManager.h>
+#include <medMetaDataKeys.h>
 %}
 
 %rename(DataIndex) medDataIndex;
 %include "medDataIndex.h"
 
 %qListTypemaps(medDataIndex, SWIG_TYPECHECK_OBJECT_ARRAY)
+
+%rename(MetaDataKeys) medMetaDataKeys;
+%include "medMetaDataKeys.h"
 
 %ignore dtkAbstractData::draw;
 %ignore dtkAbstractData::output;
@@ -132,8 +137,8 @@ public:
 %typemap(in) medAbstractData* (QObject* temp)
 {
     medPythonConvert($input, &temp);
-    med::python::propagateErrorIfOccurred();
-    *$1 = dynamic_cast<medAbstractData*>(temp);
+    //med::python::propagateErrorIfOccurred();
+    $1 = dynamic_cast<medAbstractData*>(temp);
 }
 
 %apply medAbstractData* { dtkSmartPointer<medAbstractData> };
@@ -141,7 +146,7 @@ public:
 %typemap(in) dtkSmartPointer<medAbstractData>
 {
     $1 = ($1_ltype::ObjectType*)med::python::extractSWIGWrappedObject($input);
-    med::python::propagateErrorIfOccurred();
+    //med::python::propagateErrorIfOccurred();
 }
 
 %typemap(in, numinputs = 0) dtkSmartPointer<medAbstractData>* OUTPUT (dtkSmartPointer<medAbstractData> temp)
@@ -156,6 +161,59 @@ public:
     $result = SWIG_Python_AppendOutput($result, output);
 }
 
+%pythoncode
+%{
+
+    def data_interface(name, description):
+        def decorator_data_type(cls):
+            cls.staticIdentifier = classmethod(lambda _cls : sys.modules[cls.__module__].__package__ + '.' + cls.__name__)
+            cls.staticName = staticmethod(lambda : name)
+            cls.staticDescription = staticmethod(lambda : description)
+            cls.identifier = lambda self : self.staticIdentifier()
+            cls.name = lambda self : self.staticName()
+            cls.description = lambda self : self.staticDescription()
+            return cls
+        return decorator_data_type
+
+%}
+
+%rename(DataFactory) medAbstractDataFactory;
+%include "medAbstractDataFactory.h"
+
+%extend medAbstractDataFactory
+{
+
+    bool _registerDataType(QString identifier, QString name, QString description, PyObject* nativeClass)
+    {
+        auto creator = [=]() -> medAbstractData*
+        {
+            return med::python::Object::borrowed(nativeClass)().cast<medAbstractData>();
+        };
+
+        return $self->registerDataType(identifier, creator);
+    }
+
+    %pythoncode
+    %{
+        def registerDataType(self, dataClass):
+            return self._registerDataType(dataClass.staticIdentifier(),
+                                          dataClass.staticName(),
+                                          dataClass.staticDescription(),
+                                          dataClass)
+    %}
+
+}
+
 %feature("nodirector") medDataManager;
 %rename(DataManager) medDataManager;
 %include "medDataManager.h"
+
+%extend medDataManager
+{
+
+    const QSqlDatabase& persistentDatabase()
+    {
+        return $self->controller()->database();
+    }
+
+}

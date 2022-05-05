@@ -40,7 +40,7 @@ bool initializeCore()
     return success;
 }
 
-bool initializeToolsAndPlugins()
+bool initializeTools()
 {
     bool success = false;
 
@@ -49,6 +49,26 @@ bool initializeToolsAndPlugins()
         try
         {
             import("medPythonTools").callMethod("initialize");
+            success = true;
+        }
+        catch (Exception& e)
+        {
+            qCritical() << QString("Error during initialization of medPythonTools: %1").arg(e.what());
+        }
+    }
+
+    return success;
+}
+
+bool loadPlugins()
+{
+    bool success = false;
+
+    if (isRunning())
+    {
+        try
+        {
+            import("medPythonTools").callMethod("loadPlugins");
 
             // Allow user to query info on successful and failed plugins.
             QString command = "from medPythonTools import pluginsInfo";
@@ -58,7 +78,27 @@ bool initializeToolsAndPlugins()
         }
         catch (Exception& e)
         {
-            qCritical() << QString("Error during initialization of the Python components: %1").arg(e.what());
+            qCritical() << QString("Error while loading the Python plugins: %1").arg(e.what());
+        }
+    }
+
+    return success;
+}
+
+bool runConsole()
+{
+    bool success = false;
+
+    if (isRunning())
+    {
+        try
+        {
+            import("medPythonTools").callMethod("initializeConsole");
+            success = true;
+        }
+        catch (Exception& e)
+        {
+            qCritical() << QString("Error while starting the Python console: %1").arg(e.what());
         }
     }
 
@@ -71,16 +111,6 @@ bool finalize()
 
     if (isRunning())
     {
-        try
-        {
-            import("medPythonTools").callMethod("finalize");
-        }
-        catch (Exception& e)
-        {
-            qCritical() << QString("Error during finalization of the Python components: %1").arg(e.what());
-            success = false;
-        }
-
         finalizeExceptions();
         success = finalizeInterpreter();
     }

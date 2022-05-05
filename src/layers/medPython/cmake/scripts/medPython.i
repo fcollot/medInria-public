@@ -40,6 +40,9 @@
 #undef Q_DECLARE_SHARED
 #define Q_DECLARE_SHARED(x)
 
+#undef Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6
+#define Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(x)
+
 #undef Q_DECL_COLD_FUNCTION
 #define Q_DECL_COLD_FUNCTION
 
@@ -112,6 +115,9 @@
 #undef Q_SLOTS
 #define Q_SLOTS
 
+#undef Q_SQL_EXPORT
+#define Q_SQL_EXPORT
+
 #define slots
 #define signals private
 
@@ -124,21 +130,36 @@
     void connect_noargs(SENDER_TYPE* sender, void (SENDER_TYPE::*signal)(), PyObject* receiver)
     {
         med::python::Object object = med::python::Object::borrowed(receiver);
-        sender->connect(sender, signal, [=]() { object();});
-    }
 
-    template <class SENDER_TYPE, class PRIVATE_TAG>
-    void connect_noargs_private(SENDER_TYPE* sender, void (SENDER_TYPE::*signal)(PRIVATE_TAG), PyObject* receiver)
-    {
-        med::python::Object object = med::python::Object::borrowed(receiver);
-        sender->connect(sender, signal, [=]() { object(); });
+        sender->connect(sender, signal, [=]()
+        {
+            try
+            {
+                object();
+            }
+            catch (med::python::Exception& e)
+            {
+                qDebug() << e.what();
+            }
+        });
     }
 
     template <class SENDER_TYPE, class... ARGS>
-    void connect(SENDER_TYPE* sender, void (SENDER_TYPE::*signal)(ARGS...), PyObject* receiver)
+    void connect_args(SENDER_TYPE* sender, void (SENDER_TYPE::*signal)(ARGS...), PyObject* receiver)
     {
         med::python::Object object = med::python::Object::borrowed(receiver);
-        sender->connect(sender, signal, [=](ARGS... args) { object(args...); });
+
+        sender->connect(sender, signal, [=](ARGS... args)
+        {
+            try
+            {
+                object(args...);
+            }
+            catch (med::python::Exception& e)
+            {
+                qDebug() << e.what();
+            }
+        });
     }
 %}
 
@@ -161,6 +182,15 @@
         med::python::raiseError(e.nativeClass(), e.what());
         SWIG_fail;
     }
+    catch (std::exception& e)
+    {
+        qDebug() << e.what();
+        SWIG_fail;
+    }
+    catch (...)
+    {
+        qDebug() << "fuck you C++";
+    }
 }
 
 %define %medPythonTypemaps(TYPE)
@@ -168,25 +198,37 @@
     %typemap(in) TYPE
     {
         medPythonConvert($input, &$1);
-        med::python::propagateErrorIfOccurred();
+        //med::python::propagateErrorIfOccurred();
     }
 
     %typemap(directorout) TYPE
     {
         medPythonConvert($input, &$result);
-        med::python::propagateErrorIfOccurred();
+        //med::python::propagateErrorIfOccurred();
     }
 
     %typemap(out) TYPE
     {
-        medPythonConvert($1, &$result);
-        med::python::propagateErrorIfOccurred();
+        try
+        {
+            medPythonConvert($1, &$result);
+        }
+        catch (med::python::Exception& e)
+        {
+            med::python::raiseError(e.nativeClass(), e.what());
+            SWIG_fail;
+        }
+        catch (std::exception& e)
+        {
+            qDebug() << e.what();
+            SWIG_fail;
+        }
     }
 
     %typemap(directorin) TYPE (PyObject* temp)
     {
         medPythonConvert($1, &temp);
-        med::python::propagateErrorIfOccurred();
+        //med::python::propagateErrorIfOccurred();
         $input = temp;
     }
 
@@ -203,3 +245,8 @@
     }
 
 %enddef
+
+%medPythonTypemaps(bool);
+%medPythonTypemaps(long);
+%medPythonTypemaps(double);
+%medPythonTypemaps(void*);
