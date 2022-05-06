@@ -117,11 +117,15 @@ if (APPLE)
   import_external_resources(${TARGET_NAME} FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/${TARGET_NAME}.icns")
 endif()
 
-if (USE_PYTHON)
-    import_external_resources(${TARGET_NAME}
-        DESTINATION python
-        FROM_TARGETS medPythonBase qtBindings medInriaBindings medPythonTools
-        )
+if (USE_Python)
+    if (EMBED_Python)
+        embed_python(${TARGET_NAME})
+    endif()
+
+#    import_external_resources(${TARGET_NAME}
+#        DESTINATION python
+#        FROM_TARGETS qtBindings medInriaBindings medPythonTools
+#        )
 endif()
 
 ## #############################################################################
@@ -154,7 +158,7 @@ target_link_libraries(${TARGET_NAME}
   medPacs
   )
 
-if (USE_PYTHON)
+if (USE_Python)
     target_link_libraries(${TARGET_NAME} medPythonBase)
 endif()
 

@@ -43,14 +43,6 @@ bool getAbsoluteResourcePath(QString relativePath, QString& absolutePath, QStrin
     return success;
 }
 
-bool getPythonHome(QString& pythonHome)
-{
-    QString relativePath = QString("python/python%1").arg(PYTHON_VERSION_STRING);
-    QString errorMessage = QString("Cannot find the embedded Python in the application resources at %1.")
-                           .arg(relativePath);
-    return getAbsoluteResourcePath(relativePath, pythonHome, errorMessage);
-}
-
 bool getResourceModulesPath(QString& modulesPath)
 {
     QString relativePath = "python/lib";
@@ -139,9 +131,19 @@ QStringList convertToNativePaths(QStringList paths)
 
 bool setConfigOptions(PyConfig* config, QString pythonHome, QStringList modulePaths)
 {
+    bool success = true;
     config->write_bytecode = 0;
-    bool success = checkStatus(PyConfig_SetBytesString(config, &config->home, qUtf8Printable(pythonHome)))
-                   && checkStatus(PyConfig_Read(config));
+
+    if (!pythonHome.isEmpty())
+    {
+        success = checkStatus(PyConfig_SetBytesString(config, &config->home, qUtf8Printable(pythonHome)));
+    }
+
+    if (success)
+    {
+        success = checkStatus(PyConfig_Read(config));
+    }
+
     wchar_t** moduleSearchPaths = qStringListToWideChar(convertToNativePaths(modulePaths));
 
     for (int i = 0; success && (i < modulePaths.length()); i++)
@@ -153,11 +155,10 @@ bool setConfigOptions(PyConfig* config, QString pythonHome, QStringList modulePa
     return success;
 }
 
-bool prepareConfig(PyConfig* config, QStringList additionalModulePaths)
+bool prepareConfig(PyConfig* config, QString pythonHome, QStringList additionalModulePaths)
 {
-    QString pythonHome;
     QStringList modulePaths;
-    bool success = getPythonHome(pythonHome) && getModulePaths(modulePaths);
+    bool success = getModulePaths(modulePaths);
 
     if (success)
     {
@@ -182,24 +183,27 @@ bool initializeFromConfig(PyConfig* config)
 
 } // namespace
 
-bool initializeInterpreter(QStringList additionalModulePaths)
+bool initializeInterpreter(QString pythonHome, QStringList additionalModulePaths)
 {
-    PyConfig config;
-    bool success = preInitialize()
-                   && prepareConfig(&config, additionalModulePaths)
-                   && initializeFromConfig(&config);
+    Py_Initialize();
+//    PyConfig config;
+//    bool success = preInitialize()
+//                   && prepareConfig(&config, pythonHome, additionalModulePaths)
+//                   && initializeFromConfig(&config);
 
-    if (success)
-    {
-        qInfo() << "Embedded Python initialized: " << Py_GetVersion();
-    }
-    else
-    {
-        qCritical() << "Initialization of the embedded Python failed";
-        finalizeInterpreter();
-    }
+//    if (success)
+//    {
+//        qInfo() << "Embedded Python initialized: " << Py_GetVersion();
+//    }
+//    else
+//    {
+//        qCritical() << "Initialization of the embedded Python failed";
+//        finalizeInterpreter();
+//    }
 
-    return success;
+    qInfo() << "Python initialized: " << Py_GetVersion();
+
+    return true;
 }
 
 bool finalizeInterpreter()

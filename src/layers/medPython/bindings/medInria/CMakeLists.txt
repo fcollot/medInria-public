@@ -49,7 +49,6 @@ target_include_directories(${TARGET_NAME}
 
 target_link_libraries(${TARGET_NAME}
     PUBLIC
-    ${PYTHON_PROJECT_NAME}Base
     qtBindings
     medCoreLegacy
     )

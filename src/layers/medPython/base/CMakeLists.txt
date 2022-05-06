@@ -38,16 +38,15 @@ list_header_directories_to_include(${TARGET_NAME}
 set(SWIG_RUNTIME_HEADER_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/swig)
 set(SWIG_RUNTIME_HEADER ${SWIG_RUNTIME_HEADER_DIRECTORY}/swig_runtime.h)
 
-add_custom_command(
-    OUTPUT ${SWIG_RUNTIME_HEADER}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${SWIG_RUNTIME_HEADER_DIRECTORY}
-    COMMAND ${SWIG_EXECUTABLE}
-    ARGS
-    "-python"
-    "-c++"
-    "-external-runtime"
-    ${SWIG_RUNTIME_HEADER}
-    )
+if (NOT EXISTS ${SWIG_RUNTIME_HEADER})
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${SWIG_RUNTIME_HEADER_DIRECTORY}
+        COMMAND ${SWIG_EXECUTABLE}
+        "-python"
+        "-c++"
+        "-external-runtime" ${SWIG_RUNTIME_HEADER}
+        )
+endif()
 
 ## #############################################################################
 ## Add targets
@@ -62,7 +61,9 @@ target_compile_definitions(${TARGET_NAME} PRIVATE
     TARGET_NAME="${TARGET_NAME}"
     PYTHON_PLUGIN_PREFIX="${PYTHON_PLUGIN_PREFIX}"
     PROJECT_NAME="${PROJECT_NAME}"
-    PYTHON_VERSION_STRING="${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}"
+    PYTHON_VERSION_MAJOR=${Python_VERSION_MAJOR}
+    PYTHON_VERSION_MINOR=${Python_VERSION_MINOR}
+    PYTHON_VERSION_PATCH=${Python_VERSION_PATCH}
     )
 
 ## #############################################################################
@@ -76,12 +77,6 @@ target_include_directories(${TARGET_NAME}
     )
 
 ## #############################################################################
-## Embed Python
-## #############################################################################
-
-embed_python(${TARGET_NAME})
-
-## #############################################################################
 ## Link
 ## #############################################################################
 
@@ -89,6 +84,7 @@ target_link_libraries(${TARGET_NAME}
     PUBLIC
     Qt5::Core
     medCoreLegacy
+    Python_LIBRARY
     )
 
 ## #############################################################################

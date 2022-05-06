@@ -29,7 +29,7 @@
 #include <medSettingsManager.h>
 #include <medStorage.h>
 
-#if (USE_PYTHON)
+#ifdef USE_PYTHON
   #include <medPython.h>
 #endif
 

@@ -59,17 +59,10 @@ option(USE_FFmpeg
   )
 endif()
 
-string(CONCAT USE_PYTHON_DOC
-    "Embed Python 3 into the application."
-    " The embeddable package will be downloaded at CMake configuration time."
-    " (If embedded, Python can be deactivated at startup with the --no-python"
-    " option)"
+option(USE_Python
+    "Build with Python support"
+    ON
     )
-option(USE_PYTHON ${USE_PYTHON_DOC} ON)
-
-if (USE_PYTHON)
-    add_compile_definitions(USE_PYTHON)
-endif()
 
 ## #############################################################################
 ## Find package
@@ -104,6 +97,10 @@ set(CMAKE_MACOSX_RPATH OFF)
 ## Global policies
 ## #############################################################################
 
+# Allow find_package to use <PackageName>_ROOT to locate packages (useful for
+# external projects that provide their own cmake config file.
+cmake_policy(SET CMP0074 NEW)
+
 if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.10.0")
     # Prevent warning of generated files not being moc'd
     cmake_policy(SET CMP0071 NEW)
@@ -116,7 +113,6 @@ endif()
 set(${PROJECT_NAME}_CMAKE_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/module
-  ${CMAKE_CURRENT_SOURCE_DIR}/layers/medPython/cmake
   )
 
 set(CMAKE_MODULE_PATH
@@ -132,6 +128,10 @@ include(set_lib_properties_variables)
 include(set_plugin_install_rules)
 include(set_external_resources)
 include(import_external_resources)
+
+if (USE_Python)
+    include(use_python)
+endif()
 
 include(add_plugins)
 if(APPLE)
@@ -209,7 +209,7 @@ set_lib_properties_variables(
     medVtkDataMeshBase
     )
 
-if (USE_PYTHON)
+if (USE_Python)
     set_lib_properties_variables(medPythonBase)
 endif()
 

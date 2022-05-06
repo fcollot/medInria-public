@@ -28,7 +28,7 @@ bool initializeCore()
 
     if (!isRunning())
     {
-        success = initializeInterpreter(getUserPythonPaths());
+        success = initializeInterpreter(getPythonHome(), getUserPythonPaths());
 
         if (success)
         {

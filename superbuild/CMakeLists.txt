@@ -53,6 +53,13 @@ if (NOT WIN32)
       list(APPEND external_projects ffmpeg)
   endif()
 endif()
+
+string(CONCAT USE_PYTHON_DOC
+    "Build with Python support."
+    " If USE_SYSTEM_Python is OFF (default), Python will be compiled as an external"
+    " project (Unix) or a specially prepared package will be downloaded (Windows)."
+    )
+option(USE_Python ${USE_Python_DOC} ON)
   
 list(APPEND external_projects
   VTK 
@@ -68,6 +75,12 @@ list(APPEND external_projects
 if (USE_DTKIMAGING)
     list(APPEND external_projects
         dtkImaging
+        )
+endif()
+
+if (USE_PYTHON)
+    list(APPEND external_projects
+        Python
         )
 endif()
 

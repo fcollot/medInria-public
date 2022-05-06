@@ -174,7 +174,9 @@ include(EP_GeneratePatchCommand)
 file(GLOB projects_modules ${CMAKE_SOURCE_DIR}/superbuild/projects_modules/*.cmake)
 
 foreach(module ${projects_modules})
-    include(${module})
+    if(NOT module MATCHES ".+.in$")
+        include(${module})
+    endif()
 endforeach()
 
 ## #############################################################################
