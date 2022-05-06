@@ -1,0 +1,114 @@
+################################################################################
+#
+# medInria
+#
+# Copyright (c) INRIA 2022. All rights reserved.
+# See LICENSE.txt for details.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+################################################################################
+
+@PACKAGE_INIT@
+
+set(_source_dir "@PACKAGE_source_dir@")
+set(_binary_dir "@PACKAGE_binary_dir@")
+
+if(NOT Python_FIND_COMPONENTS)
+    set(Python_FIND_COMPONENTS Interpreter)
+endif()
+
+if(WIN32)
+    ## #########################################################################
+    ## Windows
+    ## #########################################################################
+
+    set(_library_name "libpython@version_major@@version_minor@")
+
+    if(Interpreter IN_LIST Python_FIND_COMPONENTS)
+        set_and_check(Python_EXECUTABLE "${_source_dir}/python.exe")
+        set_and_check(Python_STDLIB "${_source_dir}/lib")
+        set_and_check(Python_STDARCH "${_source_dir}/DLLs")
+        set_and_check(Python_RUNTIME_LIBRARY_DIRS "${_source_dir}/bin")
+        set_and_check(_release_dll "${Python_RUNTIME_LIBRARY_DIRS}/${_library_name}.dll")
+        set_and_check(_debug_dll "${Python_RUNTIME_LIBRARY_DIRS}/${_library_name}_d.dll")
+    endif()
+
+    if(Development IN_LIST Python_FIND_COMPONENTS)
+        set_and_check(Python_INCLUDE_DIRS "${_source_dir}/include")
+        set_and_check(_stub_library_dir "${_source_dir}/libs")
+        set_and_check(_release_stub "${_stub_library_dir}/${_library_name}.lib")
+        set_and_check(_debug_stub "${_stub_library_dir}/${_library_name}_d.lib")
+    endif()
+
+    set(Python_LIBRARIES _release_dll _debug_dll _release_stub _debug_stub)
+    set(Python_LIBRARY_DIRS ${Python_RUNTIME_LIBRARY_DIRS} "${_stub_library_dir}")
+
+else()
+    ## #########################################################################
+    ## Unix
+    ## #########################################################################
+
+    set(_library_name "libpython@version_major@.@version_minor@")
+
+    if(Interpreter IN_LIST Python_FIND_COMPONENTS)
+        if(APPLE)
+            set_and_check(Python_EXECUTABLE "${_binary_dir}/python.exe")
+        else()
+            set_and_check(Python_EXECUTABLE "${_binary_dir}/python")
+        endif()
+    endif()
+
+    if(Development IN_LIST Python_FIND_COMPONENTS)
+        if(APPLE)
+            set_and_check(Python_LIBRARIES "${_binary_dir}/${_library_name}.dylib")
+        else()
+            set_and_check(Python_LIBRARIES "${_binary_dir}/${_library_name}.so")
+        endif()
+
+        set_and_check(Python_STDLIB "${_source_dir}/Lib")
+        file(READ "${_binary_dir}/pybuilddir.txt" _pybuilddir)
+        set_and_check(Python_STDARCH "${_binary_dir}/${_pybuilddir}")
+
+        set_and_check(_main_include_dir "${_source_dir}/Include")
+        set(Python_INCLUDE_DIRS
+        ${_main_include_dir}
+        "${_binary_dir}" # for pyconfig.h
+        )
+
+        set_and_check(Python_LIBRARY_DIRS "${_binary_dir}")
+        set_and_check(Python_RUNTIME_LIBRARY_DIRS "${_binary_dir}")
+    endif()
+
+endif()
+
+## #############################################################################
+## Common
+## #############################################################################
+
+set(Python_INTERPRETER_ID Python)
+set(Python_SITELIB)
+set(Python_SITEARCH)
+set(Python_LINK_OPTIONS)
+set(Python_WITH_PTH_SUPPORT TRUE)
+
+# Some last checks to ensure components:
+
+if(Interpreter IN_LIST Python_FIND_COMPONENTS
+        AND (EXISTS "${Python_STDLIB}/os.py"))
+    set(Python_Interpreter_FOUND TRUE)
+else()
+    set(Python_Interpreter_FOUND FALSE)
+endif()
+
+if(Development IN_LIST Python_FIND_COMPONENTS
+        AND (EXISTS "${_main_include_dir}/Python.h"))
+    set(Python_Development_FOUND TRUE)
+else()
+    set(Python_Development_FOUND FALSE)
+endif()
+
+set(Python_FOUND TRUE)
+check_required_components(Python)

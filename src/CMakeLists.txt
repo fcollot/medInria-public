@@ -59,17 +59,10 @@ option(USE_FFmpeg
   )
 endif()
 
-string(CONCAT USE_PYTHON_DOC
-    "Embed Python 3 into the application."
-    " The embeddable package will be downloaded at CMake configuration time."
-    " (If embedded, Python can be deactivated at startup with the --no-python"
-    " option)"
+option(USE_Python
+    "Build with Python support"
+    ON
     )
-option(USE_PYTHON ${USE_PYTHON_DOC} ON)
-
-if (USE_PYTHON)
-    add_compile_definitions(USE_PYTHON)
-endif()
 
 ## #############################################################################
 ## Find package
@@ -91,6 +84,11 @@ find_package(Qt5 REQUIRED COMPONENTS
 
 find_package(dtk REQUIRED)
 include_directories(${dtk_INCLUDE_DIRS})
+
+if(USE_Python)
+    find_package(CPPython REQUIRED COMPONENTS PackagablePython)
+    add_compile_definitions(USE_PYTHON)
+endif()
 
 ## #############################################################################
 ## enable c++ 17
@@ -116,7 +114,6 @@ endif()
 set(${PROJECT_NAME}_CMAKE_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/module
-  ${CMAKE_CURRENT_SOURCE_DIR}/layers/medPython/cmake
   )
 
 set(CMAKE_MODULE_PATH
@@ -130,8 +127,6 @@ include(set_exe_install_rules)
 include(set_lib_install_rules)
 include(set_lib_properties_variables)
 include(set_plugin_install_rules)
-include(set_external_resources)
-include(import_external_resources)
 
 include(add_plugins)
 if(APPLE)
@@ -208,10 +203,6 @@ set_lib_properties_variables(
     medUtilities
     medVtkDataMeshBase
     )
-
-if (USE_PYTHON)
-    set_lib_properties_variables(medPythonBase)
-endif()
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in)
   configure_file( ## Build tree configure file

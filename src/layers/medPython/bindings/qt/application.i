@@ -7,9 +7,6 @@
 %ignore qt_sendSpontaneousEvent;
 
 %include "qcoreapplication.h"
-
-SIGNAL_NOARGS_PRIVATE(QCoreApplication, aboutToQuit)
-
 %include "qguiapplication.h"
 
 %ignore QApplication::palette;

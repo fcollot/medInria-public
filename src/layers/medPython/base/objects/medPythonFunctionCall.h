@@ -43,7 +43,7 @@ class MEDPYTHON_EXPORT FunctionCall : public AbstractObject
 {
 public:
     FunctionCall(const AbstractObject& callable, const AbstractObject& args);
-    virtual ~FunctionCall();
+    virtual ~FunctionCall() noexcept(false);
 
     /// Add a keyword argument to the call
     ///

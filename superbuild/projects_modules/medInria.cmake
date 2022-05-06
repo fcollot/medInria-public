@@ -35,6 +35,12 @@ if (USE_DTKIMAGING)
        dtkImaging
        )
 endif()
+
+if (USE_Python)
+    list(APPEND ${ep}_dependencies
+        Python
+        )
+endif()
   
 ## #############################################################################
 ## Prepare the project
@@ -75,14 +81,24 @@ set(cmake_args
   -DCMAKE_CXX_FLAGS=${${ep}_cxx_flags}
   -DCMAKE_SHARED_LINKER_FLAGS=${${ep}_shared_linker_flags}  
   -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+  -DCMAKE_FIND_PACKAGE_PREFER_CONFIG:BOOL=TRUE
   -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS_${ep}}
   -DUSE_DTKIMAGING:BOOL=${USE_DTKIMAGING}
   -DUSE_OSPRay:BOOL=${USE_OSPRay}
+  -DUSE_Python:BOOL=${USE_Python}
   -DmedInria_VERSION:STRING=${${PROJECT_NAME}_VERSION}
   -DBUILD_ALL_PLUGINS=OFF
   -DBUILD_COMPOSITEDATASET_PLUGIN=OFF
   -DBUILD_EXAMPLE_PLUGINS=OFF
   )
+
+if (USE_Python)
+    list(APPEND cmake_args
+        -DPython_VERSION:STRING=${Python_VERSION}
+        -DPython_DIR:PATH=${Python_DIR}
+        -DSWIG_EXECUTABLE:PATH=${SWIG_EXECUTABLE}
+        )
+endif()
 
 set(cmake_cache_args
   -DDCMTK_DIR:PATH=${DCMTK_DIR}
@@ -108,7 +124,7 @@ if (USE_DTKIMAGING)
     -DdtkImaging_DIR:PATH=${dtkImaging_DIR}
     )
 endif()
-  
+
 ## #############################################################################
 ## Add external-project
 ## #############################################################################
@@ -122,6 +138,7 @@ ExternalProject_Add(${ep}
   CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
   CMAKE_ARGS ${cmake_args}
   CMAKE_CACHE_ARGS ${cmake_cache_args}
+  LIST_SEPARATOR |
   DEPENDS ${${ep}_dependencies}
   INSTALL_COMMAND ""
   BUILD_ALWAYS 1

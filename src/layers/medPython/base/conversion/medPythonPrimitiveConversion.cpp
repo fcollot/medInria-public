@@ -50,3 +50,39 @@ bool medPythonConvert(const PyObject* object, double* output)
     *output = PyFloat_AsDouble(const_cast<PyObject*>(object));
     return !PyErr_Occurred();
 }
+
+bool medPythonConvert(void* value, PyObject** output)
+{
+    if (value)
+    {
+        *output = PyCapsule_New(value, nullptr, nullptr);
+    }
+    else
+    {
+        *output = Py_None;
+        Py_INCREF(Py_None);
+    }
+
+    return *output;
+}
+
+bool medPythonConvert(const PyObject* object, void** output)
+{
+    if (object != Py_None)
+    {
+        if (PyCapsule_CheckExact(object))
+        {
+            *output = PyCapsule_GetPointer(const_cast<PyObject*>(object), nullptr);
+        }
+        else
+        {
+            *output = const_cast<PyObject*>(object);
+        }
+    }
+    else
+    {
+        *output = nullptr;
+    }
+
+    return !PyErr_Occurred();
+}

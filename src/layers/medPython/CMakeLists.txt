@@ -13,7 +13,8 @@
 #
 ################################################################################
 
-include(python_utils)
+set(PYTHON_PROJECT_NAME medPython)
+set(PYTHON_PLUGIN_PREFIX ${PROJECT_NAME}_)
 
 ## #############################################################################
 ## Find dependencies
@@ -24,10 +25,11 @@ include_directories(${dtk_INCLUDE_DIRS})
 
 find_package(Qt5 REQUIRED COMPONENTS Core)
 
+find_package(CPPython REQUIRED COMPONENTS PackagablePython)
+
 ## #############################################################################
 ## Add subdirectories
 ## #############################################################################
 
-add_subdirectory(base)
-add_subdirectory(bindings)
-add_subdirectory(tools)
+#add_subdirectory(bindings)
+#add_subdirectory(tools)

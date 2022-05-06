@@ -23,3 +23,6 @@ MEDPYTHON_EXPORT bool medPythonConvert(const PyObject* object, long* output);
 
 MEDPYTHON_EXPORT bool medPythonConvert(double value, PyObject** output);
 MEDPYTHON_EXPORT bool medPythonConvert(const PyObject* object, double* output);
+
+MEDPYTHON_EXPORT bool medPythonConvert(void* value, PyObject** output);
+MEDPYTHON_EXPORT bool medPythonConvert(const PyObject* object, void** output);

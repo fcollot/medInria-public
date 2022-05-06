@@ -209,6 +209,11 @@ function(_add_bindings_module target_name module_name library_name resource_dir 
         "${working_dir}"
         )
 
+    target_link_libraries(${target_name}
+        PUBLIC
+        ${PYTHON_PROJECT_NAME}Base
+        )
+
 endfunction()
 
 function(_forward_bindings_module)

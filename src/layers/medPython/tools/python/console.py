@@ -1,11 +1,5 @@
 import sys, code
-import qt, medInria
-from .pluginManager import failedPlugins
-
-CONSOLE_TITLE = "Python console"
-CONSOLE_SHORTCUT = "Ctrl+Shift+P"
-CONSOLE_WIDTH = 800
-CONSOLE_HEIGHT = 600
+import qt
 
 
 _logo = """
@@ -18,20 +12,6 @@ _logo = """
 888  888  888 Y8b.     Y88b 888   888   888  888 888     888 888  888
 888  888  888  "Y8888   "Y88888 8888888 888  888 888     888 "Y888888
 """
-
-
-instance = None
-
-
-def initialize():
-    instance = Console(CONSOLE_TITLE, (CONSOLE_WIDTH, CONSOLE_HEIGHT))
-    instance.setShortcut(f'{CONSOLE_SHORTCUT}')
-    mainWindow = qt.qApp().getProperty('MainWindow')
-    mainWindow.connect('destroyed', lambda _ : instance.deleteLater())
-    instance.run()
-    medInria.logInfo(f'The Python console can be accessed with {CONSOLE_SHORTCUT}')
-    if failedPlugins:
-        print('** Some plugins failed to load. Type "pluginsInfo()" for details. **\n\n')
 
 
 class CommandLine(qt.QLineEdit):
@@ -71,15 +51,15 @@ class CommandLine(qt.QLineEdit):
         
 class Console(qt.QWidget):
 
-    def __init__(self, title, size):
+    def __init__(self, size, title="Python console"):
         super().__init__()
-        self._initWindow(title, size)
+        self._initWindow(size, title)
         self._initOutputWidget()
         self._initInputWidget()
         self._initFonts()
         self._initPrompt()
  
-    def _initWindow(self, title, size):
+    def _initWindow(self, size, title):
         self.setWindowTitle(title)
         layout = qt.QVBoxLayout()
         layout.setSpacing(0)

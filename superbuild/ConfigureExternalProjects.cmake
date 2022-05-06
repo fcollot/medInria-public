@@ -171,9 +171,7 @@ include(EP_GeneratePatchCommand)
 ## Include specific module of each project
 ## #############################################################################
 
-file(GLOB projects_modules ${CMAKE_SOURCE_DIR}/superbuild/projects_modules/*.cmake)
-
-foreach(module ${projects_modules})
+foreach(module ${external_projects})
     include(${module})
 endforeach()
 

@@ -33,6 +33,6 @@ add_subdirectory(legacy/medVtkInria)
 add_subdirectory(legacy/medUtilities)
 add_subdirectory(legacy/medVtkDataMeshBase)
 
-if (USE_PYTHON)
+if (USE_Python)
     add_subdirectory(medPython)
 endif()

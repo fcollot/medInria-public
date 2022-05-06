@@ -16,11 +16,16 @@
 set(PYTHON_PROJECT_NAME medPython)
 set(PYTHON_PLUGIN_PREFIX ${PROJECT_NAME}_)
 
-cmake_policy(SET CMP0078 NEW)
-cmake_policy(SET CMP0086 NEW)
 
-find_package(SWIG REQUIRED)
-include(${SWIG_USE_FILE})
+#set(Python_EXECUTABLE "${python_BINARY_DIR}/python.exe")
+#set(Python_FIND_STRATEGY "LOCATION")
+#find_package(Python
+#    REQUIRED COMPONENTS Interpreter Development
+#    )
+#message(FATAL_ERROR ${Python_LINK_OPTIONS})
 
-include(embed_python)
-include(add_python_module)
+#find_package(SWIG REQUIRED)
+#include(${SWIG_USE_FILE})
+
+#include(embed_python)
+#include(add_python_module)

@@ -28,11 +28,7 @@ file(GLOB sources
 ## Add targets
 ## #############################################################################
 
-add_python_module(${TARGET_NAME}
-    BINDINGS_MODULE_NAME medInria
-    BINDINGS_LIBRARY_NAME ${TARGET_NAME}
-    SOURCES ${sources}
-    )
+add_python_module(${TARGET_NAME} SOURCES ${sources})
 
 ## #############################################################################
 ## Include directories
@@ -49,7 +45,6 @@ target_include_directories(${TARGET_NAME}
 
 target_link_libraries(${TARGET_NAME}
     PUBLIC
-    ${PYTHON_PROJECT_NAME}Base
     qtBindings
     medCoreLegacy
     )

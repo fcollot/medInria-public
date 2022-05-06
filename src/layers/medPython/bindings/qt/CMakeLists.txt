@@ -28,11 +28,7 @@ file(GLOB sources
 ## Add targets
 ## #############################################################################
 
-add_python_module(${TARGET_NAME}
-    BINDINGS_MODULE_NAME qt
-    BINDINGS_LIBRARY_NAME ${TARGET_NAME}
-    SOURCES ${sources}
-    )
+add_python_bindings_module(${TARGET_NAME} SWIG_INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/qt.i")
 
 ## #############################################################################
 ## Include directories
@@ -49,6 +45,6 @@ target_include_directories(${TARGET_NAME}
 
 target_link_libraries(${TARGET_NAME}
     PUBLIC
-    ${PYTHON_PROJECT_NAME}Base
     Qt5::Widgets
+    ${PYTHON_PROJECT_NAME}Base
     )

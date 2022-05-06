@@ -16,7 +16,6 @@
 #include "medPythonStandardObjects.h"
 
 #include "medPythonCoreFunction.h"
-#include "medPythonInit.h"
 
 namespace med::python
 {

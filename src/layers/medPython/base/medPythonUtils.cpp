@@ -15,9 +15,11 @@
 
 #include "medPythonUtils.h"
 
+#include <medExternalResources.h>
 #include <medSettingsManager.h>
 
 #include "medPythonCoreFunction.h"
+#include "medPythonCoreUtils.h"
 #include "medPythonStandardObjects.h"
 
 namespace med::python

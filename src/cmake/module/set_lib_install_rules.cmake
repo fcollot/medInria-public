@@ -11,6 +11,12 @@
 #
 ################################################################################
 
+if(APPLE)
+    set(RESOURCE_LIB_DIR lib/resource_libs)
+else()
+    set(RESOURCE_LIB_DIR lib)
+endif()
+
 function(set_lib_install_rules target)
 
 ################################################################################
@@ -34,7 +40,6 @@ function(set_lib_install_rules target)
 ################################################################################
 
     cmake_parse_arguments(PARSE_ARGV 1 "ARG" "RESOURCE" "" "HEADERS")
-    get_property(GENERATOR_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
     if (medInria_DIR)
         set(dest ${medInria_DIR})
@@ -42,7 +47,13 @@ function(set_lib_install_rules target)
         set(dest ${CMAKE_BINARY_DIR})
     endif()
 
-    set(shared_lib_dir lib$<$<AND:$<BOOL:${ARG_RESOURCE}>,$<PLATFORM_ID:Darwin>>:/resource_libs>)
+    if (ARG_RESOURCE)
+        set(shared_lib_dir ${RESOURCE_LIB_DIR})
+    else()
+        set(shared_lib_dir lib)
+    endif()
+
+    get_property(GENERATOR_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
     if(${GENERATOR_MULTI_CONFIG})
         set_target_properties( ${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG          ${dest}/${platformType}Debug/bin)

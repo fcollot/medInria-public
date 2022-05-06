@@ -68,6 +68,12 @@ for lib1 in $resourceLibs; do
     done
 done
 
+# Copy external resources to the bundle.
+for
+cp -RH @$medInria_BINARY_DIR@/resources @medInria_BINARY_DIR@/bin/TmpInstall/medInria.app/Contents/Resources
+
+cp -RH @$medInria_BINARY_DIR@/resources @medInria_BINARY_DIR@/bin/TmpInstall/medInria.app/Contents/Resources
+
 #Run fancy packaging apple script
 
 \cp -f @medInria_SOURCE_DIR@/utils/osx_packaging/BaseMedinriaPackage.sparseimage.gz @PROJECT_BINARY_DIR@/MedinriaPackage.sparseimage.gz

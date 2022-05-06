@@ -112,16 +112,26 @@ add_executable(${TARGET_NAME} ${DEPLOYMENT_SYSTEM} # Empty for Linux
   ${${TARGET_NAME}_HTML}
   )
 
-if (APPLE)
+if(APPLE)
   set_target_properties(${TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/cmake/MedInriaOSXBundleInfo.plist.in")
-  import_external_resources(${TARGET_NAME} FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/${TARGET_NAME}.icns")
+
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} ARGS -E make_directory Resources
+      COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/resources/${TARGET_NAME}.icns" Resources
+      WORKING_DIRECTORY "$<TARGET_BUNDLE_CONTENT_DIR:${TARGET_NAME}>"
+      )
 endif()
 
-if (USE_PYTHON)
-    import_external_resources(${TARGET_NAME}
-        DESTINATION python
-        FROM_TARGETS medPythonBase qtBindings medInriaBindings medPythonTools
-        )
+## #############################################################################
+## Create ._pth file
+## #############################################################################
+
+if(USE_Python) ## Regroup
+    create_python_pth_file(EXECUTABLE ${TARGET_NAME})
+#    file(GENERATE
+#        OUTPUT "$<TARGET_FILE_DIR:${TARGET_NAME}>/$<TARGET_FILE_BASE_NAME:${TARGET_NAME}>._pth"
+#        CONTENT "${Python_STDLIB}\n${Python_STDARCH}"
+#        )
 endif()
 
 ## #############################################################################
@@ -154,8 +164,8 @@ target_link_libraries(${TARGET_NAME}
   medPacs
   )
 
-if (USE_PYTHON)
-    target_link_libraries(${TARGET_NAME} medPythonBase)
+if(USE_Python)
+    target_link_libraries(${TARGET_NAME} CPPython)
 endif()
 
 
