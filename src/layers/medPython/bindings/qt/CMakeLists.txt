@@ -28,11 +28,7 @@ file(GLOB sources
 ## Add targets
 ## #############################################################################
 
-add_python_module(${TARGET_NAME}
-    BINDINGS_MODULE_NAME qt
-    BINDINGS_LIBRARY_NAME ${TARGET_NAME}
-    SOURCES ${sources}
-    )
+add_python_modules(${TARGET_NAME} SOURCES ${sources})
 
 ## #############################################################################
 ## Include directories
@@ -50,4 +46,5 @@ target_include_directories(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
     PUBLIC
     Qt5::Widgets
+    ${PYTHON_PROJECT_NAME}Base
     )

@@ -97,10 +97,6 @@ set(CMAKE_MACOSX_RPATH OFF)
 ## Global policies
 ## #############################################################################
 
-# Allow find_package to use <PackageName>_ROOT to locate packages (useful for
-# external projects that provide their own cmake config file.
-cmake_policy(SET CMP0074 NEW)
-
 if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.10.0")
     # Prevent warning of generated files not being moc'd
     cmake_policy(SET CMP0071 NEW)
@@ -126,11 +122,11 @@ include(set_exe_install_rules)
 include(set_lib_install_rules)
 include(set_lib_properties_variables)
 include(set_plugin_install_rules)
-include(set_external_resources)
-include(import_external_resources)
+include(external_resources)
 
 if (USE_Python)
     include(use_python)
+    include(add_python_modules)
 endif()
 
 include(add_plugins)

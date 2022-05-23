@@ -40,7 +40,7 @@ file(GLOB python_sources
 ## Add targets
 ## #############################################################################
 
-add_python_module(${TARGET_NAME}
+add_python_modules(${TARGET_NAME}
     PACKAGE ${TARGET_NAME}
     SOURCES ${python_sources} ${swig_sources} ${${TARGET_NAME}_CFILES}
     )

@@ -59,7 +59,7 @@ string(CONCAT USE_PYTHON_DOC
     " If USE_SYSTEM_Python is OFF (default), Python will be compiled as an external"
     " project (Unix) or a specially prepared package will be downloaded (Windows)."
     )
-option(USE_Python ${USE_Python_DOC} ON)
+option(USE_Python "${USE_Python_DOC}" ON)
   
 list(APPEND external_projects
   VTK 
@@ -78,7 +78,7 @@ if (USE_DTKIMAGING)
         )
 endif()
 
-if (USE_PYTHON)
+if (USE_Python)
     list(APPEND external_projects
         Python
         )

@@ -69,8 +69,8 @@ else()
         endif()
 
         set_and_check(Python_STDLIB "${_source_dir}/Lib")
-        file(READ "${_binary_dir}/pybuilddir.txt" pybuilddir)
-        set_and_check(Python_STDARCH "${_binary_dir}/${pybuilddir}")
+        file(READ "${_binary_dir}/pybuilddir.txt" _pybuilddir)
+        set_and_check(Python_STDARCH "${_binary_dir}/${_pybuilddir}")
 
         set_and_check(_main_include_dir "${_source_dir}/include")
         set(Python_INCLUDE_DIRS
@@ -92,6 +92,7 @@ set(Python_INTERPRETER_ID Python)
 set(Python_SITELIB)
 set(Python_SITEARCH)
 set(Python_LINK_OPTIONS)
+set(Python_WITH_PTH_SUPPORT TRUE)
 
 # Some last checks to ensure components:
 

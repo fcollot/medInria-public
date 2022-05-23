@@ -14,6 +14,7 @@
 ################################################################################
 
 set(PYTHON_PROJECT_NAME medPython)
+set(PYTHON_PLUGIN_PREFIX ${PROJECT_NAME}_)
 
 ## #############################################################################
 ## Find dependencies
@@ -29,5 +30,5 @@ find_package(Qt5 REQUIRED COMPONENTS Core)
 ## #############################################################################
 
 add_subdirectory(base)
-#add_subdirectory(bindings)
+add_subdirectory(bindings)
 #add_subdirectory(tools)

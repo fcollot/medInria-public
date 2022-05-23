@@ -93,10 +93,7 @@ function(python_project)
         ## #####################################################################
 
         set(${ep}_DIR ${source_dir} PARENT_SCOPE)
-
-        set(${ep}_VERSION_MAJOR ${version_major} PARENT_SCOPE)
-        set(${ep}_VERSION_MINOR ${version_minor} PARENT_SCOPE)
-        set(${ep}_VERSION_PATCH ${version_patch} PARENT_SCOPE)
+        set(${ep}_VERSION "${version_major}.${version_minor}.${version_patch}" PARENT_SCOPE)
 
         ## #####################################################################
         ## Create config files
@@ -106,16 +103,22 @@ function(python_project)
 
         file(RELATIVE_PATH relative_source_dir ${EP_PREFIX} ${source_dir})
 
-        configure_package_config_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/PythonConfig.cmake.in" "${source_dir}/PythonConfig.cmake"
+        configure_package_config_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/PythonConfig.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/PythonConfig.cmake"
             INSTALL_PREFIX ${EP_PREFIX}
             INSTALL_DESTINATION ${relative_source_dir}
             PATH_VARS source_dir binary_dir
             )
 
-        write_basic_package_version_file("${source_dir}/PythonConfigVersion.cmake"
-          VERSION ${version_major}.${version_minor}.${version_patch}
-          COMPATIBILITY SameMinorVersion
-          )
+        write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/PythonConfigVersion.cmake"
+            VERSION ${version_major}.${version_minor}.${version_patch}
+            COMPATIBILITY SameMinorVersion
+            )
+
+        ExternalProject_Add_Step(${ep} copy_config_files
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different PythonConfig.cmake PythonConfigVersion.cmake "<SOURCE_DIR>"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+            DEPENDEES build
+            )
 
     endif()
 

@@ -74,6 +74,7 @@ target_include_directories(${TARGET_NAME}
     PUBLIC
     ${${TARGET_NAME}_INCLUDE_DIRS}
     ${SWIG_RUNTIME_HEADER_DIRECTORY}
+    ${CMAKE_CURRENT_SOURCE_DIR}/swig
     )
 
 ## #############################################################################
