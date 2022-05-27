@@ -19,6 +19,7 @@
 #include <medSettingsManager.h>
 
 #include "medPythonCoreFunction.h"
+#include "medPythonCoreUtils.h"
 #include "medPythonStandardObjects.h"
 
 namespace med::python
@@ -28,24 +29,8 @@ namespace
 {
 
 const char* USER_PATHS_SETTINGS_ID = "user_paths";
-const char* PYTHON_HOME_SETTINGS_ID = "python_home";
 
 } // namespace
-
-QString getPythonHome()
-{
-    QString pythonHome = medSettingsManager::instance()->value(PYTHON_SETTINGS_ID, PYTHON_HOME_SETTINGS_ID).toString();
-
-    if (pythonHome.isEmpty())
-    {
-        QString resourcePath = QString("python/python%1.%2")
-                               .arg(PYTHON_VERSION_MAJOR)
-                               .arg(PYTHON_VERSION_MINOR);
-        pythonHome = getExternalResourcesDirectory(resourcePath);
-    }
-
-    return pythonHome;
-}
 
 void addPythonPath(QString path)
 {

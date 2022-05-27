@@ -30,7 +30,7 @@
 #include <medStorage.h>
 
 #ifdef USE_PYTHON
-  #include <medPython.h>
+  #include <medPythonManager.h>
 #endif
 
 #include <dtkCoreSupport/dtkGlobal.h>
@@ -109,10 +109,6 @@ int main(int argc,char* argv[])
                  << "[--fullscreen|--no-fullscreen] "
                  << "[--stereo] "
                  << "[--debug] "
-            #ifdef USE_PYTHON
-                 << "[--test-python] "
-                 << "[--test-python-crash] "
-            #endif
             #ifdef ACTIVATE_WALL_OPTION
                  << "[[--wall] [--tracker=URL]] "
             #endif
@@ -147,10 +143,6 @@ int main(int argc,char* argv[])
                      << "--tracker"
                      << "--stereo"
                      << "--view"
-                #ifdef USE_PYTHON
-                     << "--test-python"
-                     << "--test-python-with-crash"
-                #endif
                      << "--debug");
             for (QStringList::const_iterator opt=options.constBegin();opt!=options.constEnd();++opt)
             {
@@ -197,20 +189,15 @@ int main(int argc,char* argv[])
     medDataManager::instance()->setDatabaseLocation();
 
 #ifdef USE_PYTHON
-    if (med::python::initializeCore())
-    {
-        bool testPython = application.arguments().contains("--test-python");
-        bool testPythonWithCrash = application.arguments().contains("--test-python-with-crash");
-
-        if (testPython || testPythonWithCrash)
-        {
-            return med::python::test::testEmbeddedPython(testPythonWithCrash);
-        }
-    }
+    med::python::PythonManager* pythonManager = new med::python::PythonManager;
 #endif
 
     medPluginManager::instance()->setVerboseLoading(true);
     medPluginManager::instance()->initialize();
+
+#ifdef USE_PYTHON
+    pythonManager->loadPlugins();
+#endif
 
     //Use Qt::WA_DeleteOnClose attribute to be sure to always have only one closeEvent.
     medMainWindow *mainwindow = new medMainWindow;
@@ -274,7 +261,8 @@ int main(int argc,char* argv[])
     forceShow(*mainwindow);
 
 #ifdef USE_PYTHON
-    med::python::initializeToolsAndPlugins();
+    pythonManager->startConsole();
+    QObject::connect(&application, &QApplication::aboutToQuit, [=]() { delete pythonManager; });
 #endif
 
     qInfo() << "### Application is running...";

@@ -31,4 +31,4 @@ find_package(Qt5 REQUIRED COMPONENTS Core)
 
 add_subdirectory(base)
 add_subdirectory(bindings)
-#add_subdirectory(tools)
+add_subdirectory(tools)

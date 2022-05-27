@@ -14,4 +14,4 @@
 ################################################################################
 
 add_subdirectory(qt)
-#add_subdirectory(medInria)
+add_subdirectory(medInria)

@@ -127,15 +127,8 @@
         sender->connect(sender, signal, [=]() { object();});
     }
 
-    template <class SENDER_TYPE, class PRIVATE_TAG>
-    void connect_noargs_private(SENDER_TYPE* sender, void (SENDER_TYPE::*signal)(PRIVATE_TAG), PyObject* receiver)
-    {
-        med::python::Object object = med::python::Object::borrowed(receiver);
-        sender->connect(sender, signal, [=]() { object(); });
-    }
-
     template <class SENDER_TYPE, class... ARGS>
-    void connect(SENDER_TYPE* sender, void (SENDER_TYPE::*signal)(ARGS...), PyObject* receiver)
+    void connect_args(SENDER_TYPE* sender, void (SENDER_TYPE::*signal)(ARGS...), PyObject* receiver)
     {
         med::python::Object object = med::python::Object::borrowed(receiver);
         sender->connect(sender, signal, [=](ARGS... args) { object(args...); });

@@ -20,7 +20,6 @@
 #include "medPythonCoreFunction.h"
 #include "medPythonFunctionCall.h"
 #include "medPythonObject.h"
-#include "medPythonInit.h"
 #include "medPythonSWIGCore.h"
 
 namespace med::python

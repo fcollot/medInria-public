@@ -13,6 +13,8 @@
 #
 ################################################################################
 
+set(PYTHON_MODULE_RESOURCE_DIR python/lib)
+
 function(add_python_modules target_name)
 
 ################################################################################
@@ -70,7 +72,7 @@ function(add_python_modules target_name)
     _split_source_files(python_sources cpp_sources swig_sources ${ARG_SOURCES})
 
     get_external_resources_directory(resources_dir)
-    string(APPEND resources_dir "/python/lib")
+    string(APPEND resources_dir "/${PYTHON_MODULE_RESOURCE_DIR}")
 
     if(ARG_PACKAGE)
         string(REGEX REPLACE "\\." "/" package_dir ${ARG_PACKAGE})
@@ -78,24 +80,35 @@ function(add_python_modules target_name)
     endif()
 
     if(swig_sources)
-        if(${ARG_PACKAGE})
-            set(package_option "PACKAGE TRUE")
-        endif()
-
-        _add_bindings_module(${target_name}
-            ${package_option}
+        set(swig_args
             RESOURCES_DIR ${resources_dir}
             SWIG_SOURCES ${swig_sources}
-            CPP_SOURCES ${cpp_sources}
             )
-    else()
-        add_custom_target(${target_name} ALL)
+
+        if(cpp_sources)
+            list(APPEND swig_args CPP_SOURCES ${cpp_sources})
+        endif()
+
+        if(ARG_PACKAGE)
+            list(APPEND swig_args PACKAGE ${ARG_PACKAGE})
+        endif()
+
+        _add_bindings_module(${target_name} ${swig_args})
     endif()
 
-#    add_custom_command(TARGET ${target_name} PRE_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E make_directory "${resources_dir}"
-#        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${python_sources} "${resources_dir}"
-#        )
+    if(python_sources)
+        if(swig_sources)
+            set(copy_target ${target_name}_file_copy)
+        else()
+            set(copy_target ${target_name})
+        endif()
+
+        add_custom_target(${copy_target} ALL
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${resources_dir}"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${python_sources} "${resources_dir}"
+            DEPENDS ${python_sources}
+            )
+    endif()
 
 endfunction()
 
@@ -129,8 +142,8 @@ endmacro()
 function(_add_bindings_module target_name)
 
     cmake_parse_arguments(PARSE_ARGV 1 "ARG"
-        "PACKAGE"
-        "RESOURCES_DIR"
+        ""
+        "PACKAGE;RESOURCES_DIR"
         "SWIG_SOURCES;CPP_SOURCES"
         )
 
@@ -173,6 +186,8 @@ function(_add_bindings_module target_name)
         SWIG_COMPILE_OPTIONS -py3
         OUTPUT_NAME ${target_name}
         )
+
+    target_sources(${target_name} PRIVATE ${ARG_SWIG_SOURCES} ${ARG_CPP_SOURCES})
 
     set_lib_install_rules(${target_name} RESOURCE)
 

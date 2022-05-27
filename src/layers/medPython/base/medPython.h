@@ -14,7 +14,5 @@
 
 #include "medPythonConversion.h"
 #include "medPythonError.h"
-#include "medPythonInit.h"
 #include "medPythonObjects.h"
-#include "medPythonTest.h"
 #include "medPythonUtils.h"

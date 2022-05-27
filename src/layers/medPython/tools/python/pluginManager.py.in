@@ -9,16 +9,14 @@ failedPlugins = dict()
 
 def loadPlugins():
     for moduleInfo in iter_modules():
-        # moduleInfo[2] is True if the module is a package
-        if moduleInfo[2]:
-            moduleName = moduleInfo[1]
-            if moduleName.startswith('@PYTHON_PLUGIN_PREFIX@'):
-                try:
-                    medInria.logInfo(f'Loading python plugin: {moduleName}')
-                    loadedPlugins[moduleName] = import_module(moduleName)
-                except Exception as err:
-                    failedPlugins[moduleName] = f'{err}'
-                    medInria.logCritical(f'Error while loading Python plugin {moduleName}: {err}')
+        moduleName = moduleInfo[1]
+        if moduleName.startswith('@PYTHON_PLUGIN_PREFIX@'):
+            try:
+                medInria.logInfo(f'Loading python plugin: {moduleName}')
+                loadedPlugins[moduleName] = import_module(moduleName)
+            except Exception as err:
+                failedPlugins[moduleName] = f'{err}'
+                medInria.logCritical(f'Error while loading Python plugin {moduleName}: {err}')
 
 
 def pluginsInfo():

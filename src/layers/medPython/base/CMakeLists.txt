@@ -24,6 +24,7 @@ list_source_files(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/conversion
     ${CMAKE_CURRENT_SOURCE_DIR}/core
     ${CMAKE_CURRENT_SOURCE_DIR}/error
+    ${CMAKE_CURRENT_SOURCE_DIR}/initialization
     ${CMAKE_CURRENT_SOURCE_DIR}/objects
     )
 
@@ -61,9 +62,8 @@ target_compile_definitions(${TARGET_NAME} PRIVATE
     TARGET_NAME="${TARGET_NAME}"
     PYTHON_PLUGIN_PREFIX="${PYTHON_PLUGIN_PREFIX}"
     PROJECT_NAME="${PROJECT_NAME}"
-    PYTHON_VERSION_MAJOR=${Python_VERSION_MAJOR}
-    PYTHON_VERSION_MINOR=${Python_VERSION_MINOR}
-    PYTHON_VERSION_PATCH=${Python_VERSION_PATCH}
+    PYTHON_MODULE_RESOURCE_DIR="${PYTHON_MODULE_RESOURCE_DIR}"
+    RESOURCE_LIB_DIR="${RESOURCE_LIB_DIR}"
     )
 
 ## #############################################################################

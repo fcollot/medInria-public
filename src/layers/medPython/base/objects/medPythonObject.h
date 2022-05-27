@@ -18,7 +18,6 @@
 
 #include "medPythonAbstractObject.h"
 #include "medPythonExport.h"
-#include "medPythonInit.h"
 
 namespace med::python
 {

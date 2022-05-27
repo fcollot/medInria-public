@@ -13,12 +13,12 @@
 #
 ################################################################################
 
-string(CONCAT EMBED_Python_DOC
-    "Embed Python into the application."
-    " On Unix this option requires that the Python external project was added to"
-    " the superbuild (USE_SYSTEM_Python OFF)."
-    )
-option(EMBED_Python ${EMBED_Python_DOC} ON)
+#string(CONCAT EMBED_Python_DOC
+#    "Embed Python into the application."
+#    " On Unix this option requires that the Python external project was added to"
+#    " the superbuild (USE_SYSTEM_Python OFF)."
+#    )
+#option(EMBED_Python ${EMBED_Python_DOC} ON)
 
 ## #############################################################################
 ## Find SWIG

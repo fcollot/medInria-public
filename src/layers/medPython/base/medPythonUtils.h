@@ -22,8 +22,6 @@ namespace med::python
 
 inline const char* PYTHON_SETTINGS_ID = "python";
 
-MEDPYTHON_EXPORT QString getPythonHome();
-
 /// Appends 'path' to sys.path.
 /// (this function may throw Python-related exceptions)
 ///

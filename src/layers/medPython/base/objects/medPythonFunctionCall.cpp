@@ -40,7 +40,7 @@ FunctionCall::FunctionCall(const AbstractObject& callable, const AbstractObject&
     d->evaluated = false;
 }
 
-FunctionCall::~FunctionCall()
+FunctionCall::~FunctionCall() noexcept(false)
 {
     if (!d->evaluated)
     {
