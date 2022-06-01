@@ -35,7 +35,6 @@ public:
 
     void loadPlugins();
     void startConsole();
-    void stopConsole();
 
 private:
     PythonManagerPrivate* const d;

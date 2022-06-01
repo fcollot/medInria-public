@@ -18,7 +18,7 @@
 ///
 
 // One of Python's structs has a member named slots, and this causes conflicts
-// with the the Qt keyword of the same name.
+// with the Qt keyword of the same name.
 #undef slots
 #define slots _slots
 

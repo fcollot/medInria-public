@@ -11,6 +11,8 @@
 #
 ################################################################################
 
+
+
 function(add_external_resources target_name)
 
 ################################################################################
@@ -38,7 +40,7 @@ function(add_external_resources target_name)
         "FILES"
         )
 
-    get_external_resources_directory(resources_dir)
+    get_external_resources_build_directory(resources_dir)
 
     if (ARG_DESTINATION)
         set(resources_dir "${resources_dir}/${ARG_DESTINATION}")
@@ -54,16 +56,3 @@ function(add_external_resources target_name)
     endif()
 
 endfunction()
-
-macro(get_external_resources_directory resources_dir_var)
-
-    set(${resources_dir_var} "${CMAKE_BINARY_DIR}")
-    get_property(_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-
-    if (${_is_multi_config})
-        string(APPEND ${resources_dir_var} /$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>)
-    endif()
-
-    string(APPEND ${resources_dir_var} "/resources")
-
-endmacro()

@@ -122,11 +122,10 @@ include(set_exe_install_rules)
 include(set_lib_install_rules)
 include(set_lib_properties_variables)
 include(set_plugin_install_rules)
-include(external_resources)
 
 if (USE_Python)
     include(use_python)
-    include(add_python_modules)
+    include(add_python_module)
 endif()
 
 include(add_plugins)
@@ -174,6 +173,19 @@ if (WIN32)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /wd4068")
 endif()
+
+## #############################################################################
+## External resources
+## #############################################################################
+
+set(${PROJECT_NAME}_BINARY_RESOURCE_DIR "${CMAKE_BINARY_DIR}")
+get_property(_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
+if (${_is_multi_config})
+    string(APPEND ${PROJECT_NAME}_BINARY_RESOURCE_DIR /$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>)
+endif()
+
+string(APPEND ${PROJECT_NAME}_BINARY_RESOURCE_DIR "/resources")
 
 ## #############################################################################
 ## Add subdirectory

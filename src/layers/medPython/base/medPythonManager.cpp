@@ -108,7 +108,7 @@ void PythonManager::startConsole()
         }
         catch (Exception& e)
         {
-            qCritical() << QString("Error while starting Python console: %1").arg(e.what());
+            qCritical() << QString("Error while starting the Python console: %1").arg(e.what());
         }
     }
 }

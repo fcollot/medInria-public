@@ -15,47 +15,31 @@
 
 set(PYTHON_MODULE_RESOURCE_DIR python/lib)
 
-function(add_python_modules target_name)
+function(add_python_module target_name)
 
 ################################################################################
 #
-# Usage: add_python_modules([PACKAGE package] [SOURCES [files...]])
+# Usage: add_python_module(target_name [PACKAGE package] [SOURCES [files...]])
 #
-# Creates a target that provides python modules (these modules will need to be
-# imported through `import_external_resources`, see that function for more
-# details). The modules can be specified as .py and .i files (the latter will
-# generate a bindings module through Swig), and also .py.in and .i.in files
-# (these will be automatically configured to generate .py and .i files).
-#
-# If a bindings module is created, the corresponding bindings library will be
-# placed with the normal libraries (not in the resources).
+# Adds a Python module or package target defined by a list of sources. The
+# sources may specify pure Python modules (in which case they are simply copied
+# to the resources folder), or SWIG interface files and C++ files that are used
+# to generate Python bindings (which creates a pure Python module and an
+# associated shared library). Python sources and SWIG interface files can be
+# provided as configurable files (using the .in extension: py.in, i.in) in which
+# case they will be automatically configured to generate .py and .i files. In
+# all cases the PACKAGE option is required if the call specifies at least two
+# pure Python modules (including the bindings module).
 #
 # The options are:
 #
 # PACKAGE
-#     Specify the name of the package that will contain the modules. This option
-#     is required if more than one modules are provided, and optional for a
-#     a single module.
-#
-# PARENT_PACKAGE
-#     Specify if the module (or package) is inside another package. The value of
-#     this option must be a target previously created with `add_python_modules`.
-#
-# BINDINGS_MODULE_NAME
-#     Specify the name of the generated bindings module. The default name is
-#     "bindings.py" if this command creates a package, or the target name if it
-#     does not.
-#
-# BINDINGS_LIBRARY_NAME
-#     Specify the name of the generated bindings library. The default name is
-#     the same is the bindings module with one exception: if the module name was
-#     not provided and we are creating a package, then the library name will be
-#     [package name]_bindings.
+#     Specify the name of the package that will contain the modules. If this
+#     option is used an __init__.py file should be included.
 #
 # SOURCES
-#     Add python source files (.py, .py.in) and Swig interface files (.i, .i.in).
-#     The interface files result in the generation of one python module and one
-#     shared library.
+#     Add python source files (.py, .py.in), Swig interface files (.i, .i.in),
+#     and any necessary C++ files for the bindings library.
 #
 ################################################################################
 
@@ -71,8 +55,7 @@ function(add_python_modules target_name)
 
     _split_source_files(python_sources cpp_sources swig_sources ${ARG_SOURCES})
 
-    get_external_resources_directory(resources_dir)
-    string(APPEND resources_dir "/${PYTHON_MODULE_RESOURCE_DIR}")
+    set(resources_dir "${PROJECT_NAME}_BINARY_RESOURCE_DIR/${PYTHON_MODULE_RESOURCE_DIR}")
 
     if(ARG_PACKAGE)
         string(REGEX REPLACE "\\." "/" package_dir ${ARG_PACKAGE})
