@@ -99,6 +99,8 @@ foreach(dir ${PRIVATE_PLUGINS_LEGACY_DIRS})
     set(CPACK_INSTALL_CMAKE_PROJECTS ${CPACK_INSTALL_CMAKE_PROJECTS} ${dir} ${dir} ALL "/bin")
 endforeach()
 
+
+
 install(CODE "include(${CURRENT_BIN_DIR}/PostArchiveCleanupScript.cmake)")
 
 # force the medinria-superproject install target to run last so we can use it

@@ -55,7 +55,7 @@ function(add_python_module target_name)
 
     _split_source_files(python_sources cpp_sources swig_sources ${ARG_SOURCES})
 
-    set(resources_dir "${PROJECT_NAME}_BINARY_RESOURCE_DIR/${PYTHON_MODULE_RESOURCE_DIR}")
+    set(resources_dir "${${PROJECT_NAME}_BINARY_RESOURCE_DIR}/${PYTHON_MODULE_RESOURCE_DIR}")
 
     if(ARG_PACKAGE)
         string(REGEX REPLACE "\\." "/" package_dir ${ARG_PACKAGE})

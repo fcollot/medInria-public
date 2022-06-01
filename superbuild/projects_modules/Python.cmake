@@ -94,6 +94,7 @@ function(python_project)
 
         set(${ep}_DIR ${source_dir} PARENT_SCOPE)
         set(${ep}_VERSION "${version_major}.${version_minor}.${version_patch}" PARENT_SCOPE)
+        set(SWIG_DIR ${SWIG_DIR} PARENT_SCOPE)
 
         ## #####################################################################
         ## Create config files

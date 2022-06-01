@@ -116,7 +116,7 @@ if (APPLE)
   set_target_properties(${TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/cmake/MedInriaOSXBundleInfo.plist.in")
 
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} ARGS -E make_directory Resources}
+      COMMAND ${CMAKE_COMMAND} ARGS -E make_directory Resources
       COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/resources/${TARGET_NAME}.icns" Resources
       WORKING_DIRECTORY "$<TARGET_BUNDLE_CONTENT_DIR:${TARGET_NAME}>"
       )
