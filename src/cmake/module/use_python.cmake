@@ -100,6 +100,34 @@ else()
 endif()
 
 ## #############################################################################
+## Fix STDARCH path
+## #############################################################################
+
+# (CMake's FindPython doesn't give the correct STDARCH path)
+
+if(WIN32)
+    set(libext ".dll")
+else()
+    set(libext ".so")
+endif()
+
+file(GLOB stdarch_libs "${Python_STDARCH}/*${libext}")
+
+if(NOT stdarch_libs)
+    if(WIN32)
+        set(Python_STDARCH "${Python_STDLIB}/../DLLs")
+    else()
+        set(Python_STDARCH "${Python_STDLIB}/lib-dynload")
+    endif()
+
+    file(GLOB stdarch_libs "${Python_STDARCH}/*${libext}")
+
+    if(NOT stdarch_libs)
+        message(FATAL_ERROR "Cannot find the Python_STDARCH libraries.")
+    endif()
+endif()
+
+## #############################################################################
 ## Compile definitions
 ## #############################################################################
 
@@ -167,33 +195,7 @@ function(embed_python target)
 #                )
 #        endif()
 
-        ## #############################################################################
-        ## Adjust STDARCH path
-        ## #############################################################################
 
-        # (CMake's FindPython doesn't give the correct STDARCH path)
-
-        if(WIN32)
-            set(libext ".dll")
-        else()
-            set(libext ".so")
-        endif()
-
-        file(GLOB stdarch_libs "${Python_STDARCH}/*${libext}")
-
-        if(NOT stdarch_libs)
-            if(WIN32)
-                set(Python_STDARCH "${Python_STDLIB}/../DLLs")
-            else()
-                set(Python_STDARCH "${Python_STDLIB}/lib-dynload")
-            endif()
-
-            file(GLOB stdarch_libs "${Python_STDARCH}/*${libext}")
-
-            if(NOT stdarch_libs)
-                message(FATAL_ERROR "Cannot find the Python_STDARCH libraries.")
-            endif()
-        endif()
 
         set(Python_EXCLUDED_MODULES
             test
