@@ -31,6 +31,7 @@ struct PythonManagerPrivate
     static QStringList packagePaths;
 
     bool pythonIsUsable = false;
+    wchar_t* programName;
     Object tools;
     Object console;
 };
@@ -131,6 +132,8 @@ void PythonManager::initialize()
 
 void PythonManager::initializeInterpreter()
 {
+    d->programName = Py_DecodeLocale(qUtf8Printable(qApp->applicationFilePath()), nullptr);
+    Py_SetProgramName(d->programName);
     Py_Initialize();
 
     if (Py_IsInitialized())
@@ -158,7 +161,7 @@ void PythonManager::initializePaths()
 
         if (!testInternalPaths(paths))
         {
-            throw RuntimeError("Cannot find the interal module paths.");
+            throw RuntimeError("Cannot find the internal module paths.");
         }
     }
 

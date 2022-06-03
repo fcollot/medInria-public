@@ -96,7 +96,7 @@ if (USE_Python)
     list(APPEND cmake_args
         -DPython_VERSION:STRING=${Python_VERSION}
         -DPython_DIR:PATH=${Python_DIR}
-        -DSWIG_DIR:PATH=${SWIG_DIR}
+        -DSWIG_EXECUTABLE:PATH=${SWIG_EXECUTABLE}
         )
 endif()
 
