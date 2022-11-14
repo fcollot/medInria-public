@@ -145,6 +145,7 @@ target_link_libraries(${TARGET_NAME}
   medWidgets
   medCoreLegacy
   medPacs
+  pyncpp
   )
 
 ## #############################################################################
@@ -153,3 +154,17 @@ target_link_libraries(${TARGET_NAME}
 
 ## see cmake/module/set_lib_install_rules.Cmake
 set_exe_install_rules(${TARGET_NAME})
+
+## #############################################################################
+## embedded Python
+## #############################################################################
+
+if (APPLE)
+  set(_stdlib_install_path "bin/$<TARGET_FILE_BASE_NAME:${TARGET_NAME}>.app/Contents/Resources/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
+else()
+  set(_stdlib_install_path "resources/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
+endif()
+
+PYNCPP_target_add_path_config_file(${TARGET_NAME})
+PYNCPP_target_install_path_config_file(${TARGET_NAME} DESTINATION bin STDLIB ${_stdlib_install_path})
+PYNCPP_install_embedded_python(DESTINATION "${_stdlib_install_path}")

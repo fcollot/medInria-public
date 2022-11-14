@@ -38,6 +38,10 @@ function(PYNCPP_project)
             GIT_PROGRESS True
             )
 
+        set(cmake_args
+            -DQt5_DIR:PATH=${Qt5_DIR}
+            )
+
         ## #####################################################################
         ## Add external project
         ## #####################################################################
@@ -49,6 +53,7 @@ function(PYNCPP_project)
             TMP_DIR ${tmp_path}
             STAMP_DIR ${stamp_path}
             DEPENDS ${${ep}_dependencies}
+            CMAKE_ARGS ${cmake_args}
             INSTALL_COMMAND ""
             "${project_args}"
             )
