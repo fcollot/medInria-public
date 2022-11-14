@@ -98,6 +98,10 @@ set(cmake_cache_args
   -DBoost_INCLUDE_DIR:PATH=${Boost_INCLUDE_DIR}
   )
 
+if (USE_Python)
+    list(APPEND cmake_cache_args -DPYNCPP_DIR:PATH=${PYNCPP_DIR})
+endif()
+
 if (${USE_FFmpeg})
   list(APPEND cmake_args
   -DUSE_FFmpeg=${USE_FFmpeg})

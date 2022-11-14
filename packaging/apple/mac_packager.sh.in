@@ -16,9 +16,10 @@ cd @medInria_BINARY_DIR@/bin
 
 \rm -fr TmpInstall
 mkdir TmpInstall
-cp -r medInria.app TmpInstall
+mkdir TmpInstall/bin
+cp -r medInria.app TmpInstall/bin
 
-cd TmpInstall
+cd TmpInstall/bin
 
 @Qt5_DIR@/../../../bin/macdeployqt medInria.app -appstore-compliant
 
@@ -31,6 +32,8 @@ done
 
 @dtk_DIR@/bin/dtkDeploy medInria.app $injectDirs &>/dev/null
 
+cmake --install @medInria_BINARY_DIR@ --component Python --prefix @medInria_BINARY_DIR@/bin/TmpInstall
+
 #Run fancy packaging apple script
 
 \cp -f @medInria_SOURCE_DIR@/utils/osx_packaging/BaseMedinriaPackage.sparseimage.gz @PROJECT_BINARY_DIR@/MedinriaPackage.sparseimage.gz
@@ -39,7 +42,7 @@ gunzip -f MedinriaPackage.sparseimage.gz
 
 devName=`hdiutil attach -readwrite -noverify -noautoopen MedinriaPackage.sparseimage | egrep '^/dev/' | sed 1q | awk '{print $1}'`
 diskutil rename "medInria base" "medInria @MEDINRIA_SUPERBUILD_VERSION@"
-\cp -rf @medInria_BINARY_DIR@/bin/TmpInstall/medInria.app /Volumes/"medInria @MEDINRIA_SUPERBUILD_VERSION@"/
+\cp -rf @medInria_BINARY_DIR@/bin/TmpInstall/bin/medInria.app /Volumes/"medInria @MEDINRIA_SUPERBUILD_VERSION@"/
 
 sync
 hdiutil detach $devName
