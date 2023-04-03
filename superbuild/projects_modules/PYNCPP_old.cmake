@@ -11,18 +11,18 @@
 #
 ################################################################################
 
-#set(PYTHON_PACKAGES
-#    numpy
-#    CACHE STRING "Third-party Python packages to embed")
+set(PYTHON_PACKAGES
+    numpy
+    CACHE STRING "Third-party Python packages to embed")
 
-function(PYNCPP_project)
+function(PYNCPP_project_old)
 
     set(ep PYNCPP)
 
     EP_Initialisation(${ep}
         USE_SYSTEM OFF
         BUILD_SHARED_LIBS ON
-        REQUIRED_FOR_PLUGINS ON
+        REQUIRED_FOR_PLUGINS OFF
         )
 
     if(NOT USE_SYSTEM_${ep})
@@ -33,7 +33,7 @@ function(PYNCPP_project)
            # GIT_REPOSITORY ${GITHUB_PREFIX}LIRYC-IHU/pyncpp.git
            # GIT_TAG origin/working
             GIT_REPOSITORY ${GITHUB_PREFIX}fcollot/pyncpp.git
-            GIT_TAG origin/pack4
+            GIT_TAG origin/pack3
             GIT_SHALLOW True
             GIT_PROGRESS True
             )

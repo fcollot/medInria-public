@@ -112,9 +112,15 @@ add_executable(${TARGET_NAME} ${DEPLOYMENT_SYSTEM} # Empty for Linux
   ${${TARGET_NAME}_HTML}
   )
 
-if (APPLE)
+if(APPLE)
   set_target_properties(${TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/cmake/MedInriaOSXBundleInfo.plist.in")
   import_external_resources(${TARGET_NAME} FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/${TARGET_NAME}.icns")
+
+  set(MACOSX_BUNDLE_BUNDLE_NAME ${TARGET_NAME})
+  set(MACOSX_BUNDLE_ICON_FILE ${TARGET_NAME}.icns)
+  set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${TARGET_NAME}_VERSION})
+  set(MACOSX_BUNDLE_BUNDLE_VERSION ${TARGET_NAME}_VERSION})
+  set(MACOSX_BUNDLE_LONG_VERSION_STRING "Version ${${TARGET_NAME}_VERSION}")
 endif()
 
 ## #############################################################################
@@ -145,8 +151,11 @@ target_link_libraries(${TARGET_NAME}
   medWidgets
   medCoreLegacy
   medPacs
-  pyncpp
   )
+
+if(USE_Python)
+    target_link_libraries(${TARGET_NAME} ${PYNCPP_CPP_API_LIBRARY})
+endif()
 
 ## #############################################################################
 ## install
@@ -155,16 +164,4 @@ target_link_libraries(${TARGET_NAME}
 ## see cmake/module/set_lib_install_rules.Cmake
 set_exe_install_rules(${TARGET_NAME})
 
-## #############################################################################
-## embedded Python
-## #############################################################################
 
-if (APPLE)
-  set(_stdlib_install_path "bin/$<TARGET_FILE_BASE_NAME:${TARGET_NAME}>.app/Contents/Resources/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
-else()
-  set(_stdlib_install_path "resources/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
-endif()
-
-PYNCPP_target_add_path_config_file(${TARGET_NAME})
-PYNCPP_target_install_path_config_file(${TARGET_NAME} DESTINATION bin STDLIB ${_stdlib_install_path})
-PYNCPP_install_embedded_python(DESTINATION "${_stdlib_install_path}")

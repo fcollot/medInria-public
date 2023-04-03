@@ -28,6 +28,7 @@ list(APPEND ${ep}_dependencies
   QtDCM
   RPI
   LogDemons
+  PYNCPP
   )
 
 if (USE_DTKIMAGING)
@@ -97,10 +98,6 @@ set(cmake_cache_args
   -DLogDemons_DIR:PATH=${LogDemons_DIR}
   -DBoost_INCLUDE_DIR:PATH=${Boost_INCLUDE_DIR}
   )
-
-if (USE_Python)
-    list(APPEND cmake_cache_args -DPYNCPP_DIR:PATH=${PYNCPP_DIR})
-endif()
 
 if (${USE_FFmpeg})
   list(APPEND cmake_args

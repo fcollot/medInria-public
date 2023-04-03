@@ -65,10 +65,19 @@ function(set_lib_install_rules target)
 
     install(TARGETS ${target}
         RUNTIME DESTINATION lib
+        COMPONENT Runtime
+
         LIBRARY DESTINATION lib
+        COMPONENT Runtime
+
         ARCHIVE DESTINATION lib
+        COMPONENT Runtime
+
         FRAMEWORK DESTINATION lib
+        COMPONENT Runtime
+
         RESOURCE DESTINATION resources/${target}
+        COMPONENT Runtime
         )
 
 ## #############################################################################
@@ -78,6 +87,7 @@ function(set_lib_install_rules target)
     if(ARG_HEADERS)
         install(FILES ${ARG_HEADERS}
             DESTINATION include/${target}
+            COMPONENT Development
             )
     endif()
 

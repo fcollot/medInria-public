@@ -11,8 +11,8 @@
 #
 ################################################################################
 
-set(CURRENT_SRC_DIR ${CMAKE_SOURCE_DIR}/packaging/unix)
-set(CURRENT_BIN_DIR ${CMAKE_BINARY_DIR}/packaging/unix)
+set(CURRENT_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unix)
+set(CURRENT_BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unix)
 
 # Install a launcher scripts for the application with right environment variable
 
@@ -57,5 +57,8 @@ set(MEDINRIA_PLUGINS_DIRS "\${MEDINRIA_DIR}/plugins:\${MEDINRIA_DIR}/bin/plugins
 set(MEDINRIA_PLUGINS_LEGACY_DIRS "\${MEDINRIA_DIR}/plugins_legacy:\${MEDINRIA_DIR}/bin/plugins_legacy:\${MEDINRIA_USER_PLUGINS_DIRS_LEGACY}")
 
 configure_file(${CURRENT_SRC_DIR}/medInria.sh.in ${CURRENT_BIN_DIR}/medInria_launcher.sh @ONLY)
-install(PROGRAMS ${CURRENT_BIN_DIR}/medInria_launcher.sh
+
+if(NOT APPLE)
+    install(PROGRAMS ${CURRENT_BIN_DIR}/medInria_launcher.sh
         DESTINATION bin)
+endif()

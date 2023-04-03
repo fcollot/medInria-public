@@ -1,0 +1,25 @@
+################################################################################
+#
+# medInria
+#
+# Copyright (c) INRIA. All rights reserved.
+#
+# See LICENSE.txt for details in the root of the sources or:
+# https://github.com/medInria/medInria-public/blob/master/LICENSE.txt
+#
+# This software is distributed WITHOUT ANY WARRANTY; without even
+# the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+# PURPOSE.
+#
+################################################################################
+
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+set_and_check(PYNCPP_DIR "@PACKAGE_PYNCPP_DIR@")
+
+find_dependency(PYNCPP REQUIRED COMPONENTS Qt5)
+
+set(medInria_python_FOUND TRUE)
+check_required_components(medInria_python)

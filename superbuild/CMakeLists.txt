@@ -30,6 +30,9 @@ find_package(Qt5 REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED)
 
+find_package(OpenSSL COMPONENTS SSL)
+set(OPENSSL_ROOT_DIR CACHE PATH "Root directory of OpenSSL.")
+
 ## #############################################################################
 ## Add exteral projects
 ## #############################################################################
@@ -179,7 +182,7 @@ include(EP_CheckEnvironment)
 include(ConfigureExternalProjects)
 
 ## #############################################################################
-## Package
+## Packaging
 ## #############################################################################
 
-include(Packaging)
+add_subdirectory(packaging)

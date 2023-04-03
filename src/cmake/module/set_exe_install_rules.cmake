@@ -31,41 +31,18 @@ else()
 endif()
 
 install(TARGETS ${target}
-  RUNTIME DESTINATION bin
-  BUNDLE DESTINATION bin
-  RESOURCE DESTINATION resources
+  RUNTIME
+  DESTINATION bin
+  COMPONENT Runtime
+
+  BUNDLE
+  DESTINATION bin
+  COMPONENT Runtime
+
+  RESOURCE
+  DESTINATION resources
+  COMPONENT Runtime
   )
-
-## #############################################################################
-##  Mac bundle specificites
-## #############################################################################
-
-if (APPLE)
-  set(MACOSX_BUNDLE_BUNDLE_NAME
-    ${target}
-    )
-  set(MACOSX_BUNDLE_ICON_FILE
-    ${target}.icns
-    )
-  set(MACOSX_BUNDLE_SHORT_VERSION_STRING
-    ${${target}_VERSION}
-    )
-  set(MACOSX_BUNDLE_BUNDLE_VERSION
-    ${${target}_VERSION}
-    )
-  set(MACOSX_BUNDLE_LONG_VERSION_STRING
-    "Version ${${target}_VERSION}"
-    )
-
-  install(CODE "
-  execute_process(COMMAND
-    \${QT_BINARY_DIR}/macdeployqt \${CMAKE_INSTALL_PREFIX}/bin/${target}.app
-    )
-    execute_process(COMMAND
-      \${dtk_DIR}/bin/dtkDeploy \${CMAKE_INSTALL_PREFIX}/bin/${target}.app -inject-dir=\${CMAKE_CURRENT_BINARY_DIR}/plugins
-      )
-  ")
-endif()
 
 endmacro()
 

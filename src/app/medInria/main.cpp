@@ -19,6 +19,10 @@
 #include <QtPlatformHeaders/QWindowsWindowFunctions>
 #endif
 
+#if(USE_PYTHON)
+#include <pyncpp.h>
+#endif
+
 #include <medMainWindow.h>
 #include <medApplication.h>
 #include <medSplashScreen.h>
@@ -184,6 +188,23 @@ int main(int argc,char* argv[])
 
     medDataManager::instance()->setDatabaseLocation();
 
+#if(USE_PYTHON)
+    pyncpp::Manager pythonManager;
+    bool pythonInitialized = pythonManager.initialize();
+
+    try
+    {
+        PyObject* globals = pyncpp::cpythonCall(PyDict_New);
+        QString sourceCode = "import sys; print(f'sys.path: {sys.path}')";
+        pyncpp::cpythonCall(PyRun_String, qUtf8Printable(sourceCode), Py_file_input, globals, nullptr);
+        Py_CLEAR(globals);
+    }
+    catch(pyncpp::Exception& e)
+    {
+        qCritical() << e.what();
+    }
+#endif
+
     medPluginManager::instance()->setVerboseLoading(true);
     medPluginManager::instance()->initialize();
 
@@ -233,6 +254,14 @@ int main(int argc,char* argv[])
 
     if (show_splash)
         splash.finish(mainwindow);
+
+#if(USE_PYTHON)
+    if(!pythonInitialized) {
+        QMessageBox::warning(mainwindow,
+                             "Python initialization failed",
+                             "");
+    }
+#endif
 
     if (medPluginManager::instance()->plugins().isEmpty()) {
         QMessageBox::warning(mainwindow,
