@@ -28,7 +28,7 @@ list(APPEND ${ep}_dependencies
   QtDCM
   RPI
   LogDemons
-  PYNCPP
+  pyncpp
   )
 
 if (USE_DTKIMAGING)
@@ -113,7 +113,7 @@ endif()
 
 if (USE_Python)
   list(APPEND cmake_cache_args
-      -DPYNCPP_DIR:PATH=${PYNCPP_DIR}
+      -Dpyncpp_DIR:PATH=${pyncpp_DIR}
       )
 endif()
   
@@ -132,7 +132,7 @@ ExternalProject_Add(${ep}
   CMAKE_CACHE_ARGS ${cmake_cache_args}
   DEPENDS ${${ep}_dependencies}
   INSTALL_COMMAND ""
-  BUILD_ALWAYS 1
+  BUILD_ALWAYS 0
   )
 
 ## #############################################################################
@@ -153,7 +153,7 @@ if (WIN32)
   file(TO_NATIVE_PATH ${QtDCM_DIR}               DCM_BIN_BASE)
   file(TO_NATIVE_PATH ${_qt5Core_install_prefix} QT5_BIN_BASE)
   file(TO_NATIVE_PATH ${medInria_BINARY_DIR}     MED_BIN_BASE)
-  file(TO_NATIVE_PATH ${PYNCPP_PYTHON_DIR}       PYTHON_DIR)
+  file(TO_NATIVE_PATH ${pyncpp_PYTHON_DIR}       PYTHON_DIR)
   
   set(CONFIG_MODE $<$<CONFIG:debug>:Debug>$<$<CONFIG:release>:Release>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>)
   

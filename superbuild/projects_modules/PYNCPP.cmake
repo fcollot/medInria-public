@@ -15,9 +15,9 @@ set(PYTHON_VERSION_MAJOR 3 CACHE STRING "Python major version")
 set(PYTHON_VERSION_MINOR 10 CACHE STRING "Python minor version")
 set(PYTHON_VERSION_PATCH 10 CACHE STRING "Python patch version")
 
-function(PYNCPP_project)
+function(pyncpp_project)
 
-    set(ep PYNCPP)
+    set(ep pyncpp)
 
     EP_Initialisation(${ep}
         USE_SYSTEM OFF
@@ -32,8 +32,10 @@ function(PYNCPP_project)
         set(PYNCPP_PYTHON_DIR "${build_path}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
 
         set(project_args
-            GIT_REPOSITORY ${GITHUB_PREFIX}LIRYC-IHU/pyncpp.git
-            GIT_TAG origin/working
+#            GIT_REPOSITORY ${GITHUB_PREFIX}LIRYC-IHU/pyncpp.git
+#            GIT_TAG origin/working
+            GIT_REPOSITORY ${GITHUB_PREFIX}fcollot/pyncpp.git
+            GIT_TAG origin/fix3
             GIT_SHALLOW True
             GIT_PROGRESS True
             )
@@ -78,7 +80,7 @@ function(PYNCPP_project)
         ## #####################################################################
 
         set(${ep}_DIR ${build_path} PARENT_SCOPE)
-        set(PYNCPP_PYTHON_DIR "${PYNCPP_PYTHON_DIR}" PARENT_SCOPE)
+        set(${ep}_PYTHON_DIR "${PYNCPP_PYTHON_DIR}" PARENT_SCOPE)
 
     endif()
 
