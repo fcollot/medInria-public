@@ -11,9 +11,6 @@
 #
 ################################################################################
 
-set(CURRENT_SRC_DIR ${CMAKE_SOURCE_DIR}/packaging/unix)
-set(CURRENT_BIN_DIR ${CMAKE_BINARY_DIR}/packaging/unix)
-
 # Install a launcher scripts for the application with right environment variable
 
 #   For developpers.
@@ -44,7 +41,7 @@ configure_file(${CURRENT_SRC_DIR}/MUSICardio.sh.in MUSICardio.sh @ONLY)
 
 #   For end users.
 
-file(READ "${CURRENT_SRC_DIR}/locate_bin.sh" LOCATE)
+file(READ "${CMAKE_CURRENT_LIST_DIR}/locate_bin.sh" LOCATE)
 set(MEDINRIA_DIR "$(locate)")
 
 if (APPLE)
@@ -58,4 +55,3 @@ set(MEDINRIA_PLUGINS_LEGACY_DIRS "\${MEDINRIA_DIR}/plugins_legacy:\${MEDINRIA_DI
 
 configure_file(${CURRENT_SRC_DIR}/MUSICardio.sh.in ${CURRENT_BIN_DIR}/MUSICardio_launcher.sh @ONLY)
 install(PROGRAMS ${CURRENT_BIN_DIR}/MUSICardio_launcher.sh
-        DESTINATION bin)
