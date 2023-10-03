@@ -34,7 +34,7 @@ endif()
 
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${MSVC_ARCH}")
 
-set(ICON_PATH "${PROJECT_SOURCE_DIR}/src/app/medInria/resources/MUSICardio_logo_small.ico")
+set(ICON_PATH "${CMAKE_SOURCE_DIR}/src/app/medInria/resources/MUSICardio.ico")
 
 # Used on pinned on taskbar
 set(CPACK_PACKAGE_ICON ${ICON_PATH})
@@ -109,6 +109,11 @@ list(APPEND
   ${RPI_DIR}/bin/Release 
   ${zlib_DIR}/Release
   )
+
+set(CPACK_INSTALL_CMAKE_PROJECTS
+    ${pyncpp_DIR} pyncpp Python "/"
+    ${CPACK_INSTALL_CMAKE_PROJECTS}
+    )
 
 set(CPACK_INSTALL_CMAKE_PROJECTS
     ${pyncpp_DIR} pyncpp Python "/"
