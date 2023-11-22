@@ -114,10 +114,10 @@ endif()
 
 if (USE_Python)
   list(APPEND cmake_cache_args
-      -Dpyncpp_DIR:PATH=${pyncpp_DIR}
+      -Dpyncpp_ROOT:PATH=${pyncpp_DIR}
       )
 endif()
-  
+
 ## #############################################################################
 ## Add external-project
 ## #############################################################################
@@ -140,13 +140,6 @@ ExternalProject_Add(${ep}
 ## Set variable to provide infos about the project
 ## #############################################################################
 
-ExternalProject_Get_Property(${ep} binary_dir)
-set(${ep}_DIR ${binary_dir} PARENT_SCOPE)
-
-ExternalProject_Get_Property(${ep} source_dir)
-set(${ep}_SOURCE_DIR ${source_dir} PARENT_SCOPE)
-  
-  
 if (WIN32)
   file(TO_NATIVE_PATH ${ITK_DIR}                 ITK_BIN_BASE)
   file(TO_NATIVE_PATH ${VTK_DIR}                 VTK_BIN_BASE)
@@ -169,11 +162,13 @@ if (WIN32)
         COMMAND for %%I in ( ${QT5_BIN_BASE}\\bin\\*.dll                 ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) 
         COMMAND for %%I in ( ${PYTHON_BIN_BASE}\\bin\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI)
         COMMAND for %%I in ( ${PYTHON_BIN_BASE}\\bin\\DLLs ${PYTHON_BIN_BASE}\\bin\\Lib ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /d /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /d /H ${MED_BIN_BASE}\\%%~nxI %%~fI)
-     )
+)
 endif()
 
 
 
 endif() #NOT USE_SYSTEM_ep
+
+set(${ep}_DIR ${medInria_BINARY_DIR} PARENT_SCOPE)
 
 endfunction()

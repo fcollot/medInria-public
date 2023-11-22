@@ -39,8 +39,8 @@ function(music_plugins_project)
 
     if (NOT USE_SYSTEM_${external_project})
 
-        set(git_url ${GITHUB_PREFIX}Inria-Asclepios/music.git)
-        set(git_tag master)
+        set(git_url ${GITHUB_PREFIX}fcollot/music.git)
+        set(git_tag new)
 
         set(cmake_args
             ${ep_common_cache_args}
@@ -60,22 +60,19 @@ function(music_plugins_project)
             -Dopenssl_DIR:FILEPATH=${openssl_DIR}
             -DOPENSSL_ROOT_DIR:FILEPATH=${OPENSSL_ROOT_DIR} 
             -DOPENSSL_BUILD:FILEPATH=${OPENSSL_BUILD}
-            -DEIGEN_INCLUDE_DIR:FILEPATH=${eigen_INCLUDE_DIR}
-            -DQWT_INCLUDE_DIR:FILEPATH=${qwt_INCLUDE_DIR}
-            -DQWT_DIR:FILEPATH=${qwt_DIR}
-            -DMMG_INCDIR:FILEPATH=${mmg_INCDIR}
-            -DMMG_LIBDIR:FILEPATH=${mmg_LIBDIR}
-            -DTETGEN_INCLUDE_DIR:FILEPATH=${tetgen_INCLUDE_DIR}
-            -DTETGEN_DIR:FILEPATH=${tetgen_DIR}
-            -DQUAZIP_DIR:FILEPATH=${quazip_DIR}
-            -DQUAZIP_INCLUDE_DIR:FILEPATH=${quazip_INCLUDE_DIR}
-            -DZLIB_DIR:FILEPATH=${zlib_DIR}
+            -DEigen3_ROOT:PATH=${eigen_DIR}
+            -Dmmg_ROOT:PATH=${mmg_DIR}
+            -DQWT_INCLUDE_DIR:PATH=${qwt_INCLUDE_DIR}
+            -DQWT_DIR:PATH=${qwt_DIR}
+            -Dtetgen_ROOT:PATH=${tetgen_DIR}
+            -DQuaZip-Qt5_ROOT:PATH=${quazip_DIR}
+            -DZLIB_ROOT:PATH=${zlib_DIR}
             -DUSE_RealTimeWorkspace=${USE_RealTimeWorkspace}
             )
 
         if (USE_Python)
           list(APPEND cmake_args
-              -Dpyncpp_DIR:PATH=${pyncpp_DIR}
+              -Dpyncpp_ROOT:PATH=${pyncpp_DIR}
               )
         endif()
 
@@ -94,7 +91,6 @@ function(music_plugins_project)
             DEPENDS ${${external_project}_dependencies}
             INSTALL_COMMAND ""
             UPDATE_COMMAND ""
-            BUILD_ALWAYS 1
             )
 
         set(EXTERNAL_PROJECT_PLUGINS_LEGACY_DIRS ${EXTERNAL_PROJECT_PLUGINS_LEGACY_DIRS} "${build_path}" PARENT_SCOPE)

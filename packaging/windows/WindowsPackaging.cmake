@@ -34,7 +34,7 @@ endif()
 
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${MSVC_ARCH}")
 
-set(ICON_PATH "${CMAKE_SOURCE_DIR}/src/app/medInria/resources/MUSICardio.ico")
+set(ICON_PATH "${CMAKE_SOURCE_DIR}/src/app/medInria/resources/MUSICardio_logo_small.ico")
 
 # Used on pinned on taskbar
 set(CPACK_PACKAGE_ICON ${ICON_PATH})
@@ -111,11 +111,18 @@ list(APPEND
   )
 
 set(CPACK_INSTALL_CMAKE_PROJECTS
-    ${pyncpp_DIR} pyncpp Python "/"
+    ${pyncpp_DIR} pyncpp Runtime "/"
     ${CPACK_INSTALL_CMAKE_PROJECTS}
     )
 
 install(CODE "
+
+file(WRITE \"\${CMAKE_INSTALL_PREFIX}/bin/MUSICardio.exe._pth\"
+    \".\\n\"
+    \"../${pyncpp_PYTHON_INSTALL_DESTINATION}/Lib\\n\"
+    \"../${pyncpp_PYTHON_INSTALL_DESTINATION}/DLLs\\n\"
+    \"../${pyncpp_PYTHON_INSTALL_DESTINATION}/import site\"
+    )
 
 file(GLOB_RECURSE itk_files LIST_DIRECTORIES true \"${ITK_DIR}/bin/*.dll\")
 file(GLOB_RECURSE vtk_files LIST_DIRECTORIES true \"${VTK_DIR}/bin/*.dll\")
@@ -123,6 +130,7 @@ file(GLOB_RECURSE dtk_files LIST_DIRECTORIES true \"${dtk_DIR}/bin/*.dll\")
 file(GLOB_RECURSE dcm_files LIST_DIRECTORIES true \"${QtDCM_DIR}/bin/*.dll\")
 file(GLOB_RECURSE qt5_files LIST_DIRECTORIES true \"${QT_BINARY_DIR}/*.dll\")
 file(GLOB_RECURSE zlib_files LIST_DIRECTORIES true \"${zlib_DIR}/*.dll\")
+file(GLOB_RECURSE pyncpp_files LIST_DIRECTORIES false \"${pyncpp_DIR}/bin/*.dll\")
 list(APPEND files \${itk_files})
 list(APPEND files \${vtk_files})
 list(APPEND files \${dtk_files})

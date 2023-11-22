@@ -13,10 +13,16 @@ list(APPEND ${ep}_dependencies
 ## Prepare the project
 ## ############################################################################# 
 
+epComputPath(${ep})
+
+set(${ep}_ROOT ${build_path}/install)
+set(ZLIB_ROOT ${zlib_DIR})
+
 EP_Initialisation(${ep}
   USE_SYSTEM OFF 
   BUILD_SHARED_LIBS OFF
   REQUIRED_FOR_PLUGINS ON
+  PACKAGE_NAME QuaZip-Qt5
 )
 
 if (NOT USE_SYSTEM_${ep})
@@ -62,15 +68,13 @@ endif()
 
 find_package(Qt5 REQUIRED Core)
 
-epComputPath(${ep})
-
 ExternalProject_Add(${ep}
   PREFIX ${EP_PATH_SOURCE}
   SOURCE_DIR ${EP_PATH_SOURCE}/${ep}
   BINARY_DIR ${build_path}
+  INSTALL_DIR ${${ep}_ROOT}
   TMP_DIR ${tmp_path}
   STAMP_DIR ${stamp_path}
-
   GIT_REPOSITORY ${git_url}
   GIT_TAG ${git_tag}
   CMAKE_GENERATOR ${gen}
@@ -78,17 +82,14 @@ ExternalProject_Add(${ep}
   CMAKE_ARGS ${cmake_args}
   DEPENDS ${${ep}_dependencies}
   UPDATE_COMMAND ""
-  INSTALL_COMMAND ""
-  BUILD_ALWAYS 1
 )
+
+endif() #NOT USE_SYSTEM_ep
 
 ## #############################################################################
 ## Set variable to provide infos about the project
 ## #############################################################################
 
-set(${ep}_DIR ${build_path} PARENT_SCOPE)
-set(${ep}_INCLUDE_DIR ${EP_PATH_SOURCE}/${ep} PARENT_SCOPE)
-
-endif() #NOT USE_SYSTEM_ep
+set(${ep}_DIR ${${ep}_ROOT} PARENT_SCOPE)
 
 endfunction()

@@ -1,0 +1,318 @@
+name: Build superproject
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner'
+        required: false
+        default: 'macos-12'
+        type: choice
+        options:
+          - macos-12
+          - macos-11
+          - ubuntu-22.04
+          - ubuntu-20.04
+          - windows-2022
+          - windows-2019
+      build_type:
+        description: 'Build type'
+        required: false
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - RelWithDebInfo
+          - MinSizeRelease
+          - Debug
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  SLASH: ${{ (inputs.runner == 'windows-2019' || inputs.runner == 'windows-2022') && '\' || '/' }}
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runner }}
+
+    env:
+      BUILD: '${{ github.workspace }}\${{ env.SLASH }}build'
+      EP_SRC: '${{ runner.workspace }}\${{ env.SLASH }}EP\${{ env.SLASH }}src\${{ env.SLASH }}'
+      EP_BUILD: '${{ runner.workspace }}\${{ env.SLASH }}EP\${{ env.SLASH }}build\${{ env.SLASH }}'
+      DEPENDENCIES: '${{ github.workspace }}\${{ env.SLASH }}dependencies\${{ env.SLASH }}'
+      
+    steps:
+    - name: Set git core.longpaths flag
+      run: git config --system core.longpaths true
+           
+    - uses: actions/checkout@v3
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '5.15.2'
+        dir: ${{ build.env.DEPENDENCIES }}
+        cache: 'true'
+        cache-key-prefix: 'install-qt-action'
+        setup-python: 'false'
+
+    - uses: dkershner6/switch-case-action@v1
+      id: boost_platform_version
+      with:
+        conditionals-with-values: |
+          ${{ inputs.runner == 'macos-11' || inputs.runner == 'macos-12' }} => '11'
+          ${{ inputs.runner == 'ubuntu-20.04' || inputs.runner == 'ubuntu-22.04' }} => '20.04'
+          ${{ inputs.runner == 'windows-2022' }} => '2022'
+          ${{ inputs.runner == 'windows-2019' }} => '2019'
+
+    - name: Install boost
+      uses: MarkusJx/install-boost@v2.4.4
+      id: install-boost
+      with:
+        boost_version: 1.73.0
+        platform_version: ${{ steps.boost_platform_version.outputs.value }}
+        boost_install_dir: ${{ build.env.DEPENDENCIES }}
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "dcmtk-source-dir=$(EP_SRC)DCMTK" >> "$GITHUB_OUTPUT"
+        echo "dcmtk-build-dir=${EP_BUILD}DCMTK" >> "$GITHUB_OUTPUT"
+        echo "dtk-source-dir=${EP_SRC}dtk" >> "$GITHUB_OUTPUT"
+        echo "dtk-build-dir=${EP_BUILD}dtk" >> "$GITHUB_OUTPUT"
+        echo "eigen-install-dir=${EP_BUILD}eigen${SLASH}install" >> "$GITHUB_OUTPUT"
+        echo "itk-source-dir=${EP_SRC}ITK" >> "$GITHUB_OUTPUT"
+        echo "itk-build-dir=${EP_BUILD}ITK" >> "$GITHUB_OUTPUT"
+        echo "logdemons-source-dir=${EP_SRC}LogDemons" >> "$GITHUB_OUTPUT"
+        echo "logdemons-build-dir=${EP_BUILD}LogDemons" >> "$GITHUB_OUTPUT"
+        echo "mmg-install-dir=${EP_BUILD}mmg${SLASH}install" >> "$GITHUB_OUTPUT"
+        echo "qtdcm-source-dir=${EP_SRC}QtDCM" >> "$GITHUB_OUTPUT"
+        echo "qtdcm-build-dir=${EP_BUILD}QtDCM" >> "$GITHUB_OUTPUT"
+        echo "quazip-install-dir=${EP_BUILD}quazip${SLASH}install" >> "$GITHUB_OUTPUT"
+        echo "qwt-include-dir=${EP_SRC}qwt/src" >> "$GITHUB_OUTPUT"
+        echo "qwt-build-dir=${EP_BUILD}qwt" >> "$GITHUB_OUTPUT"
+        echo "rpi-source-dir=${EP_SRC}RPI" >> "$GITHUB_OUTPUT"
+        echo "rpi-build-dir=${EP_BUILD}RPI" >> "$GITHUB_OUTPUT"
+        echo "tetgen-install-dir=${EP_BUILD}tetgen${SLASH}install" >> "$GITHUB_OUTPUT"
+        echo "ttk-source-dir=${EP_SRC}TTK" >> "$GITHUB_OUTPUT"
+        echo "ttk-build-dir=${EP_BUILD}TTK" >> "$GITHUB_OUTPUT"
+        echo "vtk-source-dir=${EP_SRC}VTK" >> "$GITHUB_OUTPUT"
+        echo "vtk-build-dir=${EP_BUILD}VTK" >> "$GITHUB_OUTPUT"
+        echo "zlib-install-dir=${EP_BUILD}zlib${SLASH}install" >> "$GITHUB_OUTPUT"
+        echo "medInria-build-dir=${{ github.workspace }}${SLASH}build${SLASH}medInria-build" >> "$GITHUB_OUTPUT"
+
+    - name: Cache DCMTK
+      id: cache-DCMTK
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.dcmtk-source-dir }}
+          ${{ steps.strings.outputs.dcmtk-build-dir }}
+        key: ${{ matrix.os }}-dcmtk
+        restore-keys: |
+          ${{ matrix.os }}-dcmtk
+
+    - name: Cache dtk
+      id: cache-dtk
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.dtk-source-dir }}
+          ${{ steps.strings.outputs.dtk-build-dir }}
+        key: ${{ matrix.os }}-dtk
+        restore-keys: |
+          ${{ matrix.os }}-dtk
+
+    - name: Cache eigen
+      id: cache-eigen
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.eigen-install-dir }}
+        key: ${{ matrix.os }}-eigen
+        restore-keys: |
+          ${{ matrix.os }}-eigen
+
+    - name: Cache ITK
+      id: cache-itk
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.itk-source-dir }}
+          ${{ steps.strings.outputs.itk-build-dir }}
+        key: ${{ matrix.os }}-itk
+        restore-keys: |
+          ${{ matrix.os }}-itk
+
+    - name: Cache LogDemons
+      id: cache-logdemons
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.logdemons-source-dir }}
+          ${{ steps.strings.outputs.logdemons-build-dir }}
+        key: ${{ matrix.os }}-logdemons
+        restore-keys: |
+          ${{ matrix.os }}-logdemons
+
+    - name: Cache mmg
+      id: cache-mmg
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.mmg-install-dir }}
+        key: ${{ matrix.os }}-mmg
+        restore-keys: |
+          ${{ matrix.os }}-mmg
+
+    - name: Cache QtDCM
+      id: cache-qtdcm
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.qtdcm-source-dir }}
+          ${{ steps.strings.outputs.qtdcm-build-dir }}
+        key: ${{ matrix.os }}-qtdcm
+        restore-keys: |
+          ${{ matrix.os }}-qtdcm
+
+    - name: Cache quazip
+      id: cache-quazip
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.quazip-install-dir }}
+        key: ${{ matrix.os }}-quazip
+        restore-keys: |
+          ${{ matrix.os }}-quazip
+
+    - name: Cache qwt
+      id: cache-qwt
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.qwt-include-dir }}
+          ${{ steps.strings.outputs.qwt-build-dir }}
+        key: ${{ matrix.os }}-qwt
+        restore-keys: |
+          ${{ matrix.os }}-qwt
+
+    - name: Cache RPI
+      id: cache-rpi
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.rpi-source-dir }}
+          ${{ steps.strings.outputs.rpi-build-dir }}
+        key: ${{ matrix.os }}-rpi
+        restore-keys: |
+          ${{ matrix.os }}-rpi
+
+    - name: Cache tetgen
+      id: cache-tetgen
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.tetgen-install-dir }}
+        key: ${{ matrix.os }}-tetgen
+        restore-keys: |
+          ${{ matrix.os }}-tetgen
+
+    - name: Cache TTK
+      id: cache-ttk
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.ttk-source-dir }}
+          ${{ steps.strings.outputs.ttk-build-dir }}
+        key: ${{ matrix.os }}-ttk
+        restore-keys: |
+          ${{ matrix.os }}-ttk
+
+    - name: Cache VTK
+      id: cache-vtk
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.vtk-source-dir }}
+          ${{ steps.strings.outputs.vtk-build-dir }}
+        key: ${{ matrix.os }}-vtk
+        restore-keys: |
+          ${{ matrix.os }}-vtk
+
+    - name: Cache zlib
+      id: cache-zlib
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.zlib-install-dir }}
+        key: ${{ matrix.os }}-zlib
+        restore-keys: |
+          ${{ matrix.os }}-zlib
+
+    - name: Cache medInria
+      id: cache-medinria
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ steps.strings.outputs.medinria-build-dir }}
+          ${{ github.workspace }}${{ env.SLASH }}src${{ env.SLASH }}app${{ env.SLASH }}medInria${{ env.SLASH }}resources${{ env.SLASH }}MUSICardio.ico
+        key: ${{ matrix.os }}-medinria
+        restore-keys: |
+          ${{ matrix.os }}-medinria
+
+    - name: Configure CMake
+      run: >
+        cmake
+        ${{ (inputs.runner == 'windows-2019' || inputs.runner == 'windows-2022') && '-G \'Visual Studio 16 2019\'' }}
+        -B ${{ build.env.BUILD }}
+        -D CMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -D CMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -D USE_SYSTEM_DCMTK:BOOL=${{ steps.cache-dcmtk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D DCMTK_ROOT:PATH=${{ steps.cache-dcmtk.outputs.cache-hit == 'true' && steps.strings.outputs.dcmtk-build-dir || '' }}
+        -D USE_SYSTEM_dtk:BOOL=${{ steps.cache-dtk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D dtk_ROOT:PATH=${{ steps.cache-dtk.outputs.cache-hit == 'true' && steps.strings.outputs.dtk-build-dir || '' }}
+        -D USE_SYSTEM_eigen:BOOL=${{ steps.cache-eigen.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D Eigen3_ROOT:PATH=${{ steps.cache-eigen.outputs.cache-hit == 'true' && steps.strings.outputs.eigen-install-dir || '' }}
+        -D USE_SYSTEM_ITK:BOOL=${{ steps.cache-itk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D ITK_ROOT:PATH=${{ steps.cache-itk.outputs.cache-hit == 'true' && steps.strings.outputs.itk-build-dir || '' }}
+        -D USE_SYSTEM_LogDemons:BOOL=${{ steps.cache-logdemons.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D LogDemons_ROOT:PATH=${{ steps.cache-logdemons.outputs.cache-hit == 'true' && steps.strings.outputs.logdemons-build-dir || '' }}
+        -D USE_SYSTEM_mmg:BOOL=${{ steps.cache-mmg.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D mmg_ROOT:PATH=${{ steps.cache-mmg.outputs.cache-hit == 'true' && steps.strings.outputs.mmg-install-dir || '' }}
+        -D USE_SYSTEM_QtDCM:BOOL=${{ steps.cache-qtdcm.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D QtDCM_ROOT:PATH=${{ steps.cache-qtdcm.outputs.cache-hit == 'true' && steps.strings.outputs.qtdcm-build-dir || '' }}
+        -D USE_SYSTEM_qwt:BOOL=${{ steps.cache-qwt.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D qwt_DIR:PATH=${{ steps.cache-qwt.outputs.cache-hit == 'true' && steps.strings.outputs.qwt-build-dir || '' }}
+        -D qwt_INCLUDE_DIR:PATH=${{ steps.cache-qwt.outputs.cache-hit == 'true' && steps.strings.outputs.qwt-include-dir || '' }} 
+        -D USE_SYSTEM_quazip:BOOL=${{ steps.cache-quazip.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D QuaZip-Qt5_ROOT:PATH=${{ steps.cache-quazip.outputs.cache-hit == 'true' && steps.strings.outputs.quazip-install-dir || '' }}
+        -D USE_SYSTEM_RPI:BOOL=${{ steps.cache-rpi.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D RPI_ROOT:PATH=${{ steps.cache-rpi.outputs.cache-hit == 'true' && steps.strings.outputs.rpi-build-dir || '' }}
+        -D USE_SYSTEM_tetgen:BOOL=${{ steps.cache-tetgen.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D tetgen_DIR:PATH=${{ steps.cache-tetgen.outputs.cache-hit == 'true' && steps.strings.outputs.tetgen-install-dir || '' }}
+        -D USE_SYSTEM_TTK:BOOL=${{ steps.cache-ttk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D TTK_ROOT:PATH=${{ steps.cache-ttk.outputs.cache-hit == 'true' && steps.strings.outputs.ttk-build-dir || '' }}
+        -D USE_SYSTEM_VTK:BOOL=${{ steps.cache-vtk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D VTK_ROOT:PATH=${{ steps.cache-vtk.outputs.cache-hit == 'true' && steps.strings.outputs.vtk-build-dir || '' }}
+        -D USE_SYSTEM_zlib:BOOL=${{ steps.cache-zlib.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D ZLIB_ROOT:PATH=${{ steps.cache-zlib.outputs.cache-hit == 'true' && steps.strings.outputs.zlib-install-dir || '' }}
+        -D USE_SYSTEM_medInria:BOOL=${{ steps.cache-medinria.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D medInria_ROOT:PATH=${{ steps.cache-medinria.outputs.cache-hit == 'true' && steps.strings.outputs.medinria-build-dir || '' }}
+        -S ${{ github.workspace }}
+      env:
+        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
+
+    - name: Build
+      run: cmake --build ${{ build.env.BUILD }} --config ${{ inputs.build_type }} --target package -j 2
+
+    - name: Archive package
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: installer
+        path: '${{ build.env.BUILD }}/*.exe'

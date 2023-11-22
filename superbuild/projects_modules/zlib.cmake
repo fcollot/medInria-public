@@ -5,6 +5,10 @@ function(zlib_project)
     list(APPEND ${external_project}_dependencies
         )
 
+    epComputPath(${external_project})
+
+    set(ZLIB_ROOT ${build_path}/install)
+
     EP_Initialisation(${external_project}
         USE_SYSTEM OFF
         BUILD_SHARED_LIBS ON
@@ -23,13 +27,11 @@ function(zlib_project)
             -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS_${external_project}}
             )
 
-        epComputPath(${external_project})
-
         ExternalProject_Add(${external_project}
             PREFIX ${EP_PATH_SOURCE}
             SOURCE_DIR ${EP_PATH_SOURCE}/${external_project}
             BINARY_DIR ${build_path}
-            INSTALL_DIR ${build_path}
+            INSTALL_DIR ${ZLIB_ROOT}
             TMP_DIR ${tmp_path}
             STAMP_DIR ${stamp_path}
 
@@ -42,8 +44,8 @@ function(zlib_project)
             UPDATE_COMMAND ""
             )
 
-        set(${external_project}_DIR ${build_path} PARENT_SCOPE)
-
     endif()
+
+    set(${external_project}_DIR ${ZLIB_ROOT} PARENT_SCOPE)
 
 endfunction()

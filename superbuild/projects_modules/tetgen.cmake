@@ -14,10 +14,15 @@ list(APPEND ${ep}_dependencies
 ## Prepare the project
 ## ############################################################################# 
 
+epComputPath(${ep})
+
+set(${ep}_ROOT ${build_path}/install)
+
 EP_Initialisation(${ep}
   USE_SYSTEM OFF 
   BUILD_SHARED_LIBS OFF
   REQUIRED_FOR_PLUGINS OFF
+  NO_FIND_PACKAGE
   )
 
 if (NOT USE_SYSTEM_${ep})
@@ -44,36 +49,33 @@ set(cmake_args
   -DCMAKE_C_FLAGS:STRING=${${ep}_c_flags}
   -DCMAKE_CXX_FLAGS:STRING=${${ep}_cxx_flags}
   -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE_externals_projects}
+  -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
   )
 
 ## #############################################################################
 ## Add external-project
 ## #############################################################################
-epComputPath(${ep})
 
 ExternalProject_Add(${ep}
   PREFIX ${EP_PATH_SOURCE}
   SOURCE_DIR ${EP_PATH_SOURCE}/${ep}
   BINARY_DIR ${build_path}
+  INSTALL_DIR ${${ep}_ROOT}
   TMP_DIR ${tmp_path}
   STAMP_DIR ${stamp_path}
-
   GIT_REPOSITORY ${git_url}
   GIT_TAG ${git_tag}
   CMAKE_ARGS ${cmake_args}
   DEPENDS ${${ep}_dependencies}
-  INSTALL_COMMAND ""
   UPDATE_COMMAND ""
   )
+
+endif() #NOT USE_SYSTEM_ep
 
 ## #############################################################################
 ## Set variable to provide infos about the project
 ## #############################################################################
 
-ExternalProject_Get_Property(${ep} binary_dir)
-set(${ep}_DIR ${binary_dir} PARENT_SCOPE)
-set(${ep}_INCLUDE_DIR ${EP_PATH_SOURCE}/${ep} PARENT_SCOPE)
-
-endif() #NOT USE_SYSTEM_ep
+set(${ep}_DIR ${${ep}_ROOT} PARENT_SCOPE)
 
 endfunction()
