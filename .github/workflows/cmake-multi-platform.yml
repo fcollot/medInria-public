@@ -1,0 +1,82 @@
+name: CMake on multiple platforms
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: false
+        default: 'Release'
+        type: choice
+        options: 
+          - Release
+          - RelWithDebInfo
+          - MinSizeRelease
+          - Debug
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_DIR: '${{ github.workspace }}/build'
+  PYTHON_OUTPUT_DIR: ${{ github.workspace }}/build/${{ inputs.build_type }}/lib/python3.10"
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        build_type: ${{ inputs.build_type }}
+        c_compiler: [gcc]
+        include:
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: macos-latest
+            c_compiler: gcc
+            cpp_compiler: gcc
+      
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '5.13.1'
+        dir: '${{ github.workspace }}/dependencies/'
+        cache: 'true'
+        cache-key-prefix: 'install-qt-action'
+        setup-python: 'false'
+
+    - name: Cache Python build
+      uses: actions/cache@v3
+      with:
+        path: |
+          '${{ env.BUILD_DIR }}/python'
+          '${{ env.PYTHON_OUTPUT_DIR }}'
+        key: ${{ runner.OS }}-python-cache-${{ hashFiles('python/*') }}
+        restore-keys: |
+          ${{ runner.OS }}-python-cache-
+
+    - name: Configure CMake
+      run: >
+        cmake -B $BUILD_DIR
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build $BUILD_DIR --config ${{ matrix.build_type }} -j 2
+
+    # - name: Test
+      # working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      # run: ctest --build-config ${{ matrix.build_type }}
