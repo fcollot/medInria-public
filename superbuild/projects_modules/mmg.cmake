@@ -58,16 +58,13 @@ set(cmake_args
 ## #############################################################################
 ## Add external-project
 ## #############################################################################
-
-ep_GeneratePatchCommand(${ep} ${ep}_PATCH_COMMAND mmg.patch)
-
 epComputPath(${ep})
 
 ExternalProject_Add(${ep}
   PREFIX ${EP_PATH_SOURCE}
   SOURCE_DIR ${EP_PATH_SOURCE}/${ep}
   BINARY_DIR ${build_path}
-  INSTALL_DIR ${build_path}/install
+  INSTALL_DIR ${build_path}
   TMP_DIR ${tmp_path}
   STAMP_DIR ${stamp_path}
   GIT_REPOSITORY ${git_url}
@@ -76,7 +73,6 @@ ExternalProject_Add(${ep}
   CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
   CMAKE_ARGS ${cmake_args}
   DEPENDS ${${ep}_dependencies}
-  PATCH_COMMAND ${${ep}_PATCH_COMMAND}
   UPDATE_COMMAND ""
   )
 

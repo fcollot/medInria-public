@@ -108,7 +108,6 @@ list(APPEND
   ${dtk_ROOT}/bin/Release
   ${RPI_ROOT}/bin/Release
   ${zlib_ROOT}/Release
-  ${pyncpp_ROOT}/python310
   )
 
 set(CPACK_INSTALL_CMAKE_PROJECTS
@@ -131,14 +130,14 @@ file(GLOB_RECURSE dtk_files LIST_DIRECTORIES true \"${dtk_ROOT}/bin/*.dll\")
 file(GLOB_RECURSE dcm_files LIST_DIRECTORIES true \"${QtDCM_ROOT}/bin/*.dll\")
 file(GLOB_RECURSE qt5_files LIST_DIRECTORIES true \"${QT_BINARY_DIR}/*.dll\")
 file(GLOB_RECURSE zlib_files LIST_DIRECTORIES true \"${zlib_ROOT}/*.dll\")
-#file(GLOB_RECURSE pyncpp_files LIST_DIRECTORIES false \"${pyncpp_ROOT}/bin/*.dll\")
+file(GLOB_RECURSE pyncpp_files LIST_DIRECTORIES false \"${pyncpp_ROOT}/bin/*.dll\")
 list(APPEND files \${itk_files})
 list(APPEND files \${vtk_files})
 list(APPEND files \${dtk_files})
 list(APPEND files \${dcm_files})
 list(APPEND files \${qt5_files})
 list(APPEND files \${zlib_files})
-#list(APPEND files \${pyncpp_files})
+list(APPEND files \${pyncpp_files})
 
 #foreach(file \${files})
 #  get_filename_component(file2delete \${file} NAME)
