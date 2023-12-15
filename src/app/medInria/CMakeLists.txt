@@ -178,7 +178,10 @@ if(USE_Python)
             )
     endif()
 
-    target_compile_definitions(${TARGET_NAME} PUBLIC PYTHON_HOME="${python_home}")
+    target_compile_definitions(${TARGET_NAME} PUBLIC
+        USE_PYTHON
+        PYTHON_HOME="${python_home}"
+        )
 endif()
 
 ## #############################################################################

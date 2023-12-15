@@ -77,8 +77,9 @@ else()
   if(EP_CHECKBOX_ON_TOP_LEVEL)
     if(EP_CHECKBOX_ON_TOP_LEVEL_change)
       unset(EP_DIR_NAME CACHE)
-	  unset(EP_DIR_NAME_PREVIOUS CACHE)
-      set(EP_PATH_BASE "${CMAKE_SOURCE_DIR}_ExtProjs" CACHE FILEPATH ${ep_path_base_comment}   FORCE)
+      unset(EP_DIR_NAME_PREVIOUS CACHE)
+      get_filename_component(base_dir "${CMAKE_SOURCE_DIR}" DIRECTORY)
+      set(EP_PATH_BASE "${base_dir}/EP" CACHE FILEPATH ${ep_path_base_comment}   FORCE)
     endif()
     ep_change_garde(EP_PATH_BASE)
     if(EP_PATH_BASE_change OR EP_CHECKBOX_SIDE_BY_SIDE_change)
@@ -134,6 +135,7 @@ set(ep_common_cache_args
   -DCMAKE_CXX_COMPILER:=${CMAKE_CXX_COMPILER}
   -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
   -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}
+  -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
   )
 
 if(CMAKE_EXTRA_GENERATOR)
