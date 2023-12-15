@@ -84,11 +84,15 @@ set(backup_CPACK_INSTALL_CMAKE_PROJECTS ${CPACK_INSTALL_CMAKE_PROJECTS})
 
 #clear it
 set(CPACK_INSTALL_CMAKE_PROJECTS "")
-foreach(external_project ${external_projects}) 
-	if(NOT USE_SYSTEM_${external_project} AND BUILD_SHARED_LIBS_${external_project})
-		ExternalProject_Get_Property(${external_project} binary_dir)
-		set(CPACK_INSTALL_CMAKE_PROJECTS ${CPACK_INSTALL_CMAKE_PROJECTS} ${binary_dir} ${external_project} ALL "/")
-	endif()
+foreach(external_project ${external_projects})
+    if(DEFINED ${external_project}_ROOT)
+        #set(CPACK_INSTALL_CMAKE_PROJECTS ${CPACK_INSTALL_CMAKE_PROJECTS} ${${external_project}_ROOT} ${external_project} ALL "/")
+        install(CODE "
+            execute_process(
+                COMMAND ${CMAKE_COMMAND} --install ${${external_project}_ROOT} --prefix \"\${CMAKE_INSTALL_PREFIX}\"
+                )
+            ")
+    endif()
 endforeach()
 
 foreach(dir ${PRIVATE_PLUGINS_DIRS})

@@ -9,6 +9,7 @@ function(zlib_project)
         USE_SYSTEM OFF
         BUILD_SHARED_LIBS ON
         REQUIRED_FOR_PLUGINS OFF
+        NO_FIND_PACKAGE
         )
 
     if (NOT USE_SYSTEM_${external_project})
@@ -25,11 +26,13 @@ function(zlib_project)
 
         epComputPath(${external_project})
 
+        set(install_path ${build_path}/install)
+
         ExternalProject_Add(${external_project}
             PREFIX ${EP_PATH_SOURCE}
             SOURCE_DIR ${EP_PATH_SOURCE}/${external_project}
             BINARY_DIR ${build_path}
-            INSTALL_DIR ${build_path}
+            INSTALL_DIR ${install_path}
             TMP_DIR ${tmp_path}
             STAMP_DIR ${stamp_path}
 
@@ -42,7 +45,7 @@ function(zlib_project)
             UPDATE_COMMAND ""
             )
 
-        set(${external_project}_DIR ${build_path} PARENT_SCOPE)
+        set(${external_project}_ROOT ${install_path} PARENT_SCOPE)
 
     endif()
 
