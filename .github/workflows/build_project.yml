@@ -1,0 +1,545 @@
+name: Build project
+run-name: ${{ inputs.runner != '' && format('{0}, {1}, {2}', inputs.runner, inputs.build_type, inputs.target) || 'automatic run' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner'
+        required: false
+        default: 'macos-12'
+        type: choice
+        options:
+          - macos-12
+          - macos-11
+          - ubuntu-22.04
+          - ubuntu-20.04
+          - windows-2022
+          - windows-2019
+      build_type:
+        description: 'Build type'
+        required: false
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - RelWithDebInfo
+          - MinSizeRelease
+          - Debug
+      target:
+        description: 'Target'
+        required: false
+        default: 'package'
+        type: choice
+        options:
+          - package
+          - medInria
+          - music-plugins
+          - DCMTK
+          - dtk
+          - eigen
+          - ITK
+          - LogDemons
+          - mmg
+          - pyncpp
+          - QtDCM
+          - quazip
+          - qwt
+          - RPI
+          - tetgen
+          - TTK
+          - VTK
+          - zlib
+  #push:
+  #  branches: [ "master" ]
+  #pull_request:
+  #  branches: [ "master" ]
+
+env:
+  BUILD_DIR: '${{ github.workspace }}/build'
+  DEPENDENCIES_DIR: '${{ github.workspace }}/dependencies'
+  WINDOWS_GENERATOR: 'Visual Studio 16 2019'
+  CACHE_BRANCH: 'refactorTest'
+  CACHE_RUNNERS: 'macos-11, ubuntu-22.04, windows-2019'
+  TARGET: ${{ inputs.target != '' && inputs.target || 'medInria' }}
+
+jobs:
+  build:
+    runs-on: ${{ matrix.runner }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        runner: [ dummy, macos-11, macos-12, ubuntu-20.04, ubuntu-22.04, windows-2019, windows-2022 ]
+        exclude:
+          - runner: ${{ inputs.runner != '' && inputs.runner != 'macos-11' && 'macos-11' || 'dummy' }}
+          - runner: ${{ inputs.runner != '' && inputs.runner != 'macos-12' && 'macos-12' || 'dummy' }}
+          - runner: ${{ inputs.runner != '' && inputs.runner != 'ubuntu-20.04' && 'ubuntu-20.04' || 'dummy' }}
+          - runner: ${{ inputs.runner != '' && inputs.runner != 'ubuntu-22.04' && 'ubuntu-22.04' || 'dummy' }}
+          - runner: ${{ inputs.runner != '' && inputs.runner != 'windows-2019' && 'windows-2019' || 'dummy' }}
+          - runner: ${{ inputs.runner != '' && inputs.runner != 'windows-2022' && 'windows-2022' || 'dummy' }}
+          - runner: ${{ inputs.runner == '' && 'macos-12' || 'dummy' }}
+          - runner: ${{ inputs.runner == '' && 'ubuntu-20.04' || 'dummy' }}
+          - runner: ${{ inputs.runner == '' && 'windows-2022' || 'dummy' }}
+        include:
+          - build_type: ${{ inputs.build_type != '' && inputs.build_type || 'Release' }}
+
+    env:
+      CC: ${{ startsWith(matrix.runner, 'windows') && 'cl' || (startsWith(matrix.runner, 'ubuntu') && 'gcc' || 'clang') }}
+      CXX: ${{ startsWith(matrix.runner, 'windows') && 'cl' || (startsWith(matrix.runner, 'ubuntu') && 'g++' || 'clang++') }}
+      ENV_OUTPUT: ${{ startsWith(matrix.runner, 'windows') && '$env:GITHUB_ENV' || '$GITHUB_ENV' }}
+
+    steps:
+    - name: Set cache directories
+      run: |
+        echo "DCMTK_CACHE_1=${{ runner.workspace }}/EP/build/DCMTK" >> ${{ env.ENV_OUTPUT }}
+        echo "DCMTK_CACHE_2=${{ runner.workspace }}/EP/src/DCMTK" >> ${{ env.ENV_OUTPUT }}
+        echo "dtk_CACHE_1=${{ runner.workspace }}/EP/build/dtk" >> ${{ env.ENV_OUTPUT }}
+        echo "dtk_CACHE_2=${{ runner.workspace }}/EP/src/dtk" >> ${{ env.ENV_OUTPUT }}
+        echo "eigen_CACHE_1=${{ runner.workspace }}/EP/build/eigen" >> ${{ env.ENV_OUTPUT }}
+        echo "ITK_CACHE_1=${{ runner.workspace }}/EP/build/ITK" >> ${{ env.ENV_OUTPUT }}
+        echo "ITK_CACHE_2=${{ runner.workspace }}/EP/src/ITK" >> ${{ env.ENV_OUTPUT }}
+        echo "LogDemons_CACHE_1=${{ runner.workspace }}/EP/build/LogDemons" >> ${{ env.ENV_OUTPUT }}
+        echo "LogDemons_CACHE_2=${{ runner.workspace }}/EP/src/LogDemons" >> ${{ env.ENV_OUTPUT }}
+        echo "mmg_CACHE_1=${{ runner.workspace }}/EP/build/mmg" >> ${{ env.ENV_OUTPUT }}
+        echo "pyncpp_CACHE_1=${{ runner.workspace }}/EP/build/pyncpp" >> ${{ env.ENV_OUTPUT }}
+        echo "pyncpp_CACHE_2=${{ runner.workspace }}/EP/src/pyncpp" >> ${{ env.ENV_OUTPUT }}
+        echo "QtDCM_CACHE_1=${{ runner.workspace }}/EP/build/QtDCM" >> ${{ env.ENV_OUTPUT }}
+        echo "QtDCM_CACHE_2=${{ runner.workspace }}/EP/src/QtDCM" >> ${{ env.ENV_OUTPUT }}
+        echo "quazip_CACHE_1=${{ runner.workspace }}/EP/build/quazip" >> ${{ env.ENV_OUTPUT }}
+        echo "qwt_CACHE_1=${{ runner.workspace }}/EP/build/qwt" >> ${{ env.ENV_OUTPUT }}
+        echo "qwt_CACHE_2=${{ runner.workspace }}/EP/src/qwt/src" >> ${{ env.ENV_OUTPUT }}
+        echo "RPI_CACHE_1=${{ runner.workspace }}/EP/build/RPI" >> ${{ env.ENV_OUTPUT }}
+        echo "RPI_CACHE_2=${{ runner.workspace }}/EP/src/RPI" >> ${{ env.ENV_OUTPUT }}
+        echo "tetgen_CACHE_1=${{ runner.workspace }}/EP/build/tetgen" >> ${{ env.ENV_OUTPUT }}
+        echo "TTK_CACHE_1=${{ runner.workspace }}/EP/build/TTK" >> ${{ env.ENV_OUTPUT }}
+        echo "TTK_CACHE_2=${{ runner.workspace }}/EP/src/TTK" >> ${{ env.ENV_OUTPUT }}
+        echo "VTK_CACHE_1=${{ runner.workspace }}/EP/build/VTK" >> ${{ env.ENV_OUTPUT }}
+        echo "VTK_CACHE_2=${{ runner.workspace }}/EP/src/VTK" >> ${{ env.ENV_OUTPUT }}
+        echo "zlib_CACHE_1=${{ runner.workspace }}/EP/build/zlib" >> ${{ env.ENV_OUTPUT }}
+        echo "medInria_CACHE_1=${{ env.BUILD_DIR }}/medInria-build" >> ${{ env.ENV_OUTPUT }}
+        echo "medInria_CACHE_2=${{ github.workspace }}/src/app/medInria/resources/MUSICardio.ico" >> ${{ env.ENV_OUTPUT }}
+        echo "MUSIC_CACHE_1=${{ runner.workspace }}/EP/build/music-plugins" >> ${{ env.ENV_OUTPUT }}
+        echo "MUSIC_CACHE_2=${{ runner.workspace }}/EP/src/music-plugins" >> ${{ env.ENV_OUTPUT }}
+        
+    - name: Set git core.longpaths flag
+      if: ${{ startsWith(matrix.runner, 'windows') }}
+      run: git config --system core.longpaths true
+
+    - uses: de-vri-es/setup-git-credentials@v2
+      with:
+        credentials: ${{secrets.FCOLLOT_TOKEN}}
+           
+    - uses: actions/checkout@v3
+        
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '5.15.2'
+        dir: ${{ env.DEPENDENCIES_DIR }}
+        cache: ${{ github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && 'true' || 'false' }}
+        cache-key-prefix: 'install-qt-action'
+        setup-python: 'false'
+
+    - name: Install boost
+      uses: MarkusJx/install-boost@v2.4.4
+      id: install-boost
+      with:
+        boost_version: 1.73.0
+        platform_version: ${{ startsWith(matrix.runner, 'macos') && 11 || (startsWith(matrix.runner, 'ubuntu') && 20.04 || (matrix.runner == 'windows-2022' && 2022 || 2019)) }}
+        boost_install_dir: ${{ env.DEPENDENCIES_DIR }}
+        cache: ${{ github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && 'true' || 'false' }}
+
+    - name: Restore DCMTK
+      id: restore-dcmtk
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.DCMTK_CACHE_1 }}
+          ${{ env.DCMTK_CACHE_2 }}
+        key: ${{ matrix.runner }}-dcmtk
+        restore-keys: |
+          ${{ matrix.runner }}-dcmtk
+
+    - name: Restore dtk
+      id: restore-dtk
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.dtk_CACHE_1 }}
+          ${{ env.dtk_CACHE_2 }}
+        key: ${{ matrix.runner }}-dtk
+        restore-keys: |
+          ${{ matrix.runner }}-dtk
+
+    - name: Restore eigen
+      id: restore-eigen
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.eigen_CACHE_1 }}
+        key: ${{ matrix.runner }}-eigen
+        restore-keys: |
+          ${{ matrix.runner }}-eigen
+
+    - name: Restore ITK
+      id: restore-itk
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.ITK_CACHE_1 }}
+          ${{ env.ITK_CACHE_2 }}
+        key: ${{ matrix.runner }}-itk
+        restore-keys: |
+          ${{ matrix.runner }}-itk
+
+    - name: Restore LogDemons
+      id: restore-logdemons
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.LogDemons_CACHE_1 }}
+          ${{ env.LogDemons_CACHE_2 }}
+        key: ${{ matrix.runner }}-logdemons
+        restore-keys: |
+          ${{ matrix.runner }}-logdemons
+
+    - name: Restore mmg
+      id: restore-mmg
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.mmg_CACHE_1 }}
+        key: ${{ matrix.runner }}-mmg
+        restore-keys: |
+          ${{ matrix.runner }}-mmg
+
+    - name: Restore pyncpp
+      id: restore-pyncpp
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.pyncpp_CACHE_1 }}
+          ${{ env.pyncpp_CACHE_2 }}
+        key: ${{ matrix.runner }}-pyncpp
+        restore-keys: |
+          ${{ matrix.runner }}-pyncpp
+
+    - name: Restore QtDCM
+      id: restore-qtdcm
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.QtDCM_CACHE_1 }}
+          ${{ env.QtDCM_CACHE_2 }}
+        key: ${{ matrix.runner }}-qtdcm
+        restore-keys: |
+          ${{ matrix.runner }}-qtdcm
+
+    - name: Restore quazip
+      id: restore-quazip
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.quazip_CACHE_1 }}
+        key: ${{ matrix.runner }}-quazip
+        restore-keys: |
+          ${{ matrix.runner }}-quazip
+
+    - name: Restore qwt
+      id: restore-qwt
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.qwt_CACHE_1 }}
+          ${{ env.qwt_CACHE_2 }}
+        key: ${{ matrix.runner }}-qwt
+        restore-keys: |
+          ${{ matrix.runner }}-qwt
+
+    - name: Restore RPI
+      id: restore-rpi
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.RPI_CACHE_1 }}
+          ${{ env.RPI_CACHE_2 }}
+        key: ${{ matrix.runner }}-rpi
+        restore-keys: |
+          ${{ matrix.runner }}-rpi
+
+    - name: Restore tetgen
+      id: restore-tetgen
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.tetgen_CACHE_1 }}
+        key: ${{ matrix.runner }}-tetgen
+        restore-keys: |
+          ${{ matrix.runner }}-tetgen
+
+    - name: Restore TTK
+      id: restore-ttk
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.TTK_CACHE_1 }}
+          ${{ env.TTK_CACHE_2 }}
+        key: ${{ matrix.runner }}-ttk
+        restore-keys: |
+          ${{ matrix.runner }}-ttk
+
+    - name: Restore VTK
+      id: restore-VTK
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.VTK_CACHE_1 }}
+          ${{ env.VTK_CACHE_2 }}
+        key: ${{ matrix.runner }}-vtk
+        restore-keys: |
+          ${{ matrix.runner }}-vtk
+
+    - name: Restore zlib
+      id: restore-zlib
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.zlib_CACHE_1 }}
+        key: ${{ matrix.runner }}-zlib
+        restore-keys: |
+          ${{ matrix.runner }}-zlib
+
+    - name: Restore medInria
+      id: restore-medinria
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.medInria_CACHE_1 }}
+          ${{ env.medInria_CACHE_2 }}
+        key: ${{ matrix.runner }}-medinria
+        restore-keys: |
+          ${{ matrix.runner }}-medinria
+
+    - name: Restore MUSIC
+      id: restore-MUSIC
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.MUSIC_CACHE_1 }}
+          ${{ env.MUSIC_CACHE_2 }}
+        key: ${{ matrix.runner }}-music
+        restore-keys: |
+          ${{ matrix.runner }}-music
+
+    - name: Configure CMake
+      run: >
+        cmake
+        ${{ startsWith(matrix.runner, 'windows') && format(' ''-G {0}'' ', env.WINDOWS_GENERATOR) || '' }}
+        -B ${{ env.BUILD_DIR }}
+        -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -D USE_SYSTEM_DCMTK:BOOL=${{ steps.restore-dcmtk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D DCMTK_ROOT:PATH=${{ steps.restore-dcmtk.outputs.cache-hit == 'true' && env.DCMTK_CACHE_1 || '' }}
+        -D USE_SYSTEM_dtk:BOOL=${{ steps.restore-dtk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D dtk_ROOT:PATH=${{ steps.restore-dtk.outputs.cache-hit == 'true' && env.dtk_CACHE_1 || '' }}
+        -D USE_SYSTEM_eigen:BOOL=${{ steps.restore-eigen.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D eigen_ROOT:PATH=${{ steps.restore-eigen.outputs.cache-hit == 'true' && env.eigen_CACHE_1 || '' }}
+        -D USE_SYSTEM_ITK:BOOL=${{ steps.restore-itk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D ITK_ROOT:PATH=${{ steps.restore-itk.outputs.cache-hit == 'true' && env.ITK_CACHE_1 || '' }}
+        -D USE_SYSTEM_LogDemons:BOOL=${{ steps.restore-logdemons.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D LogDemons_ROOT:PATH=${{ steps.restore-logdemons.outputs.cache-hit == 'true' && env.LogDemons_CACHE_1 || '' }}
+        -D USE_SYSTEM_mmg:BOOL=${{ steps.restore-mmg.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D mmg_ROOT:PATH=${{ steps.restore-mmg.outputs.cache-hit == 'true' && env.mmg_CACHE_1 || '' }}
+        -D USE_SYSTEM_pyncpp:BOOL=${{ steps.restore-pyncpp.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D pyncpp_ROOT:PATH=${{ steps.restore-pyncpp.outputs.cache-hit == 'true' && env.pyncpp_CACHE_1 || '' }}
+        -D USE_SYSTEM_QtDCM:BOOL=${{ steps.restore-qtdcm.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D QtDCM_ROOT:PATH=${{ steps.restore-qtdcm.outputs.cache-hit == 'true' && env.QtDCM_CACHE_1 || '' }}
+        -D USE_SYSTEM_qwt:BOOL=${{ steps.restore-qwt.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D qwt_ROOT:PATH=${{ steps.restore-qwt.outputs.cache-hit == 'true' && env.qwt_CACHE_1 || '' }}
+        -D qwt_INCLUDE_DIR:PATH=${{ steps.restore-qwt.outputs.cache-hit == 'true' && env.qwt_CACHE_2 || '' }} 
+        -D USE_SYSTEM_quazip:BOOL=${{ steps.restore-quazip.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D quazip_ROOT:PATH=${{ steps.restore-quazip.outputs.cache-hit == 'true' && env.quazip_CACHE_1 || '' }}
+        -D USE_SYSTEM_RPI:BOOL=${{ steps.restore-rpi.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D RPI_ROOT:PATH=${{ steps.restore-rpi.outputs.cache-hit == 'true' && env.RPI_CACHE_1 || '' }}
+        -D USE_SYSTEM_tetgen:BOOL=${{ steps.restore-tetgen.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D tetgen_ROOT:PATH=${{ steps.restore-tetgen.outputs.cache-hit == 'true' && env.tetgen_CACHE_1 || '' }}
+        -D USE_SYSTEM_TTK:BOOL=${{ steps.restore-ttk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D TTK_ROOT:PATH=${{ steps.restore-ttk.outputs.cache-hit == 'true' && env.TTK_CACHE_1 || '' }}
+        -D USE_SYSTEM_VTK:BOOL=${{ steps.restore-vtk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D VTK_ROOT:PATH=${{ steps.restore-vtk.outputs.cache-hit == 'true' && env.VTK_CACHE_1 || '' }}
+        -D USE_SYSTEM_zlib:BOOL=${{ steps.restore-zlib.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D zlib_ROOT:PATH=${{ steps.restore-zlib.outputs.cache-hit == 'true' && env.zlib_CACHE_1 || '' }}
+        -D USE_SYSTEM_medInria:BOOL=${{ steps.restore-medinria.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D medInria_ROOT:PATH=${{ steps.restore-medinria.outputs.cache-hit == 'true' && env.medInria_CACHE_1 || '' }}
+        -D USE_MUSIC_PLUGINS:BOOL=ON
+        -D USE_SYSTEM_music-plugins:BOOL=${{ steps.restore-music.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
+        -D music-plugins_ROOT:PATH=${{ steps.restore-music.outputs.cache-hit == 'true' && env.VTK_CACHE_1 || '' }}
+        -S ${{ github.workspace }}
+      env:
+        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
+
+    - name: Build
+      run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.build_type }} --target ${{ env.TARGET }} -j 2
+
+    - name: Cache DCMTK
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-dcmtk.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.DCMTK_CACHE_1 }}
+          ${{ env.DCMTK_CACHE_2 }}
+        key: ${{ steps.restore-dcmtk.outputs.cache-primary-key }}
+
+    - name: Cache dtk
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-dtk.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.dtk_CACHE_1 }}
+          ${{ env.dtk_CACHE_2 }}
+        key: ${{ steps.restore-dtk.outputs.cache-primary-key }}
+
+    - name: Cache eigen
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-eigen.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.eigen_CACHE_1 }}
+        key: ${{ steps.restore-eigen.outputs.cache-primary-key }}
+
+    - name: Cache ITK
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-itk.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.ITK_CACHE_1 }}
+          ${{ env.ITK_CACHE_2 }}
+        key: ${{ steps.restore-itk.outputs.cache-primary-key }}
+
+    - name: Cache LogDemons
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-logdemons.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.LogDemons_CACHE_1 }}
+          ${{ env.LogDemons_CACHE_2 }}
+        key: ${{ steps.restore-logdemons.outputs.cache-primary-key }}
+
+    - name: Cache mmg
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-mmg.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.mmg_CACHE_1 }}
+        key: ${{ steps.restore-mmg.outputs.cache-primary-key }}
+
+    - name: Cache pyncpp
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-pyncpp.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.pyncpp_CACHE_1 }}
+          ${{ env.pyncpp_CACHE_2 }}
+        key: ${{ steps.restore-pyncpp.outputs.cache-primary-key }}
+
+    - name: Cache QtDCM
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-qtdcm.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.QtDCM_CACHE_1 }}
+          ${{ env.QtDCM_CACHE_2 }}
+        key: ${{ steps.restore-qtdcm.outputs.cache-primary-key }}
+
+    - name: Cache quazip
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-quazip.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.quazip_CACHE_1 }}
+        key: ${{ steps.restore-quazip.outputs.cache-primary-key }}
+
+    - name: Cache qwt
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-qwt.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.qwt_CACHE_1 }}
+          ${{ env.qwt_CACHE_2 }}
+        key: ${{ steps.restore-qwt.outputs.cache-primary-key }}
+
+    - name: Cache RPI
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-rpi.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.RPI_CACHE_1 }}
+          ${{ env.RPI_CACHE_2 }}
+        key: ${{ steps.restore-rpi.outputs.cache-primary-key }}
+
+    - name: Cache tetgen
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-tetgen.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.tetgen_CACHE_1 }}
+        key: ${{ steps.restore-tetgen.outputs.cache-primary-key }}
+
+    - name: Cache TTK
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-ttk.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.TTK_CACHE_1 }}
+          ${{ env.TTK_CACHE_2 }}
+        key: ${{ steps.restore-ttk.outputs.cache-primary-key }}
+
+    - name: Cache VTK
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-vtk.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.VTK_CACHE_1 }}
+          ${{ env.VTK_CACHE_2 }}
+        key: ${{ steps.restore-vtk.outputs.cache-primary-key }}
+
+    - name: Cache zlib
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-zlib.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.zlib_CACHE_1 }}
+        key: ${{ steps.restore-zlib.outputs.cache-primary-key }}
+
+    - name: Cache medInria
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-medinria.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.medInria_CACHE_1 }}
+          ${{ env.medInria_CACHE_2 }}
+        key: ${{ steps.restore-medinria.outputs.cache-primary-key }}
+
+    - name: Cache MUSIC
+      uses: actions/cache/save@v3
+      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-music.outputs.cache-hit != 'true'
+      with:
+        path: |
+          ${{ env.MUSIC_CACHE_1 }}
+          ${{ env.MUSIC_CACHE_2 }}
+        key: ${{ steps.restore-music.outputs.cache-primary-key }}
+
+    - name: Archive log
+      if: env.TARGET == 'package' && failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: log
+        path: "${{ env.BUILD_DIR }}/${{ startsWith(matrix.runner, 'windows') && 'exe' || (startsWith(matrix.runner, 'ubuntu') && '_CPack_Packages/Linux/ZIP/PreinstallOutput.log' || '_CPack_Packages/Darwin/TGZ/PreinstallOutput.log') }}"
+
+    - name: Archive package
+      if: env.TARGET == 'package'
+      uses: actions/upload-artifact@v3
+      with:
+        name: installer
+        path: "${{ env.BUILD_DIR }}/*.${{ startsWith(matrix.runner, 'windows') && 'exe' || (startsWith(matrix.runner, 'ubuntu') && 'zip' || 'dmg') }}"
