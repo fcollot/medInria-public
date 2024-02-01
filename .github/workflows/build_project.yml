@@ -94,8 +94,8 @@ jobs:
     - name: Ensure brew version of clang
       if: ${{ startsWith(matrix.runner, 'macos') }}
       run: |
-         export CC=$(brew --prefix llvm)/bin/${CC}
-         export CXX=$(brew --prefix llvm)/bin/${CXX}
+         echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+         echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
     
     - name: Set cache directories
       run: |
