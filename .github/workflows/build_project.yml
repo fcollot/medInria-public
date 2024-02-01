@@ -86,11 +86,17 @@ jobs:
           - build_type: ${{ inputs.build_type != '' && inputs.build_type || 'Release' }}
 
     env:
-      CC: ${{ startsWith(matrix.runner, 'windows') && 'cl' || (startsWith(matrix.runner, 'ubuntu') && 'gcc' || '$(brew --prefix llvm)/bin/clang') }}
-      CXX: ${{ startsWith(matrix.runner, 'windows') && 'cl' || (startsWith(matrix.runner, 'ubuntu') && 'g++' || '$(brew --prefix llvm)/bin/clang++') }}
+      CC: ${{ startsWith(matrix.runner, 'windows') && 'cl' || (startsWith(matrix.runner, 'ubuntu') && 'gcc' || 'clang') }}
+      CXX: ${{ startsWith(matrix.runner, 'windows') && 'cl' || (startsWith(matrix.runner, 'ubuntu') && 'g++' || 'clang++') }}
       ENV_OUTPUT: ${{ startsWith(matrix.runner, 'windows') && '$env:GITHUB_ENV' || '$GITHUB_ENV' }}
 
     steps:
+    - name: Ensure brew version of clang
+      if: ${{ startsWith(matrix.runner, 'macos') }}
+      run: |
+         export CC=$(brew --prefix llvm)/bin/${CC}
+         export CXX=$(brew --prefix llvm)/bin/${CXX}
+    
     - name: Set cache directories
       run: |
         echo "DCMTK_CACHE_1=${{ runner.workspace }}/EP/build/DCMTK" >> ${{ env.ENV_OUTPUT }}
