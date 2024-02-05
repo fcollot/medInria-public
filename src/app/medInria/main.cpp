@@ -19,7 +19,7 @@
 #include <QtPlatformHeaders/QWindowsWindowFunctions>
 #endif
 
-#if(USE_PYTHON)
+#ifdef USE_PYTHON
 #include <pyncpp.h>
 #endif
 
@@ -159,7 +159,7 @@ int main(int argc,char* argv[])
 
     medDataManager::instance().setDatabaseLocation();
 
-#if(USE_PYTHON)
+#ifdef USE_PYTHON
     pyncpp::Manager pythonManager;
     QDir pythonHome = qApp->applicationDirPath();
     QDir pythonPluginPath = pythonHome;
@@ -240,7 +240,7 @@ int main(int argc,char* argv[])
        QGLFormat::setDefaultFormat(format);
     }
 
-#if(USE_PYTHON)
+#ifdef USE_PYTHON
     if(!pythonErrorMessage.isEmpty())
     {
         QMessageBox::warning(mainwindow, "Python", pythonErrorMessage);
