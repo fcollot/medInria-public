@@ -59,7 +59,7 @@ env:
   BUILD_DIR: '${{ github.workspace }}/build'
   DEPENDENCIES_DIR: '${{ github.workspace }}/dependencies'
   WINDOWS_GENERATOR: 'Visual Studio 16 2019'
-  CACHE_BRANCH: 'refactorTest'
+  CACHE_BRANCH: 'fltest'
   CACHE_RUNNERS: 'macos-11, ubuntu-22.04, windows-2019'
   TARGET: ${{ inputs.target != '' && inputs.target || 'medInria' }}
 
