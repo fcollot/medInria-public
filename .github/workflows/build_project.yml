@@ -173,16 +173,6 @@ jobs:
         restore-keys: |
           ${{ matrix.runner }}-dtk
 
-    - name: Restore eigen
-      id: restore-eigen
-      uses: actions/cache/restore@v3
-      with:
-        path: |
-          ${{ env.eigen_CACHE_1 }}
-        key: ${{ matrix.runner }}-eigen
-        restore-keys: |
-          ${{ matrix.runner }}-eigen
-
     - name: Restore ITK
       id: restore-itk
       uses: actions/cache/restore@v3
@@ -204,16 +194,6 @@ jobs:
         key: ${{ matrix.runner }}-logdemons
         restore-keys: |
           ${{ matrix.runner }}-logdemons
-
-    - name: Restore mmg
-      id: restore-mmg
-      uses: actions/cache/restore@v3
-      with:
-        path: |
-          ${{ env.mmg_CACHE_1 }}
-        key: ${{ matrix.runner }}-mmg
-        restore-keys: |
-          ${{ matrix.runner }}-mmg
 
     - name: Restore pyncpp
       id: restore-pyncpp
@@ -237,27 +217,6 @@ jobs:
         restore-keys: |
           ${{ matrix.runner }}-qtdcm
 
-    - name: Restore quazip
-      id: restore-quazip
-      uses: actions/cache/restore@v3
-      with:
-        path: |
-          ${{ env.quazip_CACHE_1 }}
-        key: ${{ matrix.runner }}-quazip
-        restore-keys: |
-          ${{ matrix.runner }}-quazip
-
-    - name: Restore qwt
-      id: restore-qwt
-      uses: actions/cache/restore@v3
-      with:
-        path: |
-          ${{ env.qwt_CACHE_1 }}
-          ${{ env.qwt_CACHE_2 }}
-        key: ${{ matrix.runner }}-qwt
-        restore-keys: |
-          ${{ matrix.runner }}-qwt
-
     - name: Restore RPI
       id: restore-rpi
       uses: actions/cache/restore@v3
@@ -268,16 +227,6 @@ jobs:
         key: ${{ matrix.runner }}-rpi
         restore-keys: |
           ${{ matrix.runner }}-rpi
-
-    - name: Restore tetgen
-      id: restore-tetgen
-      uses: actions/cache/restore@v3
-      with:
-        path: |
-          ${{ env.tetgen_CACHE_1 }}
-        key: ${{ matrix.runner }}-tetgen
-        restore-keys: |
-          ${{ matrix.runner }}-tetgen
 
     - name: Restore TTK
       id: restore-ttk
@@ -301,16 +250,6 @@ jobs:
         restore-keys: |
           ${{ matrix.runner }}-vtk
 
-    - name: Restore zlib
-      id: restore-zlib
-      uses: actions/cache/restore@v3
-      with:
-        path: |
-          ${{ env.zlib_CACHE_1 }}
-        key: ${{ matrix.runner }}-zlib
-        restore-keys: |
-          ${{ matrix.runner }}-zlib
-
     - name: Restore medInria
       id: restore-medinria
       uses: actions/cache/restore@v3
@@ -322,17 +261,6 @@ jobs:
         restore-keys: |
           ${{ matrix.runner }}-medinria
 
-    - name: Restore MUSIC
-      id: restore-MUSIC
-      uses: actions/cache/restore@v3
-      with:
-        path: |
-          ${{ env.MUSIC_CACHE_1 }}
-          ${{ env.MUSIC_CACHE_2 }}
-        key: ${{ matrix.runner }}-music
-        restore-keys: |
-          ${{ matrix.runner }}-music
-
     - name: Configure CMake
       run: >
         cmake
@@ -343,38 +271,23 @@ jobs:
         -D DCMTK_ROOT:PATH=${{ steps.restore-dcmtk.outputs.cache-hit == 'true' && env.DCMTK_CACHE_1 || '' }}
         -D USE_SYSTEM_dtk:BOOL=${{ steps.restore-dtk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
         -D dtk_ROOT:PATH=${{ steps.restore-dtk.outputs.cache-hit == 'true' && env.dtk_CACHE_1 || '' }}
-        -D USE_SYSTEM_eigen:BOOL=${{ steps.restore-eigen.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
-        -D eigen_ROOT:PATH=${{ steps.restore-eigen.outputs.cache-hit == 'true' && env.eigen_CACHE_1 || '' }}
         -D USE_SYSTEM_ITK:BOOL=${{ steps.restore-itk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
         -D ITK_ROOT:PATH=${{ steps.restore-itk.outputs.cache-hit == 'true' && env.ITK_CACHE_1 || '' }}
         -D USE_SYSTEM_LogDemons:BOOL=${{ steps.restore-logdemons.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
         -D LogDemons_ROOT:PATH=${{ steps.restore-logdemons.outputs.cache-hit == 'true' && env.LogDemons_CACHE_1 || '' }}
-        -D USE_SYSTEM_mmg:BOOL=${{ steps.restore-mmg.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
-        -D mmg_ROOT:PATH=${{ steps.restore-mmg.outputs.cache-hit == 'true' && env.mmg_CACHE_1 || '' }}
         -D USE_SYSTEM_pyncpp:BOOL=${{ steps.restore-pyncpp.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
         -D pyncpp_ROOT:PATH=${{ steps.restore-pyncpp.outputs.cache-hit == 'true' && env.pyncpp_CACHE_1 || '' }}
+        -D USE_Python:BOOL=OFF
         -D USE_SYSTEM_QtDCM:BOOL=${{ steps.restore-qtdcm.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
         -D QtDCM_ROOT:PATH=${{ steps.restore-qtdcm.outputs.cache-hit == 'true' && env.QtDCM_CACHE_1 || '' }}
-        -D USE_SYSTEM_qwt:BOOL=${{ steps.restore-qwt.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
-        -D qwt_ROOT:PATH=${{ steps.restore-qwt.outputs.cache-hit == 'true' && env.qwt_CACHE_1 || '' }}
-        -D qwt_INCLUDE_DIR:PATH=${{ steps.restore-qwt.outputs.cache-hit == 'true' && env.qwt_CACHE_2 || '' }} 
-        -D USE_SYSTEM_quazip:BOOL=${{ steps.restore-quazip.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
-        -D quazip_ROOT:PATH=${{ steps.restore-quazip.outputs.cache-hit == 'true' && env.quazip_CACHE_1 || '' }}
         -D USE_SYSTEM_RPI:BOOL=${{ steps.restore-rpi.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
         -D RPI_ROOT:PATH=${{ steps.restore-rpi.outputs.cache-hit == 'true' && env.RPI_CACHE_1 || '' }}
-        -D USE_SYSTEM_tetgen:BOOL=${{ steps.restore-tetgen.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
-        -D tetgen_ROOT:PATH=${{ steps.restore-tetgen.outputs.cache-hit == 'true' && env.tetgen_CACHE_1 || '' }}
         -D USE_SYSTEM_TTK:BOOL=${{ steps.restore-ttk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
         -D TTK_ROOT:PATH=${{ steps.restore-ttk.outputs.cache-hit == 'true' && env.TTK_CACHE_1 || '' }}
         -D USE_SYSTEM_VTK:BOOL=${{ steps.restore-vtk.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
         -D VTK_ROOT:PATH=${{ steps.restore-vtk.outputs.cache-hit == 'true' && env.VTK_CACHE_1 || '' }}
-        -D USE_SYSTEM_zlib:BOOL=${{ steps.restore-zlib.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
-        -D zlib_ROOT:PATH=${{ steps.restore-zlib.outputs.cache-hit == 'true' && env.zlib_CACHE_1 || '' }}
         -D USE_SYSTEM_medInria:BOOL=${{ steps.restore-medinria.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
         -D medInria_ROOT:PATH=${{ steps.restore-medinria.outputs.cache-hit == 'true' && env.medInria_CACHE_1 || '' }}
-        -D USE_MUSIC_PLUGINS:BOOL=ON
-        -D USE_SYSTEM_music-plugins:BOOL=${{ steps.restore-music.outputs.cache-hit == 'true' && 'TRUE' || 'FALSE' }}
-        -D music-plugins_ROOT:PATH=${{ steps.restore-music.outputs.cache-hit == 'true' && env.VTK_CACHE_1 || '' }}
         -S ${{ github.workspace }}
       env:
         BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
@@ -400,14 +313,6 @@ jobs:
           ${{ env.dtk_CACHE_2 }}
         key: ${{ steps.restore-dtk.outputs.cache-primary-key }}
 
-    - name: Cache eigen
-      uses: actions/cache/save@v3
-      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-eigen.outputs.cache-hit != 'true'
-      with:
-        path: |
-          ${{ env.eigen_CACHE_1 }}
-        key: ${{ steps.restore-eigen.outputs.cache-primary-key }}
-
     - name: Cache ITK
       uses: actions/cache/save@v3
       if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-itk.outputs.cache-hit != 'true'
@@ -425,14 +330,6 @@ jobs:
           ${{ env.LogDemons_CACHE_1 }}
           ${{ env.LogDemons_CACHE_2 }}
         key: ${{ steps.restore-logdemons.outputs.cache-primary-key }}
-
-    - name: Cache mmg
-      uses: actions/cache/save@v3
-      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-mmg.outputs.cache-hit != 'true'
-      with:
-        path: |
-          ${{ env.mmg_CACHE_1 }}
-        key: ${{ steps.restore-mmg.outputs.cache-primary-key }}
 
     - name: Cache pyncpp
       uses: actions/cache/save@v3
@@ -452,23 +349,6 @@ jobs:
           ${{ env.QtDCM_CACHE_2 }}
         key: ${{ steps.restore-qtdcm.outputs.cache-primary-key }}
 
-    - name: Cache quazip
-      uses: actions/cache/save@v3
-      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-quazip.outputs.cache-hit != 'true'
-      with:
-        path: |
-          ${{ env.quazip_CACHE_1 }}
-        key: ${{ steps.restore-quazip.outputs.cache-primary-key }}
-
-    - name: Cache qwt
-      uses: actions/cache/save@v3
-      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-qwt.outputs.cache-hit != 'true'
-      with:
-        path: |
-          ${{ env.qwt_CACHE_1 }}
-          ${{ env.qwt_CACHE_2 }}
-        key: ${{ steps.restore-qwt.outputs.cache-primary-key }}
-
     - name: Cache RPI
       uses: actions/cache/save@v3
       if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-rpi.outputs.cache-hit != 'true'
@@ -477,14 +357,6 @@ jobs:
           ${{ env.RPI_CACHE_1 }}
           ${{ env.RPI_CACHE_2 }}
         key: ${{ steps.restore-rpi.outputs.cache-primary-key }}
-
-    - name: Cache tetgen
-      uses: actions/cache/save@v3
-      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-tetgen.outputs.cache-hit != 'true'
-      with:
-        path: |
-          ${{ env.tetgen_CACHE_1 }}
-        key: ${{ steps.restore-tetgen.outputs.cache-primary-key }}
 
     - name: Cache TTK
       uses: actions/cache/save@v3
@@ -504,14 +376,6 @@ jobs:
           ${{ env.VTK_CACHE_2 }}
         key: ${{ steps.restore-vtk.outputs.cache-primary-key }}
 
-    - name: Cache zlib
-      uses: actions/cache/save@v3
-      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-zlib.outputs.cache-hit != 'true'
-      with:
-        path: |
-          ${{ env.zlib_CACHE_1 }}
-        key: ${{ steps.restore-zlib.outputs.cache-primary-key }}
-
     - name: Cache medInria
       uses: actions/cache/save@v3
       if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-medinria.outputs.cache-hit != 'true'
@@ -520,15 +384,6 @@ jobs:
           ${{ env.medInria_CACHE_1 }}
           ${{ env.medInria_CACHE_2 }}
         key: ${{ steps.restore-medinria.outputs.cache-primary-key }}
-
-    - name: Cache MUSIC
-      uses: actions/cache/save@v3
-      if: github.ref_name == env.CACHE_BRANCH && contains(env.CACHE_RUNNERS, matrix.runner) && steps.restore-music.outputs.cache-hit != 'true'
-      with:
-        path: |
-          ${{ env.MUSIC_CACHE_1 }}
-          ${{ env.MUSIC_CACHE_2 }}
-        key: ${{ steps.restore-music.outputs.cache-primary-key }}
 
     - name: Archive log
       if: env.TARGET == 'package' && failure()
