@@ -96,7 +96,7 @@ jobs:
     - name: Install OpenMP
       if: ${{ startsWith(matrix.runner, 'macos') }}
       run: |
-          brew list --version
+          clang --version
           brew install libomp
     #     echo "CC=$(brew --prefix llvm@15)/bin/clang" >> $GITHUB_ENV
     #     echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> $GITHUB_ENV
