@@ -89,6 +89,8 @@ jobs:
       CC: ${{ startsWith(matrix.runner, 'windows') && 'cl' || (startsWith(matrix.runner, 'ubuntu') && 'gcc' || 'clang') }}
       CXX: ${{ startsWith(matrix.runner, 'windows') && 'cl' || (startsWith(matrix.runner, 'ubuntu') && 'g++' || 'clang++') }}
       ENV_OUTPUT: ${{ startsWith(matrix.runner, 'windows') && '$env:GITHUB_ENV' || '$GITHUB_ENV' }}
+      LDFLAGS: '-L/usr/local/opt/libomp/lib'
+      CPPFLAGS: '-I/usr/local/opt/libomp/include'
 
     steps:
     - name: Install OpenMP
