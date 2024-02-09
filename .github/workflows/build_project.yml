@@ -97,6 +97,7 @@ jobs:
       if: ${{ startsWith(matrix.runner, 'macos') }}
       run: |
           brew install libomp
+          ls /usr/local/opt/libomp/lib
           #echo "CC=$(brew --prefix llvm@15)/bin/clang" >> $GITHUB_ENV
           #echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> $GITHUB_ENV
     
