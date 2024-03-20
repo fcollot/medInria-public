@@ -219,3 +219,57 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in)
     @ONLY IMMEDIATE
     )
 endif()
+
+################################################################################
+# Installation
+################################################################################
+
+if (APPLE)
+    set(bundle_path "\${CMAKE_INSTALL_PREFIX}/${CPACK_PACKAGE_NAME}.app")
+
+    install(CODE "
+#        file(GLOB libraries
+#            \"\${CMAKE_INSTALL_PREFIX}/lib/*.dylib\"
+#            )
+
+#        foreach(library \${libraries})
+#            get_filename_component(library_name \"\${library}\" NAME)
+#            file(RENAME \"\${library}\" \"${bundle_path}/Contents/Frameworks/\${library_name}\")
+#        endforeach()
+
+#            file(GLOB plugins
+#                \"${tmp_dir}/bin/plugins/*.dylib\"
+#                \"${tmp_dir}/bin/plugins_legacy/*.dylib\"
+#                )
+
+#            foreach(plugin \${plugins})
+#                get_filename_component(plugin_name \"\${plugin}\" NAME)
+#                file(RENAME \"\${plugin}\" \"${bundle_path}/Contents/Frameworks/\${plugin_name}\")
+#            endforeach()
+
+#            file(GLOB python_plugins
+#                \"${tmp_dir}/bin/python_plugins/*.so\"
+#                )
+
+#            foreach(plugin \${python_plugins})
+#                get_filename_component(plugin_name \"\${plugin}\" NAME)
+#                file(RENAME \"\${plugin}\" \"${bundle_path}/Contents/Frameworks/\${plugin_name}\")
+#            endforeach()
+
+        include(BundleUtilities)
+        set(BU_CHMOD_BUNDLE_ITEMS TRUE)
+
+        file(GLOB_RECURSE plugins FOLLOW_SYMLINKS FALSE
+            \"${bundle_path}/Contents/Plugins/*.dylib\"
+            \"${bundle_path}/Contents/Plugins/*.so\"
+            )
+
+        fixup_bundle(\"\${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME}.app\"
+            \"\"
+            \"\${plugins}\"
+            \"\"
+#            \"${bundle_path}/Contents/Frameworks;${bundle_path}/Contents/Plugins\"
+#            \"${CMAKE_BINARY_DIR}/lib\"
+            )
+        ")
+endif()

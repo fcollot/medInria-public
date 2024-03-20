@@ -63,13 +63,12 @@ function(set_lib_install_rules target)
         set_target_properties( ${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY                ${dest}/lib)
     endif()
 
-    install(TARGETS ${target}
-        RUNTIME DESTINATION lib
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        FRAMEWORK DESTINATION lib
-        RESOURCE DESTINATION resources/${target}
-        )
+    if(UNIX AND NOT APPLE)
+        install(TARGETS ${target}
+            LIBRARY
+            COMPONENT Runtime
+            )
+    endif()
 
 ## #############################################################################
 ## Add headers wich have to be exposed in the include dir of the install tree
@@ -78,6 +77,7 @@ function(set_lib_install_rules target)
     if(ARG_HEADERS)
         install(FILES ${ARG_HEADERS}
             DESTINATION include/${target}
+            COMPONENT Development
             )
     endif()
 

@@ -70,6 +70,7 @@ else()
         )\n"
       )
     else()
+        message("${ep}: ${${PROJECT_NAME}_CONFIG_FILE}")
 	  if(DEFINED EP_PATH_BUILD)
 	      set(build_dir ${EP_PATH_BUILD})
 	  else()

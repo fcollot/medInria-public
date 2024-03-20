@@ -55,9 +55,28 @@ else()
   set_target_properties( ${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY                ${CMAKE_BINARY_DIR}/bin/${plugin_subdir})
 endif()
 
+if(APPLE)
+    set(plugin_install_dir bin/${PROJECT_NAME}.app/Contents/Plugins)
+else()
+    set(plugin_install_dir bin/${plugin_subdir})
+endif()
+
 install(TARGETS ${target}
-  RUNTIME DESTINATION bin/${plugin_subdir}
-  LIBRARY DESTINATION bin/${plugin_subdir}
+  RUNTIME
+  DESTINATION ${plugin_install_dir}
+  COMPONENT Runtime
+
+  LIBRARY
+  DESTINATION ${plugin_install_dir}
+  COMPONENT Runtime
+
+  FRAMEWORK
+  DESTINATION ${plugin_install_dir}
+  COMPONENT Runtime
+
+  ARCHIVE
+  DESTINATION bin/${plugin_subdir}
+  COMPONENT Development
   )
 
 endmacro()
@@ -98,12 +117,30 @@ else()
   set_target_properties( ${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY                ${dest}/bin/${plugin_subdir})
 endif()
 
+if(APPLE)
+    set(plugin_install_dir bin/${PROJECT_NAME}.app/Contents/Plugins)
+else()
+    set(plugin_install_dir bin/${plugin_subdir})
+endif()
+
 install(TARGETS ${target}
-  RUNTIME DESTINATION bin/${plugin_subdir}
-  LIBRARY DESTINATION bin/${plugin_subdir}
-  FRAMEWORK DESTINATION bin/${plugin_subdir}
-  RESOURCE DESTINATION resources/${target}
+  RUNTIME
+  DESTINATION ${plugin_install_dir}
+  COMPONENT Runtime
+
+  LIBRARY
+  DESTINATION ${plugin_install_dir}
+  COMPONENT Runtime
+
+  FRAMEWORK
+  DESTINATION ${plugin_install_dir}
+  COMPONENT Runtime
+
+  ARCHIVE
+  DESTINATION bin/${plugin_subdir}
+  COMPONENT Development
   )
+
 endmacro()
 
 ################################################################################
