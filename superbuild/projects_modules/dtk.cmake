@@ -88,6 +88,8 @@ set(cmake_cache_args
 ## Add external-project
 ## #############################################################################
 
+ep_GeneratePatchCommand(${ep} DTK_PATCH_COMMAND dtk-1.7.1.patch)
+
 epComputPath(${ep})
 
 ExternalProject_Add(${ep}
@@ -104,8 +106,8 @@ ExternalProject_Add(${ep}
   CMAKE_ARGS ${cmake_args}
   CMAKE_CACHE_ARGS ${cmake_cache_args}
   DEPENDS ${${ep}_dependencies}
+  PATCH_COMMAND ${DTK_PATCH_COMMAND}
   INSTALL_COMMAND ""
-  BUILD_ALWAYS 1
   )
 
 ## #############################################################################
@@ -113,7 +115,7 @@ ExternalProject_Add(${ep}
 ## #############################################################################
 
 ExternalProject_Get_Property(${ep} binary_dir)
-set(${ep}_DIR ${binary_dir} PARENT_SCOPE)
+set(${ep}_ROOT ${binary_dir} PARENT_SCOPE)
 
 
 endif() #NOT USE_SYSTEM_ep

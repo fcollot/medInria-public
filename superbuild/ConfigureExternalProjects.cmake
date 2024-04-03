@@ -77,7 +77,7 @@ else()
   if(EP_CHECKBOX_ON_TOP_LEVEL)
     if(EP_CHECKBOX_ON_TOP_LEVEL_change)
       unset(EP_DIR_NAME CACHE)
-	  unset(EP_DIR_NAME_PREVIOUS CACHE)
+      unset(EP_DIR_NAME_PREVIOUS CACHE)
       set(EP_PATH_BASE "${CMAKE_SOURCE_DIR}_ExtProjs" CACHE FILEPATH ${ep_path_base_comment}   FORCE)
     endif()
     ep_change_garde(EP_PATH_BASE)
@@ -134,6 +134,7 @@ set(ep_common_cache_args
   -DCMAKE_CXX_COMPILER:=${CMAKE_CXX_COMPILER}
   -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
   -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}
+  -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
   )
 
 if(CMAKE_EXTRA_GENERATOR)
@@ -153,6 +154,12 @@ if(${USE_GITLAB_INRIA_SSH})
 else()
   set(GITLAB_INRIA_PREFIX https://gitlab.inria.fr/)
 endif()
+
+if(${USE_GITLAB_SSH})
+  set(GITLAB_PREFIX git@gitlab.com:)
+else()
+  set(GITLAB_PREFIX https://gitlab.com/)
+endif()  
 
 ## #############################################################################
 ## Include cmake modules of external-project

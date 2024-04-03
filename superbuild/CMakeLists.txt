@@ -12,6 +12,20 @@
 ################################################################################
 
 ## #############################################################################
+## Options
+## #############################################################################
+
+option(USE_DTKIMAGING "Use DTK imaging layer" OFF )
+
+option(USE_OSPRay "Use OSPRay for CPU VR" OFF )
+
+option(USE_Python "Build with Python support" ON)
+
+if (NOT WIN32)
+  option(USE_FFmpeg "Build with FFmpeg video export support" OFF)
+endif()
+
+## #############################################################################
 ## Add packages
 ## #############################################################################
 
@@ -32,7 +46,7 @@ find_package(Boost REQUIRED)
 
 if(USE_Python AND UNIX)
     if(APPLE)
-        set(default_root_dir "/usr/local/opt/openssl@1.1")
+        set(default_root_dir "/usr/local/opt/openssl")
     else()
         set(default_root_dir)
     endif()
@@ -43,7 +57,7 @@ endif()
 ## #############################################################################
 ## Add exteral projects
 ## #############################################################################
-                                                                                                                                                                                                                                          
+
 # There are three possibilities:
 # - if the option USE_SYSTEM_${external_project} is set, then the system version  
 #   will be used (not yet fully tested)
@@ -53,14 +67,7 @@ endif()
 #   * otherwise use download and compile locally the package as an external 
 #     module.
 
-option(USE_DTKIMAGING "Use DTK imaging layer" OFF )
-  
-option(USE_OSPRay "Use OSPRay for CPU VR" OFF )
-
-option(USE_Python "Build with Python support" ON)
-
 if (NOT WIN32)
-  option(USE_FFmpeg "Build with FFmpeg video export support" OFF)
   if (${USE_FFmpeg})
       list(APPEND external_projects ffmpeg)
   endif()
@@ -73,12 +80,12 @@ if (USE_Python)
 endif()
 
 list(APPEND external_projects
-  VTK 
-  ITK 
-  RPI 
-  TTK 
-  DCMTK 
-  QtDCM 
+  VTK
+  ITK
+  RPI
+  TTK
+  DCMTK
+  QtDCM
   dtk
   LogDemons
   )
@@ -111,8 +118,6 @@ set(CMAKE_BUILD_TYPE_medInria Debug CACHE STRING "Build type configuration speci
 ## #############################################################################
 set(medInria_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
 set(medInria_BINARY_DIR ${CMAKE_BINARY_DIR}/medInria-build)
-set(medInria_STAMP_DIR ${CMAKE_BINARY_DIR}/medInria-stamp)
-
 
 ## #############################################################################
 ## Add modules
@@ -122,12 +127,12 @@ set(CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/external_projects_tools
   ${CMAKE_MODULE_PATH}
-    )
+  )
 
 option(USE_GITHUB_SSH 
   "Use by default Git SSH addresses, requires public key set on github" OFF
   )
-  
+
 option(USE_GITLAB_INRIA_SSH 
   "Use by default Git SSH addresses, requires public key set on Inria gitlab" OFF
   )
@@ -136,7 +141,7 @@ option(USE_GITLAB_INRIA_SSH
 # Asclepios and visages plugins
 set(${PROJECT_NAME}_CONFIG_FILE "${CMAKE_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
 file(WRITE ${${PROJECT_NAME}_CONFIG_FILE}
-  "set(CMAKE_MODULE_PATH 
+  "set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     \${CMAKE_MODULE_PATH}
     )\n\n
@@ -148,7 +153,7 @@ file(WRITE ${${PROJECT_NAME}_CONFIG_FILE}
 file(APPEND ${${PROJECT_NAME}_CONFIG_FILE}
   "set(USE_GITLAB_INRIA_SSH ${USE_GITLAB_INRIA_SSH})\n"
   )
-  
+
 # Add Qt dir
 file(APPEND ${${PROJECT_NAME}_CONFIG_FILE}
   "set(Qt5_DIR ${Qt5_DIR})\n\n"
@@ -167,10 +172,10 @@ set(PRIVATE_PLUGINS_LEGACY_DIRS "" CACHE PATH "Folders containing legacy private
 ## #############################################################################
 
 set(global_targets 
-  configure  
+  configure
   install
   )
-  
+
 # This adds targets that will be run in each external-projects
 set_property(DIRECTORY PROPERTY EP_STEP_TARGETS ${global_targets})
 
@@ -202,10 +207,9 @@ endif()
 set(external_projects ${external_projects} PARENT_SCOPE)
 
 foreach(external_project ${external_projects})
-    if(NOT USE_SYSTEM_${external_project} AND BUILD_SHARED_LIBS_${external_project})
-        ExternalProject_Get_Property(${external_project} binary_dir)
-        ExternalProject_Get_Property(${external_project} source_dir)
-        set(${external_project}_DIR ${binary_dir} PARENT_SCOPE)
-        set(${external_project}_SOURCE_DIR ${source_dir} PARENT_SCOPE)
+    if(DEFINED ${external_project}_ROOT)
+        set(${external_project}_ROOT ${${external_project}_ROOT} PARENT_SCOPE)
     endif()
 endforeach()
+
+set(medInria_SOURCE_DIR ${medInria_SOURCE_DIR} PARENT_SCOPE)
