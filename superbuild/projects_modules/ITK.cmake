@@ -75,7 +75,11 @@ set(cmake_args
 ## Check if patch has to be applied
 ## #############################################################################
   
-ep_GeneratePatchCommand(${ep} ${ep}_PATCH_COMMAND ITK_Mac.patch)
+if (WIN32 AND ${CMAKE_GENERATOR} STREQUAL "Visual Studio 16 2019")
+    ep_GeneratePatchCommand(${ep} ${ep}_PATCH_COMMAND ITK_Win.patch)
+elseif(APPLE)
+    ep_GeneratePatchCommand(${ep} ${ep}_PATCH_COMMAND ITK_Mac.patch)
+endif()
 
 ## #############################################################################
 ## Add external-project
@@ -99,7 +103,6 @@ ExternalProject_Add(${ep}
   CMAKE_CACHE_ARGS ${cmake_cache_args}
   DEPENDS ${${ep}_dependencies}
   INSTALL_COMMAND ""
-  BUILD_ALWAYS 1
   )
 
 ## #############################################################################
