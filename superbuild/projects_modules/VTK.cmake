@@ -45,6 +45,7 @@ if (NOT USE_SYSTEM_${ep})
 set(git_url ${GITHUB_PREFIX}Kitware/VTK.git)
 set(git_tag v8.1.2)
 
+
 ## #############################################################################
 ## Add specific cmake arguments for configuration step of the project
 ## #############################################################################
@@ -166,7 +167,6 @@ ExternalProject_Add(${ep}
   CMAKE_CACHE_ARGS ${cmake_cache_args}
   DEPENDS ${${ep}_dependencies}
   INSTALL_COMMAND ""
-  BUILD_ALWAYS 1
   )
   
 ## #############################################################################
