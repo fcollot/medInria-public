@@ -102,7 +102,7 @@ set(cmake_cache_args
 if (${USE_FFmpeg})
   list(APPEND cmake_args
   -DUSE_FFmpeg=${USE_FFmpeg})
-endif() 
+endif()
 
 if (USE_DTKIMAGING)
   set(cmake_args
@@ -116,7 +116,7 @@ if (USE_Python)
       -Dpyncpp_ROOT:PATH=${pyncpp_ROOT}
       )
 endif()
-  
+
 ## #############################################################################
 ## Add external-project
 ## #############################################################################
@@ -159,9 +159,8 @@ if (WIN32)
         COMMAND for %%I in ( ${DTK_BIN_BASE}\\bin\\${CONFIG_MODE}\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI)
         COMMAND for %%I in ( ${DCM_BIN_BASE}\\bin\\${CONFIG_MODE}\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI)
         COMMAND for %%I in ( ${QT5_BIN_BASE}\\bin\\*.dll                 ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) 
-        COMMAND for %%I in ( ${PYTHON_BIN_BASE}\\bin\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI)
-        COMMAND for %%I in ( ${PYTHON_BIN_BASE}\\bin\\DLLs ${PYTHON_BIN_BASE}\\bin\\Lib ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /d /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /d /H ${MED_BIN_BASE}\\%%~nxI %%~fI)
-     )
+        COMMAND for %%I in ( ${PYNCPP_BIN_BASE}\\bin\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI)
+)
 endif()
 
 

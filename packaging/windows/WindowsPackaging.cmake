@@ -36,6 +36,10 @@ set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${MS
 
 set(ICON_PATH "${CMAKE_SOURCE_DIR}/src/app/medInria/resources/medInria.ico")
 
+# Used on pinned on taskbar
+set(CPACK_PACKAGE_ICON ${ICON_PATH})
+string(REGEX REPLACE "/" "\\\\\\\\" CPACK_PACKAGE_ICON "${CPACK_PACKAGE_ICON}")
+
 # The icon to install the application.
 set(CPACK_NSIS_MUI_ICON ${ICON_PATH})
 
@@ -55,7 +59,7 @@ set(CPACK_NSIS_MODIFY_PATH "ON")
 set(CPACK_PACKAGE_EXECUTABLES "medInria" "medInria")
 
 # Add a link to the application website in the Startup menu.
-set(CPACK_NSIS_MENU_LINKS "http://med.inria.fr/" "Homepage for medInria") 
+set(CPACK_NSIS_MENU_LINKS "http://med.inria.fr/" "Homepage for medInria")
 
 # Run medInria after installation
 set(CPACK_NSIS_MUI_FINISHPAGE_RUN "medInria.exe")
@@ -103,6 +107,7 @@ list(APPEND
   ${TTK_ROOT}/bin/Release
   ${dtk_ROOT}/bin/Release
   ${RPI_ROOT}/bin/Release
+  ${ZLIB_ROOT}/Release
   )
 
 set(CPACK_INSTALL_CMAKE_PROJECTS
@@ -117,21 +122,29 @@ file(GLOB_RECURSE vtk_files LIST_DIRECTORIES true \"${VTK_ROOT}/bin/*.dll\")
 file(GLOB_RECURSE dtk_files LIST_DIRECTORIES true \"${dtk_ROOT}/bin/*.dll\")
 file(GLOB_RECURSE dcm_files LIST_DIRECTORIES true \"${QtDCM_ROOT}/bin/*.dll\")
 file(GLOB_RECURSE qt5_files LIST_DIRECTORIES true \"${QT_BINARY_DIR}/*.dll\")
+file(GLOB_RECURSE zlib_files LIST_DIRECTORIES true \"${ZLIB_ROOT}/*.dll\")
 list(APPEND files \${itk_files})
 list(APPEND files \${vtk_files})
 list(APPEND files \${dtk_files})
 list(APPEND files \${dcm_files})
 list(APPEND files \${qt5_files})
+list(APPEND files \${zlib_files})
+
+file(INSTALL ${MEDINRIA_FILES}/
+    DESTINATION \${CMAKE_INSTALL_PREFIX}/bin/
+    FILES_MATCHING
+    PATTERN \"*${CMAKE_EXECUTABLE_SUFFIX}\"
+    PATTERN \"*${CMAKE_SHARED_LIBRARY_SUFFIX}\"
+    PATTERN \"*.pyd\"
+    )
 
 foreach(file \${files})
   get_filename_component(file2delete \${file} NAME)
-  if(EXISTS \"${MEDINRIA_FILES}/\${file2delete}\")
+  if(EXISTS \"\${CMAKE_INSTALL_PREFIX}/bin/\${file2delete}\")
     file(REMOVE \"${MEDINRIA_FILES}/\${file2delete}\")
   endif()
 endforeach()
 
-file(INSTALL ${MEDINRIA_FILES}/                         DESTINATION \${CMAKE_INSTALL_PREFIX}/bin/              FILES_MATCHING PATTERN \"*${CMAKE_EXECUTABLE_SUFFIX}\")
-file(INSTALL ${MEDINRIA_FILES}/                         DESTINATION \${CMAKE_INSTALL_PREFIX}/bin/              FILES_MATCHING PATTERN \"*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
 file(INSTALL ${QT_PLUGINS_DIR}/imageformats/qgif.dll    DESTINATION \${CMAKE_INSTALL_PREFIX}/bin/imageformats/ FILES_MATCHING PATTERN \"*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
 file(INSTALL ${QT_PLUGINS_DIR}/imageformats/qicns.dll   DESTINATION \${CMAKE_INSTALL_PREFIX}/bin/imageformats/ FILES_MATCHING PATTERN \"*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
 file(INSTALL ${QT_PLUGINS_DIR}/imageformats/qico.dll    DESTINATION \${CMAKE_INSTALL_PREFIX}/bin/imageformats/ FILES_MATCHING PATTERN \"*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
