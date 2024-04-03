@@ -57,7 +57,7 @@ endif()
 ## #############################################################################
 ## Add exteral projects
 ## #############################################################################
-                                                                                                                                                                                                                                          
+
 # There are three possibilities:
 # - if the option USE_SYSTEM_${external_project} is set, then the system version  
 #   will be used (not yet fully tested)
@@ -118,8 +118,6 @@ set(CMAKE_BUILD_TYPE_medInria Debug CACHE STRING "Build type configuration speci
 ## #############################################################################
 set(medInria_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
 set(medInria_BINARY_DIR ${CMAKE_BINARY_DIR}/medInria-build)
-set(medInria_STAMP_DIR ${CMAKE_BINARY_DIR}/medInria-stamp)
-
 
 ## #############################################################################
 ## Add modules
