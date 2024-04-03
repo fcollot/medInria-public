@@ -11,7 +11,6 @@
 
 =========================================================================*/
 
-
 #include <medAbstractData.h>
 #include <medAbstractDataFactory.h>
 #include <medAbstractDataWriter.h>
@@ -21,8 +20,10 @@ class medDatabaseExporterPrivate
 {
 public:
     dtkSmartPointer<medAbstractData> data;
+    QList<medAbstractData*> dataList;
     QString          filename;
     QString          writer;
+    bool saveMultipleData;
 };
 
 medDatabaseExporter::medDatabaseExporter(dtkSmartPointer<medAbstractData> data, const QString & filename, const QString & writer) : medJobItemL(), d(new medDatabaseExporterPrivate)
@@ -30,9 +31,20 @@ medDatabaseExporter::medDatabaseExporter(dtkSmartPointer<medAbstractData> data, 
     d->data     = data;
     d->filename = filename;
     d->writer   = writer;
+    d->saveMultipleData = false;
 }
 
-medDatabaseExporter::~medDatabaseExporter(void)
+medDatabaseExporter::medDatabaseExporter(QList<medAbstractData*> data, const QString & filename, const QString & writer)
+    : medJobItemL(), d(new medDatabaseExporterPrivate)
+{
+    d->data     = nullptr;
+    d->dataList = data;
+    d->filename = filename;
+    d->writer   = writer;
+    d->saveMultipleData = true;
+}
+
+medDatabaseExporter::~medDatabaseExporter()
 {
     delete d;
 
@@ -47,7 +59,8 @@ medDatabaseExporter::~medDatabaseExporter(void)
 */
 void medDatabaseExporter::internalRun()
 {
-    if (!d->data)
+    if ((!d->saveMultipleData && !d->data) ||
+            (d->saveMultipleData && d->dataList.isEmpty()))
     {
         emit showError("Cannot export data", 3000);
         return;
@@ -59,7 +72,16 @@ void medDatabaseExporter::internalRun()
     }
 
     dtkAbstractDataWriter * dataWriter = medAbstractDataFactory::instance()->writer(d->writer);
-    dataWriter->setData(d->data);
+    if(!d->saveMultipleData)
+    {
+        dataWriter->setData(d->data);
+    }
+    else
+    {
+        auto medDataWriter = dynamic_cast<medAbstractDataWriter*>(dataWriter);
+        Q_ASSERT(medDataWriter != nullptr);
+        medDataWriter->setData(d->dataList);
+    }
 
     if ( ! dataWriter->canWrite(d->filename) || ! dataWriter->write(d->filename)) {
 

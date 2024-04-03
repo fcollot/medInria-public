@@ -295,16 +295,7 @@ void DCMTKImageIO::ReadImageInformation()
 
     double startLocation = *l;
     double endLocation   = *lle;
-    int locSign = endLocation>startLocation?1.0:-1.0;
-
-    // just check first volume
-    int startIndex = m_FilenameToIndexMap[ m_LocationToFilenamesMap.lower_bound ( *l )->second ];
-    int endIndex   = m_FilenameToIndexMap[ m_LocationToFilenamesMap.lower_bound ( *lle )->second ];
-
-    double startSlice = this->GetZPositionForImage ( startIndex );
-    double endSlice   = this->GetZPositionForImage ( endIndex );
-
-    int sliceDirection = endSlice>=startSlice?locSign:-locSign;
+    int sliceDirection = endLocation>startLocation?1.0:-1.0;
 
     /**
        Now order filenames such that we can read them sequentially and build the 3D/4D volume.
@@ -599,11 +590,11 @@ void DCMTKImageIO::DetermineOrigin()
     int startIndex = m_FilenameToIndexMap[ m_LocationToFilenamesMap.lower_bound ( *m_LocationSet.begin() )->second ];
     int endIndex   = m_FilenameToIndexMap[ m_LocationToFilenamesMap.lower_bound ( *m_LocationSet.rbegin() )->second ];
 
-    double startZ = this->GetZPositionForImage (startIndex);
-    double endZ   = this->GetZPositionForImage (endIndex);
+    double startPosition = this->GetPositionOnStackingAxisForImage (startIndex);
+    double endPosition   = this->GetPositionOnStackingAxisForImage (endIndex);
 
     int index = startIndex;
-    if (endZ<startZ)
+    if (endPosition<startPosition)
     {
         index = endIndex;
     }
@@ -679,29 +670,35 @@ void DCMTKImageIO::DetermineOrientation()
     }
 }
 
-
-double DCMTKImageIO::GetZPositionForImage (int index)
+double DCMTKImageIO::GetPositionOnStackingAxisForImage (int index)
 {
-    std::string s_position = this->GetMetaDataValueString("(0020,0032)", index);
-    double zpos = 0.0;
-    double junk;
-    std::istringstream is_stream( s_position.c_str() );
-    if (!(is_stream >> junk) )
+    // Get maximum absolute value, which is the closest to an axis
+    auto result = std::max_element(m_Direction[2].begin(), m_Direction[2].end(), [](double a, double b)
     {
-        itkWarningMacro ( << "Cannot convert string to double: " << s_position.c_str() << std::endl );
-    }
-    if (!(is_stream >> junk) )
-    {
-        itkWarningMacro ( << "Cannot convert string to double: " << s_position.c_str() << std::endl );
-    }
-    if (!(is_stream >> zpos))
-    {
-        itkWarningMacro ( << "Cannot convert string to double: " << s_position.c_str() << std::endl );
-    }
+        return std::abs(a) < std::abs(b);
+    });
 
-    return zpos;
+    // Index of the value in the vector
+    auto principalAxisIndex = std::distance(m_Direction[2].begin(), result);
+
+    return GetPositionFromPrincipalAxisIndex(index, principalAxisIndex);
 }
 
+double DCMTKImageIO::GetPositionFromPrincipalAxisIndex(int index, int principalAxisIndex)
+{
+    std::string s_position = this->GetMetaDataValueString("(0020,0032)", index);
+    if (s_position.empty())
+    {
+        itkWarningMacro ( << "Tag (0020,0032) (ImageOrigin) was not found, assuming 0.0/0.0/0.0" << std::endl);
+        return 0.0;
+    }
+
+    // Convert string metadata to vector of double
+    std::stringstream lineStream(s_position);
+    std::vector<double> positionVector(std::istream_iterator<double>(lineStream), {});
+
+    return positionVector[principalAxisIndex];
+}
 
 double DCMTKImageIO::GetSliceLocation(std::string imagePosition)
 {
@@ -935,6 +932,24 @@ std::string DCMTKImageIO::GetNumberOfStudyRelatedSeries() const
 std::string DCMTKImageIO::GetStudyDate() const
 {
     std::string name = this->GetMetaDataValueString ( "(0008,0020)", 0 );
+    return name;
+}
+
+std::string DCMTKImageIO::GetStudyTime() const
+{
+    std::string name = this->GetMetaDataValueString ( "(0008,0030)", 0 );
+    return name;
+}
+
+std::string DCMTKImageIO::GetSeriesDate() const
+{
+    std::string name = this->GetMetaDataValueString ( "(0008,0021)", 0 );
+    return name;
+}
+
+std::string DCMTKImageIO::GetSeriesTime() const
+{
+    std::string name = this->GetMetaDataValueString ( "(0008,0031)", 0 );
     return name;
 }
 

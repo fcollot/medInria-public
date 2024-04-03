@@ -51,7 +51,7 @@ bool itkDataImageReaderBase::canRead (const QString& path)
     // Avoid to display log of each metadata not read by itk::ImageIOBase
     this->io->SetGlobalWarningDisplay(false);
 
-    if (!this->io->CanReadFile( path.toLatin1().constData() ))
+    if (!this->io->CanReadFile( path.toUtf8().constData() ))
     {
         return false;
     }
@@ -62,7 +62,7 @@ bool itkDataImageReaderBase::canRead (const QString& path)
         // will be handled by more specific image readers
         // (e.g. tensors if 6 or 9 components)
 
-        this->io->SetFileName( path.toLatin1().constData() );
+        this->io->SetFileName( path.toUtf8().constData() );
         try {
            this->io->ReadImageInformation();
         }
@@ -94,7 +94,7 @@ bool itkDataImageReaderBase::readInformation (const QString& path)
     if (this->io.IsNull())
         return false;
 
-    this->io->SetFileName(path.toLatin1().constData());
+    this->io->SetFileName(path.toUtf8().constData());
     try
     {
         this->io->ReadImageInformation();
@@ -219,6 +219,34 @@ bool itkDataImageReaderBase::readInformation (const QString& path)
         return false;
     }
 
+    // [HACK] : Some data have informations in their header but itk was not able to read them at this stage.
+    // the itk::readImageInformation method read only default tag defined by itk
+    // In case data was produced in MUSIC for instance, a lot of tags are added (for identification purpose)
+    // A not exhaustive list of added tags :
+    // ContainsBasicInfo Description FilePaths ITK_InputFilterName PatientID PatientName SOPInstanceUID
+    // SeriesDescription SeriesDicomID SeriesID SeriesInstanceUID SeriesThumbnail Size StudyDescription StudyID
+    // We decide to read all available tags here  if possible
+    itk::MetaDataDictionary& metaDataDictionary = this->io->GetMetaDataDictionary();
+    std::vector<std::string> keys = metaDataDictionary.GetKeys();
+
+    for (unsigned int i = 0; i < keys.size(); i++)
+    {
+        std::string key = keys[i];
+        std::string value;
+        itk::ExposeMetaData(metaDataDictionary, key, value);
+
+        QString metaDataKey = convertItkKeyToMedKey(key);
+        if (!metaDataKey.isEmpty())
+        {
+            medData->setMetaData(metaDataKey, QString(value.c_str()));
+        }
+        else
+        {
+            qDebug() << metaObject()->className() << ":: found unknown key:" << QString::fromStdString(key);
+        }
+    }
+    // [END OF HACK]
+
     if (medData)
     {
         this->setData(medData);
@@ -248,7 +276,7 @@ bool itkDataImageReaderBase::read_image(const QString& path,const char* type)
     typedef itk::Image<T,DIM> Image;
     typename itk::ImageFileReader<Image>::Pointer TReader = itk::ImageFileReader<Image>::New();
     TReader->SetImageIO(this->io);
-    TReader->SetFileName(path.toLatin1().constData());
+    TReader->SetFileName(path.toUtf8().constData());
     TReader->SetUseStreaming(true);
     TReader->Update();
 
@@ -271,7 +299,7 @@ QString itkDataImageReaderBase::convertItkKeyToMedKey(std::string& keyToConvert)
     }
     else
     {
-        const medMetaDataKeys::Key* medKey = medMetaDataKeys::Key::fromKeyName(keyToConvert.c_str());
+        const medMetaDataKeys::Key* medKey = medMetaDataKeys::Key::fromKeyName(itkKey);
         if (medKey)
         {
             convertedKey = medKey->key();

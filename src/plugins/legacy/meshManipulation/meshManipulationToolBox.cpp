@@ -159,7 +159,7 @@ meshManipulationToolBox::meshManipulationToolBox(QWidget *parent)
     toolboxLayout->addLayout(undoLayout);
 
     QLabel* registrationListText = new QLabel("Imported transformation matrices");
-    registrationListText->setStyleSheet("QLabel{color:#ED6639;}");
+    registrationListText->setObjectName("innerTitle");
     toolboxLayout->addWidget(registrationListText);
 
     _availableMatricesWidget = new QListWidget(this);
@@ -506,7 +506,7 @@ void meshManipulationToolBox::computeData()
         transformFilter->Delete();
      
         medUtilities::setDerivedMetaData(output, data, "manually modified");
-        medDataManager::instance()->importData(output, false);
+        medDataManager::instance().importData(output, false);
         _outputs.append(output.data());
     }
 }
@@ -717,9 +717,7 @@ void meshManipulationToolBox::importTransform()
 
 dtkPlugin* meshManipulationToolBox::plugin()
 {
-    medPluginManager *pm = medPluginManager::instance();
-    dtkPlugin *plugin = pm->plugin("Mesh Manipulation");
-    return plugin;
+    return medPluginManager::instance().plugin("Mesh Manipulation");
 }
 
 void meshManipulationToolBox::enableScaling(bool state)
