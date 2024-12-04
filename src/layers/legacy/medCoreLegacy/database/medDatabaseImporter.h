@@ -40,6 +40,8 @@ public:
     medDatabaseImporter ( medAbstractData* medData, const QUuid& callerUuid, bool allowDuplicateSeriesName = false);
     ~medDatabaseImporter() override = default;
 
+    using medAbstractDatabaseImporter::tryWriteImage;
+
 private:
     bool duplicateSeriesNamesEnabled;
 
