@@ -56,6 +56,9 @@ Optional Parameters
 #]=]
 
 
+find_package(pyMedInria)
+
+
 function(set_lib_install_rules_generic TARGET_NAME)
 
     ############################################################################
@@ -188,7 +191,7 @@ function(set_lib_install_rules_generic TARGET_NAME)
     endif()
     
     
-    
+    pyMedInria_update_dependencies(${TARGET_NAME})
     
     # Main install part for the target
     install(

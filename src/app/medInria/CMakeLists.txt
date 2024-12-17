@@ -27,6 +27,8 @@ include_directories(${dtk_INCLUDE_DIRS})
 
 find_package(Boost REQUIRED)
 
+find_package(pyMedInria REQUIRED)
+
 list_source_files(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}
   areas/browser
@@ -103,7 +105,7 @@ endif()
 ## Add Exe
 ## #############################################################################
 
-add_executable(${TARGET_NAME} ${DEPLOYMENT_SYSTEM} # Empty for Linux
+pyMedInria_add_executable(${TARGET_NAME} ${DEPLOYMENT_SYSTEM} # Empty for Linux
   ${${TARGET_NAME}_CFILES}
   ${${TARGET_NAME}_QRC}
   ${${TARGET_NAME}_QSS} # Just to have it in EDI
@@ -141,7 +143,29 @@ target_link_libraries(${TARGET_NAME} PRIVATE
   dtkVrSupport
   med::Core
   med::CoreGui
+  ${pyMedInria_LIBRARY}
   )
+
+#execute_process(
+#    COMMAND "${pyMedInria_ROOT}/bin/python${CMAKE_EXECUTABLE_SUFFIX}"
+#    -m pip install "${pyMedInria_ROOT}/lib/pyMedInria"
+#    )
+
+if(APPLE)
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        #file(REMOVE_RECURSE "$<TARGET_FILE_DIR:${TARGET_NAME}>/../Frameworks")
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${TARGET_NAME}>/../Frameworks"
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
+        "${pyMedInria_ROOT}/lib/python3.10"
+        "$<TARGET_FILE_DIR:${TARGET_NAME}>/../Frameworks/python3.10"
+        VERBATIM
+        )
+
+    file(GLOB dtk_libs ${dtk_ROOT}/lib/*.dylib)
+    foreach(dtk_lib ${dtk_libs})
+        pyMedInria_update_dependencies(${dtk_lib})
+    endforeach()
+endif()
 
 
 ## #############################################################################

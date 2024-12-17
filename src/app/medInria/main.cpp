@@ -20,6 +20,8 @@
 #include <QtPlatformHeaders/QWindowsWindowFunctions>
 #endif
 
+#include <QKeySequence>
+
 #include <dtkCoreSupport/dtkGlobal.h>
 #include <medApplication.h>
 #include <medApplicationContext.h>
@@ -39,6 +41,8 @@
 #include<medNotificationPresenter.h>
 
 #include<medNotifWindow.h>
+
+#include <pyMedInria.h>
 
 void forceShow(medMainWindow &mainwindow)
 {
@@ -194,6 +198,11 @@ int main(int argc, char *argv[])
         if (runningMedInria)
             return 0;
 
+        pyMedInria::Config config;
+        config.numArgs = argc - 1;
+        config.args = argv + 1;
+        pyMedInria::Application app(config);
+
         //auto testWindow = new QMainWindow();
         //auto w = new medSpoilerWidget();
         //QHBoxLayout * lay1 = new QHBoxLayout();
@@ -336,6 +345,20 @@ int main(int argc, char *argv[])
         forceShow(*mainwindow);
 
         qInfo() << "### Application is running...";
+
+        try
+        {
+            QWidget* console = pyncpp::Module::import("pymedinria.app.application").callMethod("run_console").toCPP<QWidget*>();
+            console->hide();
+            QShortcut* consoleShortcut = new QShortcut(QKeySequence("Ctrl+Shift+P"), mainwindow);
+            QObject::connect(consoleShortcut, &QShortcut::activated, [=] () { console->setVisible(!console->isVisible()); });
+            QShortcut* consoleShortcut2 = new QShortcut(QKeySequence("Ctrl+Shift+P"), console);
+            QObject::connect(consoleShortcut2, &QShortcut::activated, [=] () { console->setVisible(!console->isVisible()); });
+        }
+        catch(pyncpp::Exception& e)
+        {
+            qDebug() << e.what();
+        }
 
         //  Start main loop.
         const int status = application.exec();

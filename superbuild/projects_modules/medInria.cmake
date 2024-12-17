@@ -26,6 +26,7 @@ list(APPEND ${ep}_dependencies
   VTK 
   TTK
   RPI
+  pyMedInria
   )
 
 if (USE_DTKIMAGING)
@@ -88,6 +89,7 @@ set(cmake_cache_args
   -DVTK_ROOT:PATH=${VTK_ROOT}
   #-DGTest_ROOT:PATH=${GTEST_ROOT}
   -DQt5_ROOT:PATH=${Qt5_ROOT}  
+  -DpyMedInria_ROOT:PATH=${pyMedInria_ROOT}
   
   -DDCMTK_DIR:PATH=${DCMTK_DIR}
   -Ddtk_DIR:PATH=${dtk_DIR}

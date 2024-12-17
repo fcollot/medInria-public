@@ -61,6 +61,7 @@ list(APPEND external_projects
   TTK 
   DCMTK
   dtk
+  pyMedInria
   )
 
 if (USE_DTKIMAGING)

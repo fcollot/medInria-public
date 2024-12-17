@@ -11,6 +11,8 @@
 #
 ################################################################################
 
+find_package(pyMedInria)
+
 
 ################################################################################
 ##############################   LEGACY   ######################################
@@ -37,6 +39,8 @@ else()
   set_target_properties( ${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY                ${dest}/lib/plugins${legacy})
   set_target_properties( ${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY                ${dest}/bin/plugins${legacy})
 endif()
+
+pyMedInria_update_dependencies(${TARGET_NAME})
 
 install(TARGETS ${target}
   RUNTIME DESTINATION bin/plugins${legacy}
